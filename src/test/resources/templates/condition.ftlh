@@ -1,0 +1,1 @@
+Welcome ${user}, <#if user == "Big Joe">our beloved leader<#else>minion of Big Joe</#if>!

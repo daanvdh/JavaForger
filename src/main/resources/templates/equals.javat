@@ -1,0 +1,18 @@
+	@Override
+	public boolean equals(Object obj) {
+		boolean equals = false;
+		if (this == obj) {
+			equals = true;
+		} else if (obj != null && getClass() == obj.getClass()) {
+			${className} other = (${className}) obj;
+			equals = new EqualsBuilder()
+<#if class.extend??>			
+				.appendSuper(super.equals(obj))
+</#if>	
+<#list classFields as field>
+				.append(${field.name}, other.${field.name})
+</#list>
+				.isEquals();
+    	}
+    	return equals;
+    }
