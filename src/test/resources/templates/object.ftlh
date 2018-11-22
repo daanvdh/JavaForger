@@ -1,0 +1,1 @@
+The product with 2 properties: name=${prod.name}, url=${prod.url}
