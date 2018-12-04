@@ -100,25 +100,9 @@ public class VariableDefinition extends TypeDefinition {
     this.init2 = init2;
   }
 
-  public String getConstantName() {
-    String regex = "([A-Z])";
-    String replacement = "_$1";
-    return name.replaceAll(regex, replacement).toUpperCase();
-  }
-
   public String getGetter() {
     String prefix = this.type.equals("boolean") ? "is" : "get";
-    return prefix + getUpperName();
-  }
-
-  public String getUpperName() {
-    return upperCaseFirstChar(name);
-  }
-
-  private String upperCaseFirstChar(String s) {
-    char[] c = s.toCharArray();
-    c[0] = Character.toUpperCase(c[0]);
-    return new String(c);
+    return prefix + getName_().getUpperFirst();
   }
 
   public String getTypeWithoutParameters() {

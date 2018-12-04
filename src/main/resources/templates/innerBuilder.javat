@@ -1,12 +1,12 @@
 
-  private ${className}(Builder builder) {
+  private ${class.name}(Builder builder) {
 <#list fields as field>
     this.${field.name} = builder.${field.name};
 </#list>
   }
 
   /**
-   * Creates builder to build {@link ${className}}.
+   * Creates builder to build {@link ${class.name}}.
    * @return created builder
    */
   public static Builder builder() {
@@ -14,7 +14,7 @@
   }
 
   /**
-   * Builder to build {@link ${className}}.
+   * Builder to build {@link ${class.name}}.
    */
   public static final class Builder {
 <#list fields as field>
@@ -38,7 +38,7 @@
     
 </#list>
 
-    public ${className} build() {
-      return new ${className}(this);
+    public ${class.name} build() {
+      return new ${class.name}(this);
     }
   }

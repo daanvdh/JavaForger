@@ -106,9 +106,6 @@ public class Generator {
     Map<String, Object> inputParameters = config.getInputParameters().entrySet().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      inputParameters.put(TemplateInputValues.CLASS_NAME.getName(), getClassName(inputClass));
-      inputParameters.put(TemplateInputValues.LOWER_CLASS_NAME.getName(), lowerCaseFirstChar(getClassName(inputClass)));
-
       // TODO maybe better to get it from the config, not decided yet.
       inputParameters.put(TemplateInputValues.CLASS.getName(), new ClassReader().read(inputClass));
       inputParameters.put(TemplateInputValues.METHODS.getName(), new MethodReader().read(inputClass));
@@ -118,20 +115,6 @@ public class Generator {
       inputParameters.put(TemplateInputValues.CLASS_FIELDS.getName(), fields);
     }
     return inputParameters;
-  }
-
-  private String lowerCaseFirstChar(String s) {
-    char[] c = s.toCharArray();
-    c[0] = Character.toLowerCase(c[0]);
-    return new String(c);
-  }
-
-  private String getClassName(String inputClass) {
-    String separator = inputClass.contains("/") ? "/" : "\\";
-    int firstIndex = inputClass.lastIndexOf(separator) + 1;
-    int lastIndex = inputClass.lastIndexOf(".");
-    String name = inputClass.substring(firstIndex, lastIndex);
-    return name;
   }
 
   public static void main(String[] args) throws IOException, TemplateException {

@@ -27,13 +27,6 @@ import generator.Generator;
  */
 public enum TemplateInputValues {
   CLASS_FIELDS("fields"),
-
-  @Deprecated
-  CLASS_NAME("className"), // TODO should be replaced by getting it via the class
-
-  @Deprecated
-  LOWER_CLASS_NAME("lowerClassName"), // TODO should be replaced by getting it via the class
-
   METHODS("methods"),
   CLASS("class");
 
