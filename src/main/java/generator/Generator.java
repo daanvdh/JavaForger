@@ -21,11 +21,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.Modifier;
 
@@ -37,10 +34,11 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
 import generator.GeneratorConfiguration.Builder;
 import merger.CodeSnipitMerger;
+import parameters.TemplateInputParameters;
+import parameters.TemplateInputDefaults;
 import reader.ClassReader;
 import reader.FieldReader;
 import reader.MethodReader;
-import templateInput.TemplateInputValues;
 import templateInput.VariableDefinition;
 
 /**
@@ -54,15 +52,15 @@ public class Generator {
   VariableInitializer initializer = new VariableInitializer();
   CodeSnipitMerger merger = new CodeSnipitMerger();
 
-  public CodeSnipit execute(String template, Map<String, Object> inputParameters) throws IOException, TemplateException {
+  public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
   }
 
   public CodeSnipit execute(String template, String inputClass) throws IOException, TemplateException {
-    return execute(template, inputClass, new HashMap<>());
+    return execute(template, inputClass, new TemplateInputParameters());
   }
 
-  public CodeSnipit execute(String template, String inputClass, Map<String, Object> inputParameters) throws IOException, TemplateException {
+  public CodeSnipit execute(String template, String inputClass, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(GeneratorConfiguration.builder().withInputParameters(inputParameters).withTemplate(template).build(), inputClass);
   }
 
@@ -103,16 +101,16 @@ public class Generator {
   }
 
   private Map<String, Object> getInputParameters(GeneratorConfiguration config, String inputClass) throws IOException {
-    Map<String, Object> inputParameters = config.getInputParameters().entrySet().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      // TODO maybe better to get it from the config, not decided yet.
-      inputParameters.put(TemplateInputValues.CLASS.getName(), new ClassReader().read(inputClass));
-      inputParameters.put(TemplateInputValues.METHODS.getName(), new MethodReader().read(inputClass));
-
       List<VariableDefinition> fields = reader.getFields(config, inputClass);
       initializer.init(fields);
-      inputParameters.put(TemplateInputValues.CLASS_FIELDS.getName(), fields);
+      inputParameters.put(TemplateInputDefaults.CLASS_FIELDS.getName(), fields);
+      inputParameters.put(TemplateInputDefaults.CLASS.getName(), new ClassReader().read(inputClass));
+      inputParameters.put(TemplateInputDefaults.METHODS.getName(), new MethodReader().read(inputClass));
+
+      config.getAdjuster().accept(inputParameters);
     }
     return inputParameters;
   }

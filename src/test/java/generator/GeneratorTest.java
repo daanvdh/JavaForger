@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +29,7 @@ import org.junit.Test;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import inputClassesForTests.Product;
+import parameters.TemplateInputParameters;
 
 /**
  * Unit test for {@link Generator}.
@@ -56,7 +55,7 @@ public class GeneratorTest {
 
   @Test
   public void testExecute_conditionFalse() throws IOException, TemplateException {
-    Map<String, Object> map = new HashMap<>();
+    TemplateInputParameters map = new TemplateInputParameters();
     map.put("user", "Steve");
     CodeSnipit code = gen.execute("condition.ftlh", map);
     verifyEquals("Welcome Steve, minion of Big Joe!", code.toString());
@@ -64,7 +63,7 @@ public class GeneratorTest {
 
   @Test
   public void testExecute_conditionTrue() throws IOException, TemplateException {
-    Map<String, Object> map = new HashMap<>();
+    TemplateInputParameters map = new TemplateInputParameters();
     map.put("user", "Big Joe");
     CodeSnipit code = gen.execute("condition.ftlh", map);
     verifyEquals("Welcome Big Joe, our beloved leader!", code.toString());
@@ -72,7 +71,7 @@ public class GeneratorTest {
 
   @Test
   public void testExecute_objectAsInput() throws IOException, TemplateException {
-    Map<String, Object> map = new HashMap<>();
+    TemplateInputParameters map = new TemplateInputParameters();
     map.put("prod", new Product("tovernaar", "goochelen"));
     CodeSnipit code = gen.execute("object.ftlh", map);
     verifyEquals("The product with 2 properties: name=tovernaar, url=goochelen", code.toString());
@@ -80,7 +79,7 @@ public class GeneratorTest {
 
   @Test
   public void testExecute_includeOtherTemplate() throws IOException, TemplateException {
-    Map<String, Object> map = new HashMap<>();
+    TemplateInputParameters map = new TemplateInputParameters();
     map.put("prod", new Product("homeopathie", "magie"));
     CodeSnipit code = gen.execute("include.ftlh", map);
     verifyEquals("We can also include stuff:\n" + "The product with 2 properties: name=homeopathie, url=magie", code.toString());
@@ -88,7 +87,7 @@ public class GeneratorTest {
 
   @Test
   public void testExecute_sequenceEmpty() throws IOException, TemplateException {
-    Map<String, Object> map = new HashMap<>();
+    TemplateInputParameters map = new TemplateInputParameters();
     map.put("products", new ArrayList<>());
     CodeSnipit code = gen.execute("sequence.ftlh", map);
     verifyEquals("We hebben deze dieren:", code.toString());
@@ -96,7 +95,7 @@ public class GeneratorTest {
 
   @Test
   public void testExecute_sequence() throws IOException, TemplateException {
-    Map<String, Object> map = new HashMap<>();
+    TemplateInputParameters map = new TemplateInputParameters();
     Product p1 = new Product("sprinkhaan", "springen");
     Product p2 = new Product("eend", "wachelen");
     map.put("products", Arrays.asList(p1, p2));
@@ -107,7 +106,7 @@ public class GeneratorTest {
   @Test
   public void testExecute_fillFromClassFile() throws IOException, TemplateException {
     String inputClass = "src/test/java/inputClassesForTests/Product.java";
-    CodeSnipit code = gen.execute("classFields.ftlh", inputClass, new HashMap<>());
+    CodeSnipit code = gen.execute("classFields.ftlh", inputClass, new TemplateInputParameters());
     verifyEquals("The input class has the following fields:\n" + "String url\n" + "String name", code.toString());
   }
 

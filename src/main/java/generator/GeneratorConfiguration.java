@@ -19,15 +19,15 @@ package generator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.github.javaparser.ast.Modifier;
+
+import parameters.ParameterAdjuster;
+import parameters.TemplateInputParameters;
 
 /**
  * DTO containing the configuration for the execution of a template.
@@ -40,7 +40,7 @@ public class GeneratorConfiguration {
   private String template;
 
   /** The input parameters to be used for the template. This is aditional to the parameters that will be added from the input class. */
-  private Map<String, Object> inputParameters;
+  private TemplateInputParameters inputParameters;
 
   /** The class that the generated code should be merged with. */
   private String mergeClass;
@@ -54,6 +54,9 @@ public class GeneratorConfiguration {
   /** With this you can define a sequence of templates to be executed. */
   private List<GeneratorConfiguration> childConfigs;
 
+  /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
+  private List<ParameterAdjuster> adjusters;
+
   private GeneratorConfiguration(Builder builder) {
     this.template = builder.template;
     this.inputParameters = builder.inputParameters;
@@ -61,6 +64,7 @@ public class GeneratorConfiguration {
     this.allowedModifiers = builder.allowedModifiers;
     this.notAllowedModifiers = builder.notAllowedModifiers;
     this.childConfigs = builder.configs;
+    this.adjusters = builder.adjusters;
   }
 
   public String getMergeClass() {
@@ -88,11 +92,11 @@ public class GeneratorConfiguration {
     this.template = template;
   }
 
-  public Map<String, Object> getInputParameters() {
-    return Collections.unmodifiableMap(inputParameters);
+  public TemplateInputParameters getInputParameters() {
+    return inputParameters.copy();
   }
 
-  public void setInputParameters(Map<String, Object> inputParameters) {
+  public void setInputParameters(TemplateInputParameters inputParameters) {
     this.inputParameters = inputParameters;
   }
 
@@ -100,6 +104,14 @@ public class GeneratorConfiguration {
     Boolean allowed = modifiers.stream().map(m -> this.allowedModifiers.contains(m)).reduce(Boolean::logicalOr).get();
     Boolean notAllowed = modifiers.stream().map(m -> this.notAllowedModifiers.contains(m)).reduce(Boolean::logicalOr).get();
     return allowed && !notAllowed;
+  }
+
+  public void addInputParameter(String name, Object value) {
+    this.inputParameters.put(name, value);
+  }
+
+  public ParameterAdjuster getAdjuster() {
+    return parameters -> adjusters.stream().forEach(adj -> adj.accept(parameters));
   }
 
   /**
@@ -116,13 +128,14 @@ public class GeneratorConfiguration {
    */
   public static final class Builder {
     private String template;
-    private Map<String, Object> inputParameters = new HashMap<>();
+    private TemplateInputParameters inputParameters = new TemplateInputParameters();
     private String mergeClass;
     private Set<Modifier> notAllowedModifiers = new HashSet<>();
     private Set<Modifier> allowedModifiers =
         new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.PROTECTED, Modifier.PRIVATE, Modifier.ABSTRACT, Modifier.STATIC, Modifier.FINAL,
             Modifier.TRANSIENT, Modifier.VOLATILE, Modifier.SYNCHRONIZED, Modifier.NATIVE, Modifier.STRICTFP, Modifier.TRANSITIVE, Modifier.DEFAULT));
     private List<GeneratorConfiguration> configs = new ArrayList<>();
+    private List<ParameterAdjuster> adjusters = new ArrayList<>();
 
     private Builder() {
     }
@@ -132,7 +145,7 @@ public class GeneratorConfiguration {
       return this;
     }
 
-    public Builder withInputParameters(Map<String, Object> inputParameters) {
+    public Builder withInputParameters(TemplateInputParameters inputParameters) {
       this.inputParameters = inputParameters;
       return this;
     }
@@ -164,10 +177,11 @@ public class GeneratorConfiguration {
       return new GeneratorConfiguration(this);
     }
 
-  }
-
-  public void addInputParameters(String name, Object value) {
-    this.inputParameters.put(name, value);
+    public Builder withParameterAdjusters(ParameterAdjuster... adjusters) {
+      this.adjusters.clear();
+      this.adjusters.addAll(Arrays.asList(adjusters));
+      return this;
+    }
 
   }
 

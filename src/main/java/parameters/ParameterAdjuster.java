@@ -15,29 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package templateInput;
+package parameters;
 
-import generator.Generator;
+import java.util.function.Consumer;
 
 /**
- * Enumeration of all possible custom input variable names that can be used inside a template. Any name, which is defined inside this enum, used inside a
- * template as variable will be filled with custom logic depending on other input by the {@link Generator}.
+ * Interface to implement a consumer of {@link TemplateInputParameters} so that the input parameters can be changed after parsing.
  *
  * @author Daan
  */
-public enum TemplateInputValues {
-  CLASS_FIELDS("fields"),
-  METHODS("methods"),
-  CLASS("class");
-
-  private final String name;
-
-  private TemplateInputValues(String name) {
-    this.name = name;
-  }
-
-  public String getName() {
-    return this.name;
-  }
-
+public interface ParameterAdjuster extends Consumer<TemplateInputParameters> {
+  // Class is empty because Consumer already defines required methods. This class is mainly needed to ensure type safety.
 }
