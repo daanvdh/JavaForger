@@ -1,5 +1,5 @@
 
-<#list classFields as field>
+<#list fields as field>
 private static final ${field.type} ${field.constantName} = ${field.init1};
 </#list>
 
@@ -7,7 +7,7 @@ private static final ${field.type} ${field.constantName} = ${field.init1};
 public void test${className}_minimum() {
 ${className} ${lowerClassName}= ${className}.builder().build();
 
-<#list classFields as field>
+<#list fields as field>
 <#if field.noInit == "null">
 Assert.assertNull("Unexpected ${field.name}", ${lowerClassName}.${field.getter}());
 <#elseif field.type == "boolean">
@@ -21,12 +21,12 @@ Assert.assertEquals("Unexpected ${field.name}", ${field.noInit}, ${lowerClassNam
 @Test 
 public void test${className}_maximum() {
 ${className} ${lowerClassName}= ${className}.builder()
-<#list classFields as field>
+<#list fields as field>
 .${field.name}(${field.constantName})
 </#list>
 .build();
 
-<#list classFields as field>
+<#list fields as field>
 <#if field.type == "boolean">
 Assert.assertTrue("Unexpected ${field.name}", ${lowerClassName}.${field.getter}());
 <#else>

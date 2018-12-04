@@ -1,6 +1,6 @@
 
   private ${className}(Builder builder) {
-<#list classFields as field>
+<#list fields as field>
     this.${field.name} = builder.${field.name};
 </#list>
   }
@@ -17,7 +17,7 @@
    * Builder to build {@link ${className}}.
    */
   public static final class Builder {
-<#list classFields as field>
+<#list fields as field>
     private ${field.type} ${field.name}<#if field.defaultInit??> = ${field.defaultInit}</#if>;
 </#list>
 
@@ -25,7 +25,7 @@
       // Builder should only be used via the parent class
     }
 
-<#list classFields as field>
+<#list fields as field>
     public Builder ${field.name}(${field.type} ${field.name}) {
 <#if field.collection>
       this.${field.name}.clear();

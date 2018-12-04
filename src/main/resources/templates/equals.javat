@@ -9,7 +9,7 @@
 <#if class.extend??>			
 				.appendSuper(super.equals(obj))
 </#if>	
-<#list classFields as field>
+<#list fields as field>
 				.append(${field.name}, other.${field.name})
 </#list>
 				.isEquals();

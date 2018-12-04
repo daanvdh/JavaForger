@@ -4,7 +4,7 @@
 <#if class.extend??>
 			.appendSuper(super.toString())
 </#if>
-<#list classFields as field>
+<#list fields as field>
 			.append("${field.name}", ${field.name})
 </#list>
 			.build();
