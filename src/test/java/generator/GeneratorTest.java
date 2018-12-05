@@ -38,59 +38,66 @@ import parameters.TemplateInputParameters;
  */
 public class GeneratorTest {
 
-  private Generator gen;
+  private Generator gen = new Generator();
+  private GeneratorConfiguration genConfig;
 
   @Before
   public void setup() throws IOException {
-    Configuration config = FreeMarkerConfiguration.getConfig();
-    config.setDirectoryForTemplateLoading(new File("src/test/resources/templates"));
-    gen = new Generator();
+    Configuration freeMarkerConfig = FreeMarkerConfiguration.getConfig();
+    freeMarkerConfig.setDirectoryForTemplateLoading(new File("src/test/resources/templates"));
+    genConfig = GeneratorConfiguration.builder().withFreeMarkerConfiguration(freeMarkerConfig).build();
   }
 
   @Test
   public void testExecute_simple() throws IOException, TemplateException {
-    CodeSnipit code = gen.execute("simple.ftlh", "");
-    verifyEquals("This is a simple test template.", code.toString());
+    String template = "simple.ftlh";
+    String expected = "This is a simple test template.";
+    executeAndVerify(template, null, null, expected);
   }
 
   @Test
   public void testExecute_conditionFalse() throws IOException, TemplateException {
     TemplateInputParameters map = new TemplateInputParameters();
     map.put("user", "Steve");
-    CodeSnipit code = gen.execute("condition.ftlh", map);
-    verifyEquals("Welcome Steve, minion of Big Joe!", code.toString());
+    String template = "condition.ftlh";
+    String expected = "Welcome Steve, minion of Big Joe!";
+    executeAndVerify(template, null, map, expected);
   }
 
   @Test
   public void testExecute_conditionTrue() throws IOException, TemplateException {
     TemplateInputParameters map = new TemplateInputParameters();
     map.put("user", "Big Joe");
-    CodeSnipit code = gen.execute("condition.ftlh", map);
-    verifyEquals("Welcome Big Joe, our beloved leader!", code.toString());
+    String template = "condition.ftlh";
+    String expected = "Welcome Big Joe, our beloved leader!";
+    executeAndVerify(template, null, map, expected);
   }
 
   @Test
   public void testExecute_objectAsInput() throws IOException, TemplateException {
     TemplateInputParameters map = new TemplateInputParameters();
     map.put("prod", new Product("tovernaar", "goochelen"));
-    CodeSnipit code = gen.execute("object.ftlh", map);
-    verifyEquals("The product with 2 properties: name=tovernaar, url=goochelen", code.toString());
+    String template = "object.ftlh";
+    String expected = "The product with 2 properties: name=tovernaar, url=goochelen";
+    executeAndVerify(template, null, map, expected);
   }
 
   @Test
   public void testExecute_includeOtherTemplate() throws IOException, TemplateException {
     TemplateInputParameters map = new TemplateInputParameters();
     map.put("prod", new Product("homeopathie", "magie"));
-    CodeSnipit code = gen.execute("include.ftlh", map);
-    verifyEquals("We can also include stuff:\n" + "The product with 2 properties: name=homeopathie, url=magie", code.toString());
+    String template = "include.ftlh";
+    String expected = "We can also include stuff:\n" + "The product with 2 properties: name=homeopathie, url=magie";
+    executeAndVerify(template, null, map, expected);
   }
 
   @Test
   public void testExecute_sequenceEmpty() throws IOException, TemplateException {
     TemplateInputParameters map = new TemplateInputParameters();
     map.put("products", new ArrayList<>());
-    CodeSnipit code = gen.execute("sequence.ftlh", map);
-    verifyEquals("We hebben deze dieren:", code.toString());
+    String template = "sequence.ftlh";
+    String expected = "We hebben deze dieren:";
+    executeAndVerify(template, null, map, expected);
   }
 
   @Test
@@ -99,15 +106,34 @@ public class GeneratorTest {
     Product p1 = new Product("sprinkhaan", "springen");
     Product p2 = new Product("eend", "wachelen");
     map.put("products", Arrays.asList(p1, p2));
-    CodeSnipit code = gen.execute("sequence.ftlh", map);
-    verifyEquals("We hebben deze dieren:\n" + "Een sprinkhaan kan springen.\n" + "Een eend kan wachelen.", code.toString());
+
+    String template = "sequence.ftlh";
+    String expected = "We hebben deze dieren:\n" + "Een sprinkhaan kan springen.\n" + "Een eend kan wachelen.";
+    executeAndVerify(template, null, map, expected);
   }
 
   @Test
   public void testExecute_fillFromClassFile() throws IOException, TemplateException {
+    String template = "classFields.ftlh";
     String inputClass = "src/test/java/inputClassesForTests/Product.java";
-    CodeSnipit code = gen.execute("classFields.ftlh", inputClass, new TemplateInputParameters());
-    verifyEquals("The input class has the following fields:\n" + "String url\n" + "String name", code.toString());
+    String expected = "The input class has the following fields:\n" + "String url\n" + "String name";
+    executeAndVerify(template, inputClass, null, expected);
+  }
+
+  private void executeAndVerify(String template, String inputClass, TemplateInputParameters map, String expected) throws IOException, TemplateException {
+    CodeSnipit code = execute(template, inputClass, map);
+    verifyEquals(expected, code.toString());
+  }
+
+  private CodeSnipit execute(String template, String inputClass, TemplateInputParameters map) throws IOException, TemplateException {
+    if (map != null) {
+      genConfig.setInputParameters(map);
+    }
+    if (template != null) {
+      genConfig.setTemplate(template);
+    }
+    CodeSnipit code = gen.execute(genConfig, inputClass);
+    return code;
   }
 
   /**

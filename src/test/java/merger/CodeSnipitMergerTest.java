@@ -42,12 +42,13 @@ public class CodeSnipitMergerTest {
 
   private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/ClassWithEverything.java";
   private static String SAVED_INPUT = null;
-  private static final GeneratorConfiguration CONFIG = GeneratorConfiguration.builder().withMergeClass(INPUT_CLASS).build();
+  private static GeneratorConfiguration CONFIG;
 
   private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
 
   @Before
   public void setup() throws IOException {
+    CONFIG = GeneratorConfiguration.builder().withMergeClass(INPUT_CLASS).build();
     if (SAVED_INPUT == null) {
       SAVED_INPUT = readFile(INPUT_CLASS);
     }

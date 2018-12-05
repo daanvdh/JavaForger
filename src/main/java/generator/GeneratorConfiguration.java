@@ -17,6 +17,7 @@
  */
 package generator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -26,6 +27,11 @@ import java.util.Set;
 
 import com.github.javaparser.ast.Modifier;
 
+import freemarker.core.ParseException;
+import freemarker.template.Configuration;
+import freemarker.template.MalformedTemplateNameException;
+import freemarker.template.Template;
+import freemarker.template.TemplateNotFoundException;
 import parameters.ParameterAdjuster;
 import parameters.TemplateInputParameters;
 
@@ -57,7 +63,13 @@ public class GeneratorConfiguration {
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
   private List<ParameterAdjuster> adjusters;
 
-  private GeneratorConfiguration(Builder builder) {
+  private Configuration freeMarkerConfiguration;
+
+  public GeneratorConfiguration() throws IOException {
+    this.freeMarkerConfiguration = FreeMarkerConfiguration.getConfig();
+  }
+
+  private GeneratorConfiguration(Builder builder) throws IOException {
     this.template = builder.template;
     this.inputParameters = builder.inputParameters;
     this.mergeClass = builder.mergeClass;
@@ -65,6 +77,7 @@ public class GeneratorConfiguration {
     this.notAllowedModifiers = builder.notAllowedModifiers;
     this.childConfigs = builder.configs;
     this.adjusters = builder.adjusters;
+    this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? FreeMarkerConfiguration.getConfig() : builder.freeMarkerConfiguration;
   }
 
   public String getMergeClass() {
@@ -84,8 +97,8 @@ public class GeneratorConfiguration {
     this.childConfigs.addAll(configs);
   }
 
-  public String getTemplate() {
-    return template;
+  public Template getTemplate() throws TemplateNotFoundException, MalformedTemplateNameException, ParseException, IOException {
+    return freeMarkerConfiguration.getTemplate(template);
   }
 
   public void setTemplate(String template) {
@@ -114,6 +127,10 @@ public class GeneratorConfiguration {
     return parameters -> adjusters.stream().forEach(adj -> adj.accept(parameters));
   }
 
+  public Configuration getFreeMarkerConfiguration() {
+    return freeMarkerConfiguration;
+  }
+
   /**
    * Creates builder to build {@link GeneratorConfiguration}.
    *
@@ -136,6 +153,7 @@ public class GeneratorConfiguration {
             Modifier.TRANSIENT, Modifier.VOLATILE, Modifier.SYNCHRONIZED, Modifier.NATIVE, Modifier.STRICTFP, Modifier.TRANSITIVE, Modifier.DEFAULT));
     private List<GeneratorConfiguration> configs = new ArrayList<>();
     private List<ParameterAdjuster> adjusters = new ArrayList<>();
+    private Configuration freeMarkerConfiguration = null;
 
     private Builder() {
     }
@@ -173,7 +191,12 @@ public class GeneratorConfiguration {
       return this;
     }
 
-    public GeneratorConfiguration build() {
+    public Builder withFreeMarkerConfiguration(Configuration config) {
+      this.freeMarkerConfiguration = config;
+      return this;
+    }
+
+    public GeneratorConfiguration build() throws IOException {
       return new GeneratorConfiguration(this);
     }
 

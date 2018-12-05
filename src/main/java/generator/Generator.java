@@ -22,20 +22,17 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.github.javaparser.ast.Modifier;
 
 import freemarker.core.ParseException;
-import freemarker.template.Configuration;
 import freemarker.template.MalformedTemplateNameException;
-import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
 import generator.GeneratorConfiguration.Builder;
 import merger.CodeSnipitMerger;
-import parameters.TemplateInputParameters;
 import parameters.TemplateInputDefaults;
+import parameters.TemplateInputParameters;
 import reader.ClassReader;
 import reader.FieldReader;
 import reader.MethodReader;
@@ -64,8 +61,12 @@ public class Generator {
     return execute(GeneratorConfiguration.builder().withInputParameters(inputParameters).withTemplate(template).build(), inputClass);
   }
 
+  public CodeSnipit execute(GeneratorConfiguration genConfig) throws IOException, TemplateException {
+    return execute(genConfig, "");
+  }
+
   public CodeSnipit execute(GeneratorConfiguration config, String inputClass) throws IOException, TemplateException {
-    Map<String, Object> inputParameters = getInputParameters(config, inputClass);
+    TemplateInputParameters inputParameters = getInputParameters(config, inputClass);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
     merger.merge(config, codeSnipit);
     executeChildren(config, inputClass, codeSnipit);
@@ -89,18 +90,14 @@ public class Generator {
     });
   }
 
-  private CodeSnipit processTemplate(GeneratorConfiguration config, Map<String, Object> inputParameters)
+  private CodeSnipit processTemplate(GeneratorConfiguration config, TemplateInputParameters inputParameters)
       throws IOException, TemplateNotFoundException, MalformedTemplateNameException, ParseException, TemplateException {
-    CodeSnipit codeSnipit;
-    Configuration cfg = FreeMarkerConfiguration.getConfig();
-    Template temp = cfg.getTemplate(config.getTemplate());
     Writer writer = new StringWriter();
-    temp.process(inputParameters, writer);
-    codeSnipit = new CodeSnipit(writer.toString());
-    return codeSnipit;
+    config.getTemplate().process(inputParameters, writer);
+    return new CodeSnipit(writer.toString());
   }
 
-  private Map<String, Object> getInputParameters(GeneratorConfiguration config, String inputClass) throws IOException {
+  private TemplateInputParameters getInputParameters(GeneratorConfiguration config, String inputClass) throws IOException {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
