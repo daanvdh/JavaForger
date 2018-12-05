@@ -26,12 +26,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParseStart;
+import com.github.javaparser.Provider;
+import com.github.javaparser.Providers;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
@@ -88,8 +95,9 @@ public class CodeSnipitMerger {
   }
 
   private void merge(CompilationUnit existingCode, CompilationUnit newCode) {
-    NodeList<BodyDeclaration<?>> existingMembers = getClassMembers(existingCode);
-    NodeList<BodyDeclaration<?>> newMembers = getClassMembers(newCode);
+    mergeImports(existingCode, newCode);
+    NodeList<BodyDeclaration<?>> existingMembers = getParent(existingCode).getMembers();
+    NodeList<BodyDeclaration<?>> newMembers = getParent(newCode).getMembers();
     for (BodyDeclaration<?> member : newMembers) {
       int replacementIndex = findReplacementNode(existingMembers, member);
       if (replacementIndex >= 0) {
@@ -101,11 +109,15 @@ public class CodeSnipitMerger {
     }
   }
 
+  private void mergeImports(CompilationUnit existingCode, CompilationUnit newCode) {
+    Set<ImportDeclaration> existingSet = new HashSet<>(existingCode.getImports());
+    newCode.getImports().stream().filter(imp -> !existingSet.contains(imp)).forEach(existingCode::addImport);
+  }
+
   private int findInsertionLocation(NodeList<BodyDeclaration<?>> existingMembers, BodyDeclaration<?> member) {
     int index = 0;
     for (int i = 0; i < existingMembers.size(); i++) {
       if (existingMembers.get(i).getClass().equals(member.getClass())) {
-
         Optional<EnumSet<Modifier>> modNew = findModifiers(member);
         Optional<EnumSet<Modifier>> modExist = findModifiers(existingMembers.get(i));
         if (modNew.isPresent() && modExist.isPresent()) {
@@ -115,7 +127,6 @@ public class CodeSnipitMerger {
         } else {
           index = i + 1;
         }
-
       }
     }
     return index;
@@ -200,13 +211,6 @@ public class CodeSnipitMerger {
     return isReplacement;
   }
 
-  private NodeList<BodyDeclaration<?>> getClassMembers(CompilationUnit existingCode) {
-    NodeList<BodyDeclaration<?>> members;
-    ClassOrInterfaceDeclaration parentNode = getParent(existingCode);
-    members = parentNode.getMembers();
-    return members;
-  }
-
   private ClassOrInterfaceDeclaration getParent(CompilationUnit cu) {
     ClassOrInterfaceDeclaration parentNode = null;
     for (TypeDeclaration<?> type : cu.getTypes()) {
@@ -249,15 +253,38 @@ public class CodeSnipitMerger {
 
   private CompilationUnit read(CodeSnipit codeSnipit) {
     // TODO make this flexible so that we only add the class if needed
-    // TODO don't locate class block at the beginning if codeSnipit contains imports.
-    // TODO support merging imports
-    // List<String> imports = codeSnipit.getCode().stream().filter(s -> s.startsWith("import")).collect(Collectors.toList());
-
-    String code = "public class ClassToMerge {\n" + codeSnipit.toString() + "\n}";
+    String string = codeSnipit.toString();
+    int index = firstIndexAfterImports(string);
+    String code = string.substring(0, index) + "public class ClassToMerge {\n" + string.substring(index) + "\n}";
     CompilationUnit cu = Parser.parse(code);
     // Needed to preserve the original formatting
     LexicalPreservingPrinter.setup(cu);
     return cu;
+  }
+
+  private int firstIndexAfterImports(String string) {
+    int lineBegin = 0;
+    int lineEnd = string.indexOf(";");
+    lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
+    String importDeclaration = string.substring(lineBegin, lineEnd);
+    ParseResult<ImportDeclaration> result = parseImport(importDeclaration);
+
+    while (result.isSuccessful()) {
+      lineBegin = lineEnd + 1;
+      lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
+      lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
+      importDeclaration = string.substring(lineBegin, lineEnd);
+      result = parseImport(importDeclaration);
+    }
+    return lineBegin;
+  }
+
+  private ParseResult<ImportDeclaration> parseImport(String importDeclaration) {
+    JavaParser parser = new JavaParser();
+    ParseStart<ImportDeclaration> parseStart = ParseStart.IMPORT_DECLARATION;
+    Provider provider = Providers.provider(importDeclaration);
+    ParseResult<ImportDeclaration> result = parser.parse(parseStart, provider);
+    return result;
   }
 
   private CompilationUnit read(String className) throws IOException {

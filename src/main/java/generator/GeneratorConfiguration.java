@@ -72,12 +72,12 @@ public class GeneratorConfiguration {
   private GeneratorConfiguration(Builder builder) throws IOException {
     this();
     this.template = builder.template;
-    this.inputParameters = builder.inputParameters;
+    this.inputParameters = new TemplateInputParameters(builder.inputParameters);
     this.mergeClass = builder.mergeClass;
     this.allowedModifiers = builder.allowedModifiers;
     this.notAllowedModifiers = builder.notAllowedModifiers;
-    this.childConfigs = builder.configs;
-    this.adjusters = builder.adjusters;
+    this.childConfigs = new ArrayList<>(builder.configs);
+    this.adjusters = new ArrayList<>(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
   }
 

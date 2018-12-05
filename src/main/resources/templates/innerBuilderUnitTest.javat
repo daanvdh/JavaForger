@@ -1,3 +1,4 @@
+import org.junit.Assert;
 
 <#list fields as field>
 private static final ${field.type} ${field.name_.snakeCase} = ${field.init1};

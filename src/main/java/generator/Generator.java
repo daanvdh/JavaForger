@@ -45,9 +45,11 @@ import templateInput.VariableDefinition;
  */
 public class Generator {
 
-  FieldReader reader = new FieldReader();
-  VariableInitializer initializer = new VariableInitializer();
-  CodeSnipitMerger merger = new CodeSnipitMerger();
+  private FieldReader fieldReader = new FieldReader();
+  private ClassReader classReader = new ClassReader();
+  private MethodReader methodReader = new MethodReader();
+  private VariableInitializer initializer = new VariableInitializer();
+  private CodeSnipitMerger merger = new CodeSnipitMerger();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
@@ -101,11 +103,11 @@ public class Generator {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      List<VariableDefinition> fields = reader.getFields(config, inputClass);
+      List<VariableDefinition> fields = fieldReader.getFields(config, inputClass);
       initializer.init(fields);
       inputParameters.put(TemplateInputDefaults.FIELDS.getName(), fields);
-      inputParameters.put(TemplateInputDefaults.CLASS.getName(), new ClassReader().read(inputClass));
-      inputParameters.put(TemplateInputDefaults.METHODS.getName(), new MethodReader().read(inputClass));
+      inputParameters.put(TemplateInputDefaults.CLASS.getName(), classReader.read(inputClass));
+      inputParameters.put(TemplateInputDefaults.METHODS.getName(), methodReader.read(inputClass));
 
       config.getAdjuster().accept(inputParameters);
     }
