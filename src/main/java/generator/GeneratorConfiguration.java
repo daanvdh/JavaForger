@@ -66,10 +66,11 @@ public class GeneratorConfiguration {
   private Configuration freeMarkerConfiguration;
 
   public GeneratorConfiguration() throws IOException {
-    this.freeMarkerConfiguration = FreeMarkerConfiguration.getConfig();
+    this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
   }
 
   private GeneratorConfiguration(Builder builder) throws IOException {
+    this();
     this.template = builder.template;
     this.inputParameters = builder.inputParameters;
     this.mergeClass = builder.mergeClass;
@@ -77,7 +78,7 @@ public class GeneratorConfiguration {
     this.notAllowedModifiers = builder.notAllowedModifiers;
     this.childConfigs = builder.configs;
     this.adjusters = builder.adjusters;
-    this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? FreeMarkerConfiguration.getConfig() : builder.freeMarkerConfiguration;
+    this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
   }
 
   public String getMergeClass() {

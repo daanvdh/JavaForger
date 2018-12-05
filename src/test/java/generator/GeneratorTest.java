@@ -43,7 +43,7 @@ public class GeneratorTest {
 
   @Before
   public void setup() throws IOException {
-    Configuration freeMarkerConfig = FreeMarkerConfiguration.getConfig();
+    Configuration freeMarkerConfig = FreeMarkerConfiguration.getDefaultConfig();
     freeMarkerConfig.setDirectoryForTemplateLoading(new File("src/test/resources/templates"));
     genConfig = GeneratorConfiguration.builder().withFreeMarkerConfiguration(freeMarkerConfig).build();
   }

@@ -42,16 +42,16 @@ public class TemplateInputParameters extends HashMap<String, Object> {
     // empty constructor
   }
 
-  public List<VariableDefinition> getFields() {
-    return (List<VariableDefinition>) get(TemplateInputDefaults.CLASS_FIELDS.getName());
+  public List<? extends VariableDefinition> getFields() {
+    return (List<? extends VariableDefinition>) get(TemplateInputDefaults.FIELDS.getName());
   }
 
   public ClassDefinition getClassDefinition() {
     return (ClassDefinition) get(TemplateInputDefaults.CLASS.getName());
   }
 
-  public List<MethodDefinition> getMethods() {
-    return (List<MethodDefinition>) get(TemplateInputDefaults.METHODS.getName());
+  public List<? extends MethodDefinition> getMethods() {
+    return (List<? extends MethodDefinition>) get(TemplateInputDefaults.METHODS.getName());
   }
 
   public TemplateInputParameters copy() {

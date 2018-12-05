@@ -17,8 +17,6 @@
  */
 package generator;
 
-import java.io.IOException;
-
 import freemarker.core.PlainTextOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
@@ -30,16 +28,12 @@ import freemarker.template.TemplateExceptionHandler;
  */
 public class FreeMarkerConfiguration {
 
-  private static Configuration config;
-
-  public static Configuration getConfig() throws IOException {
-    if (config == null) {
-      initConfig();
-    }
-    return config;
+  public static Configuration getDefaultConfig() {
+    return initConfig();
   }
 
-  private static synchronized void initConfig() throws IOException {
+  private static Configuration initConfig() {
+    Configuration config;
     // TODO maybe put this method in a separate singleton class with a lazy getter for it.
 
     // Create your Configuration instance, and specify if up to what FreeMarker
@@ -72,6 +66,8 @@ public class FreeMarkerConfiguration {
 
     // This prevents special characters (like <>{}& ) from being escaped.
     config.setAutoEscapingPolicy(Configuration.DISABLE_AUTO_ESCAPING_POLICY);
+
+    return config;
   }
 
 }

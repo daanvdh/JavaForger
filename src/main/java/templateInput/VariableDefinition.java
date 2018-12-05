@@ -43,6 +43,18 @@ public class VariableDefinition extends TypeDefinition {
     // explicitly make constructor visible
   }
 
+  /**
+   * Copy constructor
+   *
+   * @param var
+   */
+  public VariableDefinition(VariableDefinition var) {
+    super(var);
+    this.init1 = var.init1;
+    this.init2 = var.init2;
+    this.noInit = var.noInit;
+  }
+
   private VariableDefinition(Builder builder) {
     this.name = builder.name;
     this.type = builder.type;

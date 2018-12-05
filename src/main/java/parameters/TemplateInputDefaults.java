@@ -26,7 +26,7 @@ import generator.Generator;
  * @author Daan
  */
 public enum TemplateInputDefaults {
-  CLASS_FIELDS("fields"),
+  FIELDS("fields"),
   METHODS("methods"),
   CLASS("class");
 

@@ -103,7 +103,7 @@ public class Generator {
     if (inputClass != null && !inputClass.isEmpty()) {
       List<VariableDefinition> fields = reader.getFields(config, inputClass);
       initializer.init(fields);
-      inputParameters.put(TemplateInputDefaults.CLASS_FIELDS.getName(), fields);
+      inputParameters.put(TemplateInputDefaults.FIELDS.getName(), fields);
       inputParameters.put(TemplateInputDefaults.CLASS.getName(), new ClassReader().read(inputClass));
       inputParameters.put(TemplateInputDefaults.METHODS.getName(), new MethodReader().read(inputClass));
 

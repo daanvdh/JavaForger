@@ -40,6 +40,24 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   protected Set<String> annotations = new HashSet<>();
   protected Set<String> accessModifiers = new HashSet<>();
 
+  public TypeDefinition() {
+    // Make default constructor visable.
+  }
+
+  /**
+   * Copy constructor
+   *
+   * @param type
+   */
+  public TypeDefinition(TypeDefinition type) {
+    this.name = type.name;
+    this.type = type.type;
+    this.lineNumber = type.lineNumber;
+    this.column = type.column;
+    this.annotations = type.annotations;
+    this.accessModifiers = type.accessModifiers;
+  }
+
   @Override
   public int compareTo(TypeDefinition o) {
     int line = this.getLineNumber() - o.getLineNumber();
