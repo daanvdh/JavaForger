@@ -1,11 +1,14 @@
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
 <#if class.extend??>
-			.appendSuper(super.toString())
+      .appendSuper(super.toString())
 </#if>
 <#list fields as field>
-			.append("${field.name}", ${field.name})
+      .append("${field.name}", ${field.name})
 </#list>
-			.build();
-	}
+      .build();
+  }

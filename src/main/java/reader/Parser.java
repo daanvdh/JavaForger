@@ -48,6 +48,7 @@ public class Parser {
     try {
       cu = JavaParser.parse(code);
     } catch (Exception e) {
+      e.printStackTrace();
       System.out.println("The following could not be parsed:");
       System.out.println(printWithLineNumbers(code));
       throw e;

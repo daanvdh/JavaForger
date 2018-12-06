@@ -1,0 +1,32 @@
+import java.util.function.BiFunction;
+import org.junit.Assert;
+import org.junit.Test;
+
+  @Test
+  public void testEquals_Same() {
+    ${class.name}.Builder builder = createAndFillBuilder();
+    ${class.name} a = builder.build();
+    ${class.name} b = builder.build();
+    Assert.assertTrue("Expected a and b to be equal", a.equals(b));
+  }
+
+  @Test
+  public void testEquals_Different() {
+<#list fields as field>
+    verifyEqualsDifferent(${class.name}.Builder::${field.name}, ${field.init1});
+</#list>
+  }
+
+  private <T> void verifyEqualsDifferent(BiFunction<${class.name}.Builder, T, ${class.name}.Builder> withMapper, T argument) {
+    ${class.name}.Builder builder = createAndFillBuilder();
+    ${class.name} a = builder.build();
+    ${class.name} b = withMapper.apply(builder, argument).build();
+    Assert.assertFalse("Expected a and b not to be equal", a.equals(b));
+  }
+
+  private ${class.name}.Builder createAndFillBuilder() {
+    return ${class.name}.builder()
+<#list fields as field>
+      .${field.name}(${field.init1})
+</#list>;
+  }

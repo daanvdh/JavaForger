@@ -1,0 +1,33 @@
+import java.util.function.BiFunction;
+import org.junit.Assert;
+import org.junit.Test;
+
+  @Test
+  public void testHashCode_Same() {
+    ${class.name}.Builder builder = createAndFillBuilder();
+    ${class.name} a = builder.build();
+    ${class.name} b = builder.build();
+    Assert.assertEquals("Expected hash code to be the same", a.hashCode(), b.hashCode());
+  }
+
+  @Test
+  public void testHashCode_Different() {
+<#list fields as field>
+    verifyHashCode_Different(${class.name}.Builder::${field.name}, ${field.init2});
+</#list>
+  }
+
+  private <T> void verifyHashCode_Different(BiFunction<${class.name}.Builder, T, ${class.name}.Builder> withMapper, T argument) {
+    ${class.name}.Builder builder = createAndFillBuilder();
+    ${class.name} a = builder.build();
+    ${class.name} b = withMapper.apply(builder, argument).build();
+    Assert.assertNotEquals("Expected hash code to be different", a.hashCode(), b.hashCode());
+  }
+
+  private ${class.name}.Builder createAndFillBuilder() {
+    return ${class.name}.builder()
+<#list fields as field>
+      .${field.name}(${field.init1})
+</#list>
+      ;
+  }
