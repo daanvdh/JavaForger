@@ -49,8 +49,8 @@ public class JavaForgerConfiguration {
   /** The input parameters to be used for the template. This is aditional to the parameters that will be added from the input class. */
   private TemplateInputParameters inputParameters;
 
-  /** The class that the generated code should be merged with. */
-  private String mergeClass;
+  /** The {@link MergeClassProvider} to provide the class to merge the generated code with. */
+  private MergeClassProvider mergeClassProvider;
 
   /** If a field contains a modifier in this set it may be selected. This should not be used, use adjusters instead */
   @Deprecated
@@ -79,7 +79,7 @@ public class JavaForgerConfiguration {
     this();
     this.template = builder.template;
     this.inputParameters = new TemplateInputParameters(builder.inputParameters);
-    this.mergeClass = builder.mergeClass;
+    this.mergeClassProvider = builder.mergeClassProvider;
     this.allowedModifiers = builder.allowedModifiers;
     this.notAllowedModifiers = builder.notAllowedModifiers;
     this.childConfigs = new ArrayList<>(builder.childConfigs);
@@ -87,12 +87,12 @@ public class JavaForgerConfiguration {
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
   }
 
-  public String getMergeClass() {
-    return mergeClass;
+  public MergeClassProvider getMergeClassProvider() {
+    return mergeClassProvider;
   }
 
   public void setMergeClass(String mergeClass) {
-    this.mergeClass = mergeClass;
+    this.mergeClassProvider = new MergeClassProvider(mergeClass);
   }
 
   public List<JavaForgerConfiguration> getChildConfigs() {
@@ -164,7 +164,7 @@ public class JavaForgerConfiguration {
   public static final class Builder {
     private String template;
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
-    private String mergeClass;
+    private MergeClassProvider mergeClassProvider;
     @Deprecated
     private Set<Modifier> notAllowedModifiers = new HashSet<>();
     @Deprecated
@@ -181,7 +181,7 @@ public class JavaForgerConfiguration {
     private Builder(JavaForgerConfiguration config) {
       this.template = config.template;
       this.inputParameters = new TemplateInputParameters(config.inputParameters);
-      this.mergeClass = config.mergeClass;
+      this.mergeClassProvider = config.mergeClassProvider;
       this.allowedModifiers = config.allowedModifiers;
       this.notAllowedModifiers = config.notAllowedModifiers;
       this.childConfigs = config.childConfigs.stream().map(JavaForgerConfiguration::builder).map(Builder::build).collect(Collectors.toList());
@@ -200,7 +200,7 @@ public class JavaForgerConfiguration {
     }
 
     public Builder withMergeClass(String mergeClass) {
-      this.mergeClass = mergeClass;
+      this.mergeClassProvider = new MergeClassProvider(mergeClass);
       return this;
     }
 
@@ -236,6 +236,11 @@ public class JavaForgerConfiguration {
     public Builder withParameterAdjusters(ParameterAdjuster... adjusters) {
       this.adjusters.clear();
       this.adjusters.addAll(Arrays.asList(adjusters));
+      return this;
+    }
+
+    public Builder withMergeClassProvider(MergeClassProvider mergeClassProvider) {
+      this.mergeClassProvider = mergeClassProvider;
       return this;
     }
 

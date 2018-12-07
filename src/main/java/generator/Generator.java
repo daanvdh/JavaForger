@@ -68,18 +68,45 @@ public class Generator {
   }
 
   public CodeSnipit execute(JavaForgerConfiguration config, String inputClass) throws IOException, TemplateException {
+    return execute(config, inputClass, null);
+  }
+
+  private CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
     TemplateInputParameters inputParameters = getInputParameters(config, inputClass);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
-    merger.merge(config, codeSnipit);
-    executeChildren(config, inputClass, codeSnipit);
+    String mergedClass = merge(config, codeSnipit, inputClass, parentMergeClass);
+    executeChildren(config, inputClass, codeSnipit, mergedClass);
     return codeSnipit;
   }
 
-  private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit) {
+  private String merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String inputClass, String parentMergeClass) throws IOException {
+    String mergeClassPath = null;
+    MergeClassProvider mergeClassProvider = config.getMergeClassProvider();
+    if (mergeClassProvider != null) {
+      switch (mergeClassProvider.provideFrom()) {
+      case SELF:
+        mergeClassPath = mergeClassProvider.provide("");
+        break;
+      case INPUT_CLASS:
+        mergeClassPath = mergeClassProvider.provide(inputClass);
+        break;
+      case PARENT_CONFIG_MERGE_CLASS:
+        mergeClassPath = mergeClassProvider.provide(parentMergeClass);
+        break;
+      default:
+      }
+      merger.merge(config, codeSnipit, mergeClassPath);
+    }
+    return mergeClassPath;
+  }
+
+  private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit, String parentMergeClass) {
+    // TODO provide the parent somehow
+
     List<CodeSnipit> codeSnipits = new ArrayList<>();
     config.getChildConfigs().stream().forEach(conf -> {
       try {
-        codeSnipits.add(execute(conf, inputClass));
+        codeSnipits.add(execute(conf, inputClass, parentMergeClass));
       } catch (IOException e) {
         throw new RuntimeException(e);
       } catch (TemplateException e) {

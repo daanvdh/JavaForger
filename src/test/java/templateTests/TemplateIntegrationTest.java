@@ -28,9 +28,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.github.javaparser.ast.Modifier;
-
 import freemarker.template.TemplateException;
+import generator.ConfigurationDefaults;
 import generator.JavaForger;
 import generator.JavaForgerConfiguration;
 
@@ -68,36 +67,35 @@ public class TemplateIntegrationTest {
 
   @Test
   public void testInnerBuilder() throws IOException {
-    String template = "innerBuilder.javat";
     String expectedClass = "verify-innerBuilder.java";
-    String testTemplate = "innerBuilderTest.javat";
     String expectedTestClass = "verify-innerBuilderTest.java";
-    executeAndVerify(template, expectedClass, testTemplate, expectedTestClass);
+    executeAndVerify(ConfigurationDefaults.forBuilderAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
   public void testEquals() throws IOException {
-    String template = "equals.javat";
     String expectedClass = "verify-equals.java";
-    String testTemplate = "equalsTest.javat";
     String expectedTestClass = "verify-equalsTest.java";
-    executeAndVerify(template, expectedClass, testTemplate, expectedTestClass);
+    executeAndVerify(ConfigurationDefaults.forEqualsAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
   public void testHashCode() throws IOException {
-    String template = "hashCode.javat";
     String expectedClass = "verify-hashCode.java";
-    String testTemplate = "hashCodeTest.javat";
     String expectedTestClass = "verify-hashCodeTest.java";
-    executeAndVerify(template, expectedClass, testTemplate, expectedTestClass);
+    executeAndVerify(ConfigurationDefaults.forHashCodeAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
   public void testToString() throws IOException {
-    String template = "toString.javat";
     String expectedClass = "verify-toString.java";
-    executeAndVerify(template, expectedClass);
+    executeAndVerify(ConfigurationDefaults.forToString(), expectedClass);
+  }
+
+  private void executeAndVerify(JavaForgerConfiguration config, String expectedClass, String expectedTestClass) throws IOException {
+    execute(config);
+    verifyFileEqual(expectedClass, COPY_CLASS);
+    verifyFileEqual(expectedTestClass, COPY_TEST_CLASS);
   }
 
   private void copyClass(String input, String copyLocation) throws IOException, FileNotFoundException {
@@ -111,20 +109,6 @@ public class TemplateIntegrationTest {
     if (f.exists() && !f.isDirectory()) {
       f.delete();
     }
-  }
-
-  private void executeAndVerify(String template, String expectedClass, String testTemplate, String expectedTestClass) throws IOException {
-    JavaForgerConfiguration config = JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(COPY_CLASS)
-        .withChildConfig(JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(testTemplate).withMergeClass(COPY_TEST_CLASS).build())
-        .build();
-    executeAndVerify(config, expectedClass);
-    verifyFileEqual(expectedTestClass, COPY_TEST_CLASS);
-  }
-
-  private void executeAndVerify(String template, String expectedClass) throws IOException {
-    JavaForgerConfiguration config =
-        JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(COPY_CLASS).build();
-    executeAndVerify(config, expectedClass);
   }
 
   private void executeAndVerify(JavaForgerConfiguration config, String expectedClass) throws IOException {

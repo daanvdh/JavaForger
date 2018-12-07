@@ -73,20 +73,19 @@ public class CodeSnipitMerger {
    * @param codeSnipit The {@link CodeSnipit} which will be merged into the input class.
    * @throws IOException
    */
-  public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit) throws IOException {
-    if (config.getMergeClass() == null) {
+  public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+    if (config.getMergeClassProvider() == null) {
       return;
     }
-    String className = config.getMergeClass();
-    CompilationUnit existingCode = read(className);
+    CompilationUnit existingCode = read(mergeClassPath);
     CompilationUnit newCode = read(codeSnipit);
     merge(existingCode, newCode);
-    write(className, existingCode);
-    format(config);
+    write(mergeClassPath, existingCode);
+    format(config, mergeClassPath);
   }
 
-  private void format(JavaForgerConfiguration config) {
-    System.err.println("formatting is not yet supported and should be done manually for class " + config.getMergeClass());
+  private void format(JavaForgerConfiguration config, String mergeClassPath) {
+    System.err.println("formatting is not yet supported and should be done manually for class " + mergeClassPath);
     // TODO Probably best to call the formatter via the cmd:
     // https://stackoverflow.com/questions/15464111/run-cmd-commands-through-java
     // https://www.beyondjava.net/run-eclipse-formatter-command-line

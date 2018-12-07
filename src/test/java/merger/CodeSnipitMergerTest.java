@@ -104,13 +104,6 @@ public class CodeSnipitMergerTest {
   }
 
   @Test
-  public void testMerge_inputClassNull() throws IOException {
-    JavaForgerConfiguration conf = JavaForgerConfiguration.builder().build();
-
-    executeAndVerify(conf, SAVED_INPUT, "something that should not be parsed");
-  }
-
-  @Test
   public void testMerge_failingJavaParserPrinter() {
     // TODO anonymously overwrite CodeSnipitPrinter::write(CompilationUnit existingCode, PrintWriter writer) to throw an exception and delete everything in the
     // existing file. Then check if the file is still the same afterwards.
@@ -121,7 +114,7 @@ public class CodeSnipitMergerTest {
   }
 
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
-    new CodeSnipitMerger().merge(conf, new CodeSnipit(merge));
+    new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), conf.getMergeClassProvider().provide(""));
     String result = readFile(INPUT_CLASS);
 
     String expect = expected;
