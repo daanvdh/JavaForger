@@ -17,8 +17,6 @@
  */
 package generator;
 
-import com.github.javaparser.ast.Modifier;
-
 import generator.JavaForgerConfiguration.Builder;
 
 /**
@@ -26,7 +24,7 @@ import generator.JavaForgerConfiguration.Builder;
  *
  * @author Daan
  */
-public class ConfigurationDefaults {
+public class DefaultConfigurations {
 
   public static JavaForgerConfiguration forEquals() {
     return defaultConfig("equals.javat");
@@ -56,16 +54,17 @@ public class ConfigurationDefaults {
     return defaultConfig("toString.javat");
   }
 
-  private static JavaForgerConfiguration defaultConfig(String template) {
+  protected static JavaForgerConfiguration defaultConfig(String template) {
     return defaultBuilder(template).build();
   }
 
-  private static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
+  protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
     return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(MergeClassProvider.forMavenUnitTest()).build()).build();
   }
 
-  private static Builder defaultBuilder(String template) {
-    return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new MergeClassProvider()).withoutModifiers(Modifier.STATIC);
+  protected static Builder defaultBuilder(String template) {
+    return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new MergeClassProvider())
+        .withParameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
   }
 
 }

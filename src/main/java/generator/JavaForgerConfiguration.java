@@ -20,13 +20,8 @@ package generator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.github.javaparser.ast.Modifier;
 
 import freemarker.core.ParseException;
 import freemarker.template.Configuration;
@@ -52,17 +47,6 @@ public class JavaForgerConfiguration {
   /** The {@link MergeClassProvider} to provide the class to merge the generated code with. */
   private MergeClassProvider mergeClassProvider;
 
-  /** If a field contains a modifier in this set it may be selected. This should not be used, use adjusters instead */
-  @Deprecated
-  private Set<Modifier> allowedModifiers = new HashSet<>();
-
-  /**
-   * If a field contains a modifier which is in this set, that field will not be selected. This overrules the allowed modifiers. This should not be used, use
-   * adjusters instead
-   */
-  @Deprecated
-  private Set<Modifier> notAllowedModifiers = new HashSet<>();
-
   /** With this you can define a sequence of templates to be executed. */
   private final List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
 
@@ -80,8 +64,6 @@ public class JavaForgerConfiguration {
     this.template = builder.template;
     this.inputParameters = new TemplateInputParameters(builder.inputParameters);
     this.mergeClassProvider = builder.mergeClassProvider;
-    this.allowedModifiers = builder.allowedModifiers;
-    this.notAllowedModifiers = builder.notAllowedModifiers;
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
@@ -120,13 +102,6 @@ public class JavaForgerConfiguration {
     this.inputParameters = inputParameters;
   }
 
-  @Deprecated
-  public boolean modifiersAreAllowed(EnumSet<Modifier> modifiers) {
-    Boolean allowed = modifiers.stream().map(m -> this.allowedModifiers.contains(m)).reduce(Boolean::logicalOr).get();
-    Boolean notAllowed = modifiers.stream().map(m -> this.notAllowedModifiers.contains(m)).reduce(Boolean::logicalOr).get();
-    return allowed && !notAllowed;
-  }
-
   public void addInputParameter(String name, Object value) {
     this.inputParameters.put(name, value);
   }
@@ -146,6 +121,10 @@ public class JavaForgerConfiguration {
 
   public Configuration getFreeMarkerConfiguration() {
     return freeMarkerConfiguration;
+  }
+
+  public void setFreeMarkerConfiguration(Configuration freeMarkerConfig) {
+    this.freeMarkerConfiguration = freeMarkerConfig;
   }
 
   /**
@@ -174,12 +153,6 @@ public class JavaForgerConfiguration {
     private String template;
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
     private MergeClassProvider mergeClassProvider;
-    @Deprecated
-    private Set<Modifier> notAllowedModifiers = new HashSet<>();
-    @Deprecated
-    private Set<Modifier> allowedModifiers =
-        new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.PROTECTED, Modifier.PRIVATE, Modifier.ABSTRACT, Modifier.STATIC, Modifier.FINAL,
-            Modifier.TRANSIENT, Modifier.VOLATILE, Modifier.SYNCHRONIZED, Modifier.NATIVE, Modifier.STRICTFP, Modifier.TRANSITIVE, Modifier.DEFAULT));
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ParameterAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
@@ -191,8 +164,6 @@ public class JavaForgerConfiguration {
       this.template = config.template;
       this.inputParameters = new TemplateInputParameters(config.inputParameters);
       this.mergeClassProvider = config.mergeClassProvider;
-      this.allowedModifiers = config.allowedModifiers;
-      this.notAllowedModifiers = config.notAllowedModifiers;
       this.childConfigs = config.childConfigs.stream().map(JavaForgerConfiguration::builder).map(Builder::build).collect(Collectors.toList());
       this.adjusters = new ArrayList<>(config.adjusters);
       this.freeMarkerConfiguration = config.freeMarkerConfiguration;
@@ -210,20 +181,6 @@ public class JavaForgerConfiguration {
 
     public Builder withMergeClass(String mergeClass) {
       this.mergeClassProvider = new MergeClassProvider(mergeClass);
-      return this;
-    }
-
-    @Deprecated
-    public Builder withModifiers(Modifier... allowedModifiers) {
-      this.allowedModifiers.clear();
-      this.allowedModifiers.addAll(Arrays.asList(allowedModifiers));
-      return this;
-    }
-
-    @Deprecated
-    public Builder withoutModifiers(Modifier... allowedModifiers) {
-      this.notAllowedModifiers.clear();
-      this.notAllowedModifiers.addAll(Arrays.asList(allowedModifiers));
       return this;
     }
 

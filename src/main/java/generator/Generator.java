@@ -23,8 +23,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.javaparser.ast.Modifier;
-
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
@@ -147,8 +145,8 @@ public class Generator {
     String testMergeClass = "src/test/java/inputClassesForTests/Product.java";
     String testTemplate = "innerBuilderUnitTest.javat";
 
-    Builder builder = JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template); // .withMergeClass(inputClass);
-    builder.withChildConfig(JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(testTemplate) // .withMergeClass(testMergeClass)
+    Builder builder = JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(template); // .withMergeClass(inputClass);
+    builder.withChildConfig(JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(testTemplate) // .withMergeClass(testMergeClass)
         .build());
 
     String code = new Generator().execute(builder.build(), inputClass).toString();

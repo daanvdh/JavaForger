@@ -26,6 +26,8 @@ package inputClassesForTests;import java.util.Objects;
  */
 public class CLassWithEverything {
 
+  public static final Boolean PUB_STAT_FIN = false;
+
   public int i = 0;
   private String s;
 

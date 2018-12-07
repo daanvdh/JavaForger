@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import freemarker.template.TemplateException;
-import generator.ConfigurationDefaults;
+import generator.DefaultConfigurations;
 import generator.JavaForger;
 import generator.JavaForgerConfiguration;
 
@@ -69,27 +69,27 @@ public class TemplateIntegrationTest {
   public void testInnerBuilder() throws IOException {
     String expectedClass = "verify-innerBuilder.java";
     String expectedTestClass = "verify-innerBuilderTest.java";
-    executeAndVerify(ConfigurationDefaults.forBuilderAndTest(), expectedClass, expectedTestClass);
+    executeAndVerify(DefaultConfigurations.forBuilderAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
   public void testEquals() throws IOException {
     String expectedClass = "verify-equals.java";
     String expectedTestClass = "verify-equalsTest.java";
-    executeAndVerify(ConfigurationDefaults.forEqualsAndTest(), expectedClass, expectedTestClass);
+    executeAndVerify(DefaultConfigurations.forEqualsAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
   public void testHashCode() throws IOException {
     String expectedClass = "verify-hashCode.java";
     String expectedTestClass = "verify-hashCodeTest.java";
-    executeAndVerify(ConfigurationDefaults.forHashCodeAndTest(), expectedClass, expectedTestClass);
+    executeAndVerify(DefaultConfigurations.forHashCodeAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
   public void testToString() throws IOException {
     String expectedClass = "verify-toString.java";
-    executeAndVerify(ConfigurationDefaults.forToString(), expectedClass);
+    executeAndVerify(DefaultConfigurations.forToString(), expectedClass);
   }
 
   private void executeAndVerify(JavaForgerConfiguration config, String expectedClass, String expectedTestClass) throws IOException {

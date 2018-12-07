@@ -52,6 +52,7 @@ import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinte
 
 import freemarker.template.TemplateException;
 import generator.CodeSnipit;
+import generator.DefaultAdjusters;
 import generator.Generator;
 import generator.JavaForgerConfiguration;
 import reader.Parser;
@@ -303,8 +304,8 @@ public class CodeSnipitMerger {
     String inputClass = "src/test/java/inputClassesForTests/Product.java";
     String template = "equals.javat";
 
-    JavaForgerConfiguration config =
-        JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(inputClass).build();
+    JavaForgerConfiguration config = JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(template)
+        .withMergeClass(inputClass).build();
 
     new Generator().execute(config, inputClass).toString();
   }

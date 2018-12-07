@@ -60,13 +60,11 @@ public class FieldReader extends Reader<VariableDefinition> {
       for (Node node : childNodes) {
         if (node instanceof FieldDeclaration) {
           FieldDeclaration fd = (FieldDeclaration) node;
-          if (config.modifiersAreAllowed(fd.getModifiers())) {
-            Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
-            Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
-            fields.add(VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
-                .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
-                .withAccessModifiers(accessModifiers).build());
-          }
+          Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
+          Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
+          fields.add(VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
+              .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
+              .withAccessModifiers(accessModifiers).build());
         }
       }
     }
