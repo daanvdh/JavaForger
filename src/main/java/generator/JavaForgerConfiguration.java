@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.Modifier;
 
@@ -40,7 +41,7 @@ import parameters.TemplateInputParameters;
  *
  * @author Daan
  */
-public class GeneratorConfiguration {
+public class JavaForgerConfiguration {
 
   /** The template to be prosessed. */
   private String template;
@@ -51,32 +52,37 @@ public class GeneratorConfiguration {
   /** The class that the generated code should be merged with. */
   private String mergeClass;
 
-  /** If a field contains a modifier in this set it may be selected. */
+  /** If a field contains a modifier in this set it may be selected. This should not be used, use adjusters instead */
+  @Deprecated
   private Set<Modifier> allowedModifiers = new HashSet<>();
 
-  /** If a field contains a modifier which is in this set, that field will not be selected. This overrules the allowed modifiers. */
+  /**
+   * If a field contains a modifier which is in this set, that field will not be selected. This overrules the allowed modifiers. This should not be used, use
+   * adjusters instead
+   */
+  @Deprecated
   private Set<Modifier> notAllowedModifiers = new HashSet<>();
 
   /** With this you can define a sequence of templates to be executed. */
-  private List<GeneratorConfiguration> childConfigs;
+  private List<JavaForgerConfiguration> childConfigs;
 
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
   private List<ParameterAdjuster> adjusters;
 
   private Configuration freeMarkerConfiguration;
 
-  public GeneratorConfiguration() throws IOException {
+  public JavaForgerConfiguration() {
     this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
   }
 
-  private GeneratorConfiguration(Builder builder) throws IOException {
+  private JavaForgerConfiguration(Builder builder) {
     this();
     this.template = builder.template;
     this.inputParameters = new TemplateInputParameters(builder.inputParameters);
     this.mergeClass = builder.mergeClass;
     this.allowedModifiers = builder.allowedModifiers;
     this.notAllowedModifiers = builder.notAllowedModifiers;
-    this.childConfigs = new ArrayList<>(builder.configs);
+    this.childConfigs = new ArrayList<>(builder.childConfigs);
     this.adjusters = new ArrayList<>(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
   }
@@ -89,11 +95,11 @@ public class GeneratorConfiguration {
     this.mergeClass = mergeClass;
   }
 
-  public List<GeneratorConfiguration> getChildConfigs() {
+  public List<JavaForgerConfiguration> getChildConfigs() {
     return childConfigs;
   }
 
-  public void setChildConfigs(List<GeneratorConfiguration> configs) {
+  public void setChildConfigs(List<JavaForgerConfiguration> configs) {
     this.childConfigs.clear();
     this.childConfigs.addAll(configs);
   }
@@ -114,6 +120,7 @@ public class GeneratorConfiguration {
     this.inputParameters = inputParameters;
   }
 
+  @Deprecated
   public boolean modifiersAreAllowed(EnumSet<Modifier> modifiers) {
     Boolean allowed = modifiers.stream().map(m -> this.allowedModifiers.contains(m)).reduce(Boolean::logicalOr).get();
     Boolean notAllowed = modifiers.stream().map(m -> this.notAllowedModifiers.contains(m)).reduce(Boolean::logicalOr).get();
@@ -133,7 +140,7 @@ public class GeneratorConfiguration {
   }
 
   /**
-   * Creates builder to build {@link GeneratorConfiguration}.
+   * Creates builder to build {@link JavaForgerConfiguration}.
    *
    * @return created builder
    */
@@ -142,21 +149,44 @@ public class GeneratorConfiguration {
   }
 
   /**
-   * Builder to build {@link GeneratorConfiguration}.
+   * Creates builder that is filled with the input {@link JavaForgerConfiguration} to build {@link JavaForgerConfiguration}.
+   *
+   * @param config The config to copy
+   * @return created builder
+   */
+  public static Builder builder(JavaForgerConfiguration config) {
+    return new Builder(config);
+  }
+
+  /**
+   * Builder to build {@link JavaForgerConfiguration}.
    */
   public static final class Builder {
     private String template;
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
     private String mergeClass;
+    @Deprecated
     private Set<Modifier> notAllowedModifiers = new HashSet<>();
+    @Deprecated
     private Set<Modifier> allowedModifiers =
         new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.PROTECTED, Modifier.PRIVATE, Modifier.ABSTRACT, Modifier.STATIC, Modifier.FINAL,
             Modifier.TRANSIENT, Modifier.VOLATILE, Modifier.SYNCHRONIZED, Modifier.NATIVE, Modifier.STRICTFP, Modifier.TRANSITIVE, Modifier.DEFAULT));
-    private List<GeneratorConfiguration> configs = new ArrayList<>();
+    private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ParameterAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
 
     private Builder() {
+    }
+
+    private Builder(JavaForgerConfiguration config) {
+      this.template = config.template;
+      this.inputParameters = new TemplateInputParameters(config.inputParameters);
+      this.mergeClass = config.mergeClass;
+      this.allowedModifiers = config.allowedModifiers;
+      this.notAllowedModifiers = config.notAllowedModifiers;
+      this.childConfigs = config.childConfigs.stream().map(JavaForgerConfiguration::builder).map(Builder::build).collect(Collectors.toList());
+      this.adjusters = new ArrayList<>(config.adjusters);
+      this.freeMarkerConfiguration = config.freeMarkerConfiguration;
     }
 
     public Builder withTemplate(String template) {
@@ -174,21 +204,23 @@ public class GeneratorConfiguration {
       return this;
     }
 
+    @Deprecated
     public Builder withModifiers(Modifier... allowedModifiers) {
       this.allowedModifiers.clear();
       this.allowedModifiers.addAll(Arrays.asList(allowedModifiers));
       return this;
     }
 
+    @Deprecated
     public Builder withoutModifiers(Modifier... allowedModifiers) {
       this.notAllowedModifiers.clear();
       this.notAllowedModifiers.addAll(Arrays.asList(allowedModifiers));
       return this;
     }
 
-    public Builder withChildConfig(GeneratorConfiguration... configs) {
-      this.configs.clear();
-      this.configs.addAll(Arrays.asList(configs));
+    public Builder withChildConfig(JavaForgerConfiguration... configs) {
+      this.childConfigs.clear();
+      this.childConfigs.addAll(Arrays.asList(configs));
       return this;
     }
 
@@ -197,8 +229,8 @@ public class GeneratorConfiguration {
       return this;
     }
 
-    public GeneratorConfiguration build() throws IOException {
-      return new GeneratorConfiguration(this);
+    public JavaForgerConfiguration build() {
+      return new JavaForgerConfiguration(this);
     }
 
     public Builder withParameterAdjusters(ParameterAdjuster... adjusters) {

@@ -31,8 +31,8 @@ import org.junit.Test;
 import com.github.javaparser.ast.Modifier;
 
 import freemarker.template.TemplateException;
-import generator.Generator;
-import generator.GeneratorConfiguration;
+import generator.JavaForger;
+import generator.JavaForgerConfiguration;
 
 /**
  * Integration test testing the whole flow of inserting code into a class. If this test fails, comment out deleting the created file in the tearDown method.
@@ -52,8 +52,6 @@ public class TemplateIntegrationTest {
   private static final String COPY_TEST_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverythingTest.java";
   private static final String EXPECTED_RESULTS_PATH = "src/test/resources/templateTestOutcomes/";
 
-  private Generator gen = new Generator();
-
   @Before
   public void setup() throws IOException {
     removeTestClassIfExists(COPY_CLASS);
@@ -69,7 +67,7 @@ public class TemplateIntegrationTest {
   }
 
   @Test
-  public void testInnerBuilder() throws IOException, TemplateException {
+  public void testInnerBuilder() throws IOException {
     String template = "innerBuilder.javat";
     String expectedClass = "verify-innerBuilder.java";
     String testTemplate = "innerBuilderTest.javat";
@@ -78,7 +76,7 @@ public class TemplateIntegrationTest {
   }
 
   @Test
-  public void testEquals() throws IOException, TemplateException {
+  public void testEquals() throws IOException {
     String template = "equals.javat";
     String expectedClass = "verify-equals.java";
     String testTemplate = "equalsTest.javat";
@@ -87,7 +85,7 @@ public class TemplateIntegrationTest {
   }
 
   @Test
-  public void testHashCode() throws IOException, TemplateException {
+  public void testHashCode() throws IOException {
     String template = "hashCode.javat";
     String expectedClass = "verify-hashCode.java";
     String testTemplate = "hashCodeTest.javat";
@@ -96,7 +94,7 @@ public class TemplateIntegrationTest {
   }
 
   @Test
-  public void testToString() throws IOException, TemplateException {
+  public void testToString() throws IOException {
     String template = "toString.javat";
     String expectedClass = "verify-toString.java";
     executeAndVerify(template, expectedClass);
@@ -115,27 +113,27 @@ public class TemplateIntegrationTest {
     }
   }
 
-  private void executeAndVerify(String template, String expectedClass, String testTemplate, String expectedTestClass) throws IOException, TemplateException {
-    GeneratorConfiguration config = GeneratorConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(COPY_CLASS)
-        .withChildConfig(GeneratorConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(testTemplate).withMergeClass(COPY_TEST_CLASS).build())
+  private void executeAndVerify(String template, String expectedClass, String testTemplate, String expectedTestClass) throws IOException {
+    JavaForgerConfiguration config = JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(COPY_CLASS)
+        .withChildConfig(JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(testTemplate).withMergeClass(COPY_TEST_CLASS).build())
         .build();
     executeAndVerify(config, expectedClass);
     verifyFileEqual(expectedTestClass, COPY_TEST_CLASS);
   }
 
-  private void executeAndVerify(String template, String expectedClass) throws IOException, TemplateException {
-    GeneratorConfiguration config =
-        GeneratorConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(COPY_CLASS).build();
+  private void executeAndVerify(String template, String expectedClass) throws IOException {
+    JavaForgerConfiguration config =
+        JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(COPY_CLASS).build();
     executeAndVerify(config, expectedClass);
   }
 
-  private void executeAndVerify(GeneratorConfiguration config, String expectedClass) throws IOException, TemplateException {
+  private void executeAndVerify(JavaForgerConfiguration config, String expectedClass) throws IOException {
     execute(config);
     verifyFileEqual(expectedClass, COPY_CLASS);
   }
 
-  private void execute(GeneratorConfiguration config) throws IOException, TemplateException {
-    gen.execute(config, COPY_CLASS).toString();
+  private void execute(JavaForgerConfiguration config) {
+    JavaForger.execute(config, COPY_CLASS);
   }
 
   // Protected so that we can override it, to make tests green instead of verifying anything.
@@ -164,15 +162,15 @@ public class TemplateIntegrationTest {
   /**
    * VERY DANGEROUS MAIN METHOD, ONLY USE THIS WHEN YOU KNOW WHAT YOU'RE DOING.
    * </p>
-   * This main method will force the whole test to be green again, by replacing all verify files.
+   * This main method will force the whole test to be green again, by replacing all verify files with the actual result.
    *
    * @param args
    * @throws IOException
    * @throws TemplateException
    */
-  public static void main(String[] args) throws IOException, TemplateException {
+  public static void main(String[] args) throws IOException {
 
-    // This statement prevents the main method from accidentily being executed.
+    // This statement prevents the main method from accidently being executed.
     Assert.fail();
 
     TemplateIntegrationTest test = new TemplateIntegrationTest() {

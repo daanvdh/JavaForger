@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import generator.CodeSnipit;
-import generator.GeneratorConfiguration;
+import generator.JavaForgerConfiguration;
 
 /**
  * Unit test for {@link CodeSnipitMerger}.
@@ -42,13 +42,13 @@ public class CodeSnipitMergerTest {
 
   private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/ClassWithEverything.java";
   private static String SAVED_INPUT = null;
-  private static GeneratorConfiguration CONFIG;
+  private static JavaForgerConfiguration CONFIG;
 
   private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
 
   @Before
   public void setup() throws IOException {
-    CONFIG = GeneratorConfiguration.builder().withMergeClass(INPUT_CLASS).build();
+    CONFIG = JavaForgerConfiguration.builder().withMergeClass(INPUT_CLASS).build();
     if (SAVED_INPUT == null) {
       SAVED_INPUT = readFile(INPUT_CLASS);
     }
@@ -105,7 +105,7 @@ public class CodeSnipitMergerTest {
 
   @Test
   public void testMerge_inputClassNull() throws IOException {
-    GeneratorConfiguration conf = GeneratorConfiguration.builder().build();
+    JavaForgerConfiguration conf = JavaForgerConfiguration.builder().build();
 
     executeAndVerify(conf, SAVED_INPUT, "something that should not be parsed");
   }
@@ -120,7 +120,7 @@ public class CodeSnipitMergerTest {
     executeAndVerify(CONFIG, expected, merge);
   }
 
-  private void executeAndVerify(GeneratorConfiguration conf, String expected, String merge) throws IOException {
+  private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
     new CodeSnipitMerger().merge(conf, new CodeSnipit(merge));
     String result = readFile(INPUT_CLASS);
 

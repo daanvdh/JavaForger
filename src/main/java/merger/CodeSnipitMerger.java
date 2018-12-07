@@ -53,7 +53,7 @@ import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinte
 import freemarker.template.TemplateException;
 import generator.CodeSnipit;
 import generator.Generator;
-import generator.GeneratorConfiguration;
+import generator.JavaForgerConfiguration;
 import reader.Parser;
 
 /**
@@ -64,16 +64,16 @@ import reader.Parser;
 public class CodeSnipitMerger {
 
   /**
-   * Merges the input {@link CodeSnipit} with the mergeClass given by the {@link GeneratorConfiguration}. Currently only codeSnipits are supported that are not
+   * Merges the input {@link CodeSnipit} with the mergeClass given by the {@link JavaForgerConfiguration}. Currently only codeSnipits are supported that are not
    * a complete class. Imports are also not supported. Inside this method we wrap the code within the codeSnipit in a class and let {@link JavaParser} read it.
    * Then everything inside the wrapped class will be inserted into the inputClass. Variables with the same name and Methods with the same name and signature
    * will be replaced in the mergeClass. Changes will be written directly in the mergeClass.
    *
-   * @param config The {@link GeneratorConfiguration} containing merge settings and the path of the class to merge with.
+   * @param config The {@link JavaForgerConfiguration} containing merge settings and the path of the class to merge with.
    * @param codeSnipit The {@link CodeSnipit} which will be merged into the input class.
    * @throws IOException
    */
-  public void merge(GeneratorConfiguration config, CodeSnipit codeSnipit) throws IOException {
+  public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit) throws IOException {
     if (config.getMergeClass() == null) {
       return;
     }
@@ -85,7 +85,7 @@ public class CodeSnipitMerger {
     format(config);
   }
 
-  private void format(GeneratorConfiguration config) {
+  private void format(JavaForgerConfiguration config) {
     System.err.println("formatting is not yet supported and should be done manually for class " + config.getMergeClass());
     // TODO Probably best to call the formatter via the cmd:
     // https://stackoverflow.com/questions/15464111/run-cmd-commands-through-java
@@ -304,8 +304,8 @@ public class CodeSnipitMerger {
     String inputClass = "src/test/java/inputClassesForTests/Product.java";
     String template = "equals.javat";
 
-    GeneratorConfiguration config =
-        GeneratorConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(inputClass).build();
+    JavaForgerConfiguration config =
+        JavaForgerConfiguration.builder().withoutModifiers(Modifier.STATIC).withTemplate(template).withMergeClass(inputClass).build();
 
     new Generator().execute(config, inputClass).toString();
   }

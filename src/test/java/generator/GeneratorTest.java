@@ -39,13 +39,13 @@ import parameters.TemplateInputParameters;
 public class GeneratorTest {
 
   private Generator gen = new Generator();
-  private GeneratorConfiguration genConfig;
+  private JavaForgerConfiguration genConfig;
 
   @Before
   public void setup() throws IOException {
     Configuration freeMarkerConfig = FreeMarkerConfiguration.getDefaultConfig();
     freeMarkerConfig.setDirectoryForTemplateLoading(new File("src/test/resources/templates"));
-    genConfig = GeneratorConfiguration.builder().withFreeMarkerConfiguration(freeMarkerConfig).build();
+    genConfig = JavaForgerConfiguration.builder().withFreeMarkerConfiguration(freeMarkerConfig).build();
   }
 
   @Test

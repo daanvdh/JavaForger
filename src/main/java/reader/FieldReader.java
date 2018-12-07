@@ -31,7 +31,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 
-import generator.GeneratorConfiguration;
+import generator.JavaForgerConfiguration;
 import templateInput.VariableDefinition;
 
 /**
@@ -42,7 +42,7 @@ import templateInput.VariableDefinition;
 // TODO this should extend Reader<VariableDefinition> instead of current implementation.
 public class FieldReader extends Reader<VariableDefinition> {
 
-  public List<VariableDefinition> getFields(GeneratorConfiguration config, String className) throws IOException {
+  public List<VariableDefinition> getFields(JavaForgerConfiguration config, String className) throws IOException {
     ArrayList<VariableDefinition> fields = new ArrayList<>();
     try (FileInputStream in = new FileInputStream(className)) {
       CompilationUnit cu = JavaParser.parse(in);
@@ -54,7 +54,7 @@ public class FieldReader extends Reader<VariableDefinition> {
     return fields.stream().sorted().collect(Collectors.toList());
   }
 
-  private void getFields(GeneratorConfiguration config, ArrayList<VariableDefinition> fields, CompilationUnit cu) {
+  private void getFields(JavaForgerConfiguration config, ArrayList<VariableDefinition> fields, CompilationUnit cu) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       List<Node> childNodes = type.getChildNodes();
       for (Node node : childNodes) {
