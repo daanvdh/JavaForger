@@ -1,7 +1,7 @@
 
   private ${class.name}(Builder builder) {
 <#list fields as field>
-    this.${field.name} = builder.${field.name};
+    this.${field.name} = builder.${field.name} == null ? this.${field.name} : builder.${field.name};
 </#list>
   }
 

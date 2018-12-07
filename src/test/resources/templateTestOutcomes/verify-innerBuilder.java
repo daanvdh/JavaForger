@@ -37,8 +37,8 @@ public class CLassWithEverything {
   }
 
 private CLassWithEverything(Builder builder) {
-    this.i = builder.i;
-    this.s = builder.s;
+    this.i = builder.i == null ? this.i : builder.i;
+    this.s = builder.s == null ? this.s : builder.s;
   }
 
   public void method1() {

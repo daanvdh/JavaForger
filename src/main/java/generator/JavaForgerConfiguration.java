@@ -64,10 +64,10 @@ public class JavaForgerConfiguration {
   private Set<Modifier> notAllowedModifiers = new HashSet<>();
 
   /** With this you can define a sequence of templates to be executed. */
-  private List<JavaForgerConfiguration> childConfigs;
+  private final List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
 
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
-  private List<ParameterAdjuster> adjusters;
+  private final List<ParameterAdjuster> adjusters = new ArrayList<>();
 
   private Configuration freeMarkerConfiguration;
 
@@ -82,8 +82,8 @@ public class JavaForgerConfiguration {
     this.mergeClassProvider = builder.mergeClassProvider;
     this.allowedModifiers = builder.allowedModifiers;
     this.notAllowedModifiers = builder.notAllowedModifiers;
-    this.childConfigs = new ArrayList<>(builder.childConfigs);
-    this.adjusters = new ArrayList<>(builder.adjusters);
+    this.childConfigs.addAll(builder.childConfigs);
+    this.adjusters.addAll(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
   }
 
@@ -92,7 +92,7 @@ public class JavaForgerConfiguration {
   }
 
   public void setMergeClass(String mergeClass) {
-    this.mergeClassProvider = new MergeClassProvider(mergeClass);
+    this.mergeClassProvider = mergeClass == null ? null : new MergeClassProvider(mergeClass);
   }
 
   public List<JavaForgerConfiguration> getChildConfigs() {
@@ -133,6 +133,15 @@ public class JavaForgerConfiguration {
 
   public ParameterAdjuster getAdjuster() {
     return parameters -> adjusters.stream().forEach(adj -> adj.accept(parameters));
+  }
+
+  public void addParameterAdjusters(ParameterAdjuster... adjusters) {
+    this.adjusters.addAll(Arrays.asList(adjusters));
+  }
+
+  public void setParameterAdjusters(ParameterAdjuster... adjusters) {
+    this.adjusters.clear();
+    this.adjusters.addAll(Arrays.asList(adjusters));
   }
 
   public Configuration getFreeMarkerConfiguration() {

@@ -166,12 +166,13 @@ public class TemplateIntegrationTest {
     };
 
     test.setup();
-
     test.testEquals();
+    test.setup();
     test.testHashCode();
+    test.setup();
     test.testInnerBuilder();
+    test.setup();
     test.testToString();
-
     test.tearDown();
   }
 

@@ -28,7 +28,7 @@ public class JavaForgerException extends UncheckedExecutionException {
   private static final long serialVersionUID = 6709295471984508495L;
 
   public JavaForgerException(Exception caught) {
-    super.setStackTrace(caught.getStackTrace());
+    super(caught);
   }
 
 }
