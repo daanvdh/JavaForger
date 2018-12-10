@@ -14,6 +14,8 @@ ${class.name} ${class.name_.lowerFirst}= ${class.name}.builder().build();
 Assert.assertNull("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}());
 <#elseif field.type == "boolean">
 Assert.assertFalse("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}());
+<#elseif field.collection>
+Assert.assertTrue("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}().isEmpty());
 <#else>
 Assert.assertEquals("Unexpected ${field.name}", ${field.noInit}, ${class.name_.lowerFirst}.${field.getter}());
 </#if>

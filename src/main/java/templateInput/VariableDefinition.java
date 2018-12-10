@@ -27,8 +27,6 @@ import java.util.Set;
  */
 public class VariableDefinition extends TypeDefinition {
 
-  // TODO variables below should be moved to new class extending this one. VariableDefinitionInitialization
-  // For generating tests we need to be able to initialize the variable defined.
   /** The default initialization for a field, especially used for initializing collections. Field will not be initialized when this is null. */
   private String defaultInit;
   /** init1 and init2 hold two distinct initialization values. */
@@ -50,9 +48,11 @@ public class VariableDefinition extends TypeDefinition {
    */
   public VariableDefinition(VariableDefinition var) {
     super(var);
+    this.defaultInit = var.defaultInit;
     this.init1 = var.init1;
     this.init2 = var.init2;
     this.noInit = var.noInit;
+    this.collection = var.collection;
   }
 
   private VariableDefinition(Builder builder) {
@@ -89,11 +89,6 @@ public class VariableDefinition extends TypeDefinition {
 
   public void setNoInit(String noInit) {
     this.noInit = noInit;
-  }
-
-  // TODO this method should be removed, it is to customly build for the filter in the VariableInitializer.
-  public boolean isStatic() {
-    return accessModifiers.contains("static");
   }
 
   public String getInit1() {

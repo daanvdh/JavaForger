@@ -166,8 +166,11 @@ public class VariableInitializer {
     testNoInit.put("float", "0.0");
     testNoInit.put("Optional", "Optional.empty()");
     testNoInit.put("List", "Collections.emptyList()");
+    testNoInit.put("ArrayList", "Collections.emptyList()");
     testNoInit.put("HashMap", "Collections.emptyMap()");
     testNoInit.put("Map", "Collections.emptyMap()");
+    testNoInit.put("Set", "Collections.emptySet()");
+    testNoInit.put("HashSet", "Collections.emptySet()");
   }
 
   private void initializeParameterizedJavaDefaults() {
