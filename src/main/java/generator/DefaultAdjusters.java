@@ -32,7 +32,7 @@ import templateInput.VariableDefinition;
 public class DefaultAdjusters {
 
   public static ParameterAdjuster removeDepracatedFields() {
-    return (parameters) -> removeVariableIf(parameters, var -> var.getAnnotations().contains("depracated"));
+    return (parameters) -> removeVariableIf(parameters, var -> var.getAnnotations().contains("Deprecated"));
   }
 
   public static ParameterAdjuster removeStaticFields() {

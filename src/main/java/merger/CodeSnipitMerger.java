@@ -44,6 +44,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -191,12 +192,10 @@ public class CodeSnipitMerger {
    */
   private boolean memberIsReplacement(BodyDeclaration<?> exists, BodyDeclaration<?> member) {
     boolean isReplacement = false;
-
     if (MethodDeclaration.class.isAssignableFrom(member.getClass())) {
       MethodDeclaration m1 = (MethodDeclaration) exists;
       MethodDeclaration m2 = (MethodDeclaration) member;
       isReplacement = m1.getName().equals(m2.getName());
-      // TODO check if we can do equality on parameter types.
       List<Type> parameterTypes1 = m1.getParameters().stream().map(p -> p.getType()).collect(Collectors.toList());
       List<Type> parameterTypes2 = m2.getParameters().stream().map(p -> p.getType()).collect(Collectors.toList());
       isReplacement = isReplacement && parameterTypes1.equals(parameterTypes2);
@@ -204,9 +203,22 @@ public class CodeSnipitMerger {
       FieldDeclaration f1 = (FieldDeclaration) exists;
       FieldDeclaration f2 = (FieldDeclaration) member;
       isReplacement = f1.getVariable(0).getName().asString().equals(f2.getVariable(0).getName().asString());
+    } else if (ClassOrInterfaceDeclaration.class.isAssignableFrom(member.getClass())) {
+      // TODO Some recursive action should be done in this case, to replace fields and methods instead of overwriting the whole class.
+      ClassOrInterfaceDeclaration f1 = (ClassOrInterfaceDeclaration) exists;
+      ClassOrInterfaceDeclaration f2 = (ClassOrInterfaceDeclaration) member;
+      isReplacement = f1.getName().equals(f2.getName());
+    } else if (ConstructorDeclaration.class.isAssignableFrom(member.getClass())) {
+      ConstructorDeclaration m1 = (ConstructorDeclaration) exists;
+      ConstructorDeclaration m2 = (ConstructorDeclaration) member;
+      isReplacement = m1.getName().equals(m2.getName());
+      List<Type> parameterTypes1 = m1.getParameters().stream().map(p -> p.getType()).collect(Collectors.toList());
+      List<Type> parameterTypes2 = m2.getParameters().stream().map(p -> p.getType()).collect(Collectors.toList());
+      isReplacement = isReplacement && parameterTypes1.equals(parameterTypes2);
     } else {
-      System.err
-          .println("The type " + member.getClass().getName() + " is currently not supported. This type will not be replaced even though it already exists. ");
+      // TODO support the other types
+      System.err.println("The type " + member.getClass().getName()
+          + " is currently not supported. This type will not be replaced if it already exists, it will be simply be added. ");
     }
     return isReplacement;
   }
