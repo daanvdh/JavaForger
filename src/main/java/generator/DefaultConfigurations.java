@@ -43,11 +43,16 @@ public class DefaultConfigurations {
   }
 
   public static JavaForgerConfiguration forBuilder() {
-    return defaultConfig("innerBuilder.javat");
+    JavaForgerConfiguration config = defaultConfig("innerBuilder.javat");
+    config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
+    return config;
   }
 
   public static JavaForgerConfiguration forBuilderAndTest() {
-    return defaultConfiguration("innerBuilder.javat", "innerBuilderTest.javat");
+    JavaForgerConfiguration config = defaultConfiguration("innerBuilder.javat", "innerBuilderTest.javat");
+    config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
+    config.getChildConfigs().stream().forEach(c -> c.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects()));
+    return config;
   }
 
   public static JavaForgerConfiguration forToString() {

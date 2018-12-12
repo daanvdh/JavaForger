@@ -79,7 +79,8 @@ public class MergeClassProvider {
    */
   public static MergeClassProvider forMavenUnitTest() {
     Function<String, String> function = (s) -> {
-      String testPath = s.replace("main", "test");
+      String testPath = s.replace("\\main\\", "\\test\\");
+      s.replace("/main/", "/test/");
       testPath = testPath.replace(".java", "Test.java");
       return testPath;
     };

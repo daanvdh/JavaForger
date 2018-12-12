@@ -41,16 +41,23 @@ public class VariableInitializer {
   private static Map<String, String> emptyInit = new HashMap<>();
   private static Set<String> collections = new HashSet<>();
 
+  private static Map<String, String> primitiveToObject = new HashMap<>();
+
   public VariableInitializer() {
     initializeJavaDefaults();
     initializeJavaNoInit();
     initializeJavaEmptyInit();
     initializeJavaCollections();
     initializeParameterizedJavaDefaults();
+    initializePrimitiveToObject();
   }
 
   public void init(List<VariableDefinition> fields) {
     fields.stream().forEach(f -> init(f));
+  }
+
+  public String getObjectForPrimitive(String type) {
+    return primitiveToObject.containsKey(type) ? primitiveToObject.get(type) : type;
   }
 
   public void init(VariableDefinition var) {
@@ -140,12 +147,17 @@ public class VariableInitializer {
     defaultValue1.put("String", "\"a\"");
     defaultValue2.put("String", "\"b\"");
 
+    // Special ones
     defaultValue1.put("LocalDateTime", "LocalDateTime.of(2017, 3, 25, 0, 0)");
     defaultValue2.put("LocalDateTime", "LocalDateTime.of(2018, 4, 26, 1, 1)");
     defaultValue1.put("BigDecimal", "BigDecimal.valueOf(5)");
     defaultValue2.put("BigDecimal", "BigDecimal.valueOf(6)");
     defaultValue1.put("Date", "Date.from(ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())");
     defaultValue2.put("Date", "Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())");
+    defaultValue1.put("Length", "SI.METER");
+    defaultValue2.put("Length", "SI.KILOMETER");
+    defaultValue1.put("Volume", "SI.CUBIC_METRE");
+    defaultValue2.put("Volume", "SI.CUBIC_METRE"); // no alternative
   }
 
   private void initializeJavaEmptyInit() {
@@ -173,6 +185,14 @@ public class VariableInitializer {
     testNoInit.put("HashSet", "Collections.emptySet()");
   }
 
+  private void initializePrimitiveToObject() {
+    primitiveToObject.put("int", "Integer");
+    primitiveToObject.put("boolean", "Boolean");
+    primitiveToObject.put("long", "Long");
+    primitiveToObject.put("double", "Double");
+    primitiveToObject.put("float", "Float");
+  }
+
   private void initializeParameterizedJavaDefaults() {
     parameterizedVariables.put("List", "Collections.singletonList(");
     parameterizedVariables.put("ArrayList", "Collections.singletonList("); // This will not compile, but better than creating a builder for it.
@@ -181,6 +201,11 @@ public class VariableInitializer {
     parameterizedVariables.put("Set", "Collections.singleton(");
     parameterizedVariables.put("HashSet", "Collections.singleton(");
     parameterizedVariables.put("ArrayListValuedHashMap", "new ArrayListValuedHashMap<>(");
+
+    // Special ones
+
+    parameterizedVariables.put("DecimalMeasure", "DecimalMeasure.valueOf(BigDecimal.ZERO, ");
+
   }
 
   private void initializeJavaCollections() {

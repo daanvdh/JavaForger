@@ -17,6 +17,11 @@
  */
 package generator;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 /**
  * Contains a list of Stings, each string represents a line of code.
  *
@@ -36,6 +41,24 @@ public class CodeSnipit {
 
   public void add(String string) {
     code = code + string;
+  }
+
+  public void print() {
+    System.out.println(toString());
+  }
+
+  public void printWithLineNumbers() {
+    System.out.println(toStringWithLineNumbers());
+  }
+
+  /**
+   * @return The code with line numbers.
+   */
+  private String toStringWithLineNumbers() {
+    String[] split = code.split("\\r?\\n");
+    List<String> codeList = Arrays.asList(split);
+    IntStream.range(0, codeList.size()).mapToObj(i -> (Integer) i).forEach(i -> codeList.set(i, i + "\t" + codeList.get(i)));
+    return codeList.stream().collect(Collectors.joining("\n"));
   }
 
   @Override

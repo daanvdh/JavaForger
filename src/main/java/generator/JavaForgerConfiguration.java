@@ -47,6 +47,8 @@ public class JavaForgerConfiguration {
   /** The {@link MergeClassProvider} to provide the class to merge the generated code with. */
   private MergeClassProvider mergeClassProvider;
 
+  private boolean merge = true;
+
   /** With this you can define a sequence of templates to be executed. */
   private final List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
 
@@ -67,6 +69,14 @@ public class JavaForgerConfiguration {
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
+  }
+
+  public boolean isMerge() {
+    return merge;
+  }
+
+  public void setMerge(boolean merge) {
+    this.merge = merge;
   }
 
   public MergeClassProvider getMergeClassProvider() {

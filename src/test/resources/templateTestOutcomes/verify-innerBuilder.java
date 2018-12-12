@@ -72,14 +72,14 @@ public static Builder builder() {
   }
   
   public static final class Builder {
-    private int i;
+    private Integer i;
     private String s;
 
     private Builder() {
       // Builder should only be used via the parent class
     }
 
-    public Builder i(int i) {
+    public Builder i(Integer i) {
       this.i = i;
       return this;
     }

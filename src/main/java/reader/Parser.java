@@ -21,13 +21,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+
+import generator.CodeSnipit;
 
 /**
  * Parser using {@link JavaParser} to parse classes. If an exception is thrown within JavaParser, this class will output the input String so that everything can
@@ -50,7 +48,7 @@ public class Parser {
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("The following could not be parsed:");
-      System.out.println(printWithLineNumbers(code));
+      new CodeSnipit(code).printWithLineNumbers();
       throw e;
     }
     return cu;
@@ -58,19 +56,6 @@ public class Parser {
 
   public static CompilationUnit parse(FileInputStream in) throws IOException {
     return parse(getFileContent(in));
-  }
-
-  /**
-   * Print the input string with a line number before every new line.
-   *
-   * @param code The string to add line numbers to.
-   * @return The string with line numbers.
-   */
-  public static String printWithLineNumbers(String code) {
-    String[] split = code.split("\\r?\\n");
-    List<String> codeList = Arrays.asList(split);
-    IntStream.range(0, codeList.size()).mapToObj(i -> (Integer) i).forEach(i -> codeList.set(i, i + "\t" + codeList.get(i)));
-    return codeList.stream().collect(Collectors.joining("\n"));
   }
 
   private static String getFileContent(FileInputStream fis) throws IOException {

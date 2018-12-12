@@ -46,7 +46,7 @@ Assert.assertEquals("Unexpected i", I, cLassWithEverything.getI());
 Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
 }
 
-private static final int I = 1;
+private static final Integer I = 1;
 
 private static final String S = "a";
 

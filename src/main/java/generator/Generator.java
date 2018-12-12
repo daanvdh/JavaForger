@@ -93,24 +93,32 @@ public class Generator {
         break;
       default:
       }
-      merger.merge(config, codeSnipit, mergeClassPath);
+      if (config.isMerge()) {
+        // TODO check if file exists, create otherwise
+
+        boolean success = false;
+        try {
+          merger.merge(config, codeSnipit, mergeClassPath);
+          success = true;
+        } finally {
+          if (!success) {
+            codeSnipit.printWithLineNumbers();
+          }
+        }
+      }
     }
     return mergeClassPath;
   }
 
-  private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit, String parentMergeClass) {
-    // TODO provide the parent somehow
-
+  private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit, String parentMergeClass)
+      throws IOException, TemplateException {
+    // forloop needed because we cannot throw exceptions from within a stream
+    // TODO let execute only throw our own unchecked exception and replace the forloop with stream below.
+    // config.getChildConfigs().stream().map(conf -> execute(conf, inputClass, parentMergeClass)).collect(Collectors.toList());
     List<CodeSnipit> codeSnipits = new ArrayList<>();
-    config.getChildConfigs().stream().forEach(conf -> {
-      try {
-        codeSnipits.add(execute(conf, inputClass, parentMergeClass));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      } catch (TemplateException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    for (JavaForgerConfiguration conf : config.getChildConfigs()) {
+      codeSnipits.add(execute(conf, inputClass, parentMergeClass));
+    }
     codeSnipits.forEach(s -> {
       codeSnipit.add("\n======================================================================\n");
       codeSnipit.add(s.toString());

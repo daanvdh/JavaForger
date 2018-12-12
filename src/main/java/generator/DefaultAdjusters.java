@@ -18,6 +18,7 @@
 package generator;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import parameters.ParameterAdjuster;
@@ -37,6 +38,18 @@ public class DefaultAdjusters {
 
   public static ParameterAdjuster removeStaticFields() {
     return (parameters) -> removeVariableIf(parameters, var -> var.getAccessModifiers().contains("static"));
+  }
+
+  public static ParameterAdjuster replaceFieldPrimitivesWithObjects() {
+    VariableInitializer init = new VariableInitializer();
+    return (p) -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
+  }
+
+  public static void changeVariable(TemplateInputParameters parameters, Consumer<VariableDefinition> f) {
+    List<? extends VariableDefinition> fields = parameters.getFields();
+    for (int i = 0; i < fields.size(); i++) {
+      f.accept(fields.get(i));
+    }
   }
 
   public static void removeVariableIf(TemplateInputParameters parameters, Function<VariableDefinition, Boolean> f) {
