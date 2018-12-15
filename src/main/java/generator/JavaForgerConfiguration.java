@@ -83,6 +83,10 @@ public class JavaForgerConfiguration {
     return mergeClassProvider;
   }
 
+  public void setMergeClassProvider(MergeClassProvider mergeClassProvider) {
+    this.mergeClassProvider = mergeClassProvider;
+  }
+
   public void setMergeClass(String mergeClass) {
     this.mergeClassProvider = mergeClass == null ? null : new MergeClassProvider(mergeClass);
   }
