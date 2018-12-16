@@ -17,19 +17,12 @@
  */
 package merger;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
+import common.AbstractFileChangingTest;
 import generator.CodeSnipit;
 import generator.JavaForgerConfiguration;
 
@@ -38,32 +31,11 @@ import generator.JavaForgerConfiguration;
  *
  * @author Daan
  */
-public class CodeSnipitMergerTest {
+public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
-  private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/ClassWithEverything.java";
-  private static String SAVED_INPUT = null;
-  private static JavaForgerConfiguration CONFIG;
+  private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();;
 
   private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
-
-  @Before
-  public void setup() throws IOException {
-    CONFIG = JavaForgerConfiguration.builder().withMergeClass(INPUT_CLASS).build();
-    if (SAVED_INPUT == null) {
-      SAVED_INPUT = readFile(INPUT_CLASS);
-    }
-    if (SAVED_INPUT == null) {
-      SAVED_INPUT = readFile(INPUT_CLASS);
-    }
-  }
-
-  @After
-  public void after() throws FileNotFoundException, UnsupportedEncodingException {
-    try (PrintWriter writer = new PrintWriter(INPUT_CLASS, "UTF-8")) {
-      writer.append(SAVED_INPUT);
-      writer.close();
-    }
-  }
 
   @Test
   public void testMerge_newPublicMethod() throws IOException {
@@ -114,8 +86,8 @@ public class CodeSnipitMergerTest {
   }
 
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
-    new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), conf.getMergeClassProvider().provide(""));
-    String result = readFile(INPUT_CLASS);
+    new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
+    String result = fileToString(INPUT_CLASS);
 
     String expect = expected;
 
@@ -160,17 +132,12 @@ public class CodeSnipitMergerTest {
     }
   }
 
-  private String genExpected(String newCode, String atLocation, boolean replace) {
-    String wholeFile = new String(SAVED_INPUT);
+  private String genExpected(String newCode, String atLocation, boolean replace) throws IOException {
+    String wholeFile = fileToString(INPUT_CLASS);
     String verySpecialLineEndingsToMakeItAllWork = "\r\n\r\n";
     String replaceWith = replace ? newCode + verySpecialLineEndingsToMakeItAllWork : atLocation + newCode + verySpecialLineEndingsToMakeItAllWork;
     String newFile = wholeFile.replace(atLocation, replaceWith);
     return newFile;
-  }
-
-  private String readFile(String path) throws IOException {
-    byte[] encoded = Files.readAllBytes(Paths.get(path));
-    return new String(encoded, StandardCharsets.UTF_8);
   }
 
 }

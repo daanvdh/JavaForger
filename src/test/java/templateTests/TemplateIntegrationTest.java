@@ -23,11 +23,10 @@ import java.io.IOException;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
+import common.AbstractFileChangingTest;
 import freemarker.template.TemplateException;
 import generator.DefaultConfigurations;
 import generator.JavaForger;
@@ -43,27 +42,9 @@ import generator.JavaForgerConfiguration;
  *
  * @author Daan
  */
-public class TemplateIntegrationTest {
+public class TemplateIntegrationTest extends AbstractFileChangingTest {
 
-  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/CLassWithEverything.java";
-  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/CLassWithEverythingTest.java";
-  private static final String COPY_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverything.java";
-  private static final String COPY_TEST_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverythingTest.java";
   private static final String EXPECTED_RESULTS_PATH = "src/test/resources/templateTestOutcomes/";
-
-  @Before
-  public void setup() throws IOException {
-    removeTestClassIfExists(COPY_CLASS);
-    removeTestClassIfExists(COPY_TEST_CLASS);
-    copyClass(ORIGINAL_CLASS, COPY_CLASS);
-    copyClass(ORIGINAL_TEST_CLASS, COPY_TEST_CLASS);
-  }
-
-  @After
-  public void tearDown() {
-    removeTestClassIfExists(COPY_CLASS);
-    removeTestClassIfExists(COPY_TEST_CLASS);
-  }
 
   @Test
   public void testInnerBuilder() throws IOException {
@@ -94,30 +75,17 @@ public class TemplateIntegrationTest {
 
   private void executeAndVerify(JavaForgerConfiguration config, String expectedClass, String expectedTestClass) throws IOException {
     execute(config);
-    verifyFileEqual(expectedClass, COPY_CLASS);
-    verifyFileEqual(expectedTestClass, COPY_TEST_CLASS);
-  }
-
-  private void copyClass(String input, String copyLocation) throws IOException, FileNotFoundException {
-    File src = new File(input);
-    File dest = new File(copyLocation);
-    FileUtils.copyFile(src, dest);
-  }
-
-  private void removeTestClassIfExists(String input) {
-    File f = new File(input);
-    if (f.exists() && !f.isDirectory()) {
-      f.delete();
-    }
+    verifyFileEqual(expectedClass, INPUT_CLASS);
+    verifyFileEqual(expectedTestClass, INPUT_TEST_CLASS);
   }
 
   private void executeAndVerify(JavaForgerConfiguration config, String expectedClass) throws IOException {
     execute(config);
-    verifyFileEqual(expectedClass, COPY_CLASS);
+    verifyFileEqual(expectedClass, INPUT_CLASS);
   }
 
   private void execute(JavaForgerConfiguration config) {
-    JavaForger.execute(config, COPY_CLASS);
+    JavaForger.execute(config, INPUT_CLASS);
   }
 
   // Protected so that we can override it, to make tests green instead of verifying anything.
