@@ -34,7 +34,7 @@ import templateInput.MethodDefinition.Builder;
  * @author Daan
  */
 public class MethodReaderTest {
-  private static final String INPUT_CLASS = "C:/gitrepo/JavaForger/src/test/java/inputClassesForTests/Product.java";
+  private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/Product.java";
 
   private MethodReader mr = new MethodReader();
 

@@ -34,7 +34,7 @@ import templateInput.ClassDefinition;
  * @author Daan
  */
 public class ClassReaderTest {
-  private static final String INPUT_CLASS = "C:/gitrepo/JavaForger/src/test/java/inputClassesForTests/ExtendedProduct.java";
+  private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/ExtendedProduct.java";
 
   private ClassReader cr = new ClassReader();
 

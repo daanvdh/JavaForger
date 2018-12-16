@@ -34,7 +34,7 @@ import templateInput.VariableDefinition;
  * @author Daan
  */
 public class FieldReaderTest {
-  private static final String INPUT_CLASS = "C:/gitrepo/JavaForger/src/test/java/inputClassesForTests/Product.java";
+  private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/Product.java";
 
   @Test
   public void testGetFields() throws IOException {
