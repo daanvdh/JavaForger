@@ -17,12 +17,8 @@
  */
 package templateTests;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Scanner;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -75,40 +71,17 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
 
   private void executeAndVerify(JavaForgerConfiguration config, String expectedClass, String expectedTestClass) throws IOException {
     execute(config);
-    verifyFileEqual(expectedClass, INPUT_CLASS);
-    verifyFileEqual(expectedTestClass, INPUT_TEST_CLASS);
+    verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_CLASS);
+    verifyFileEqual(EXPECTED_RESULTS_PATH + expectedTestClass, INPUT_TEST_CLASS);
   }
 
   private void executeAndVerify(JavaForgerConfiguration config, String expectedClass) throws IOException {
     execute(config);
-    verifyFileEqual(expectedClass, INPUT_CLASS);
+    verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_CLASS);
   }
 
   private void execute(JavaForgerConfiguration config) {
     JavaForger.execute(config, INPUT_CLASS);
-  }
-
-  // Protected so that we can override it, to make tests green instead of verifying anything.
-  protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
-    File file1 = new File(actualPath);
-    String expPath = EXPECTED_RESULTS_PATH + expectedPath;
-    File file2 = new File(expPath);
-    boolean contentEquals = FileUtils.contentEquals(file1, file2);
-    if (contentEquals == false) {
-      System.err.println("Actual file " + actualPath + ":");
-      printFile(file1);
-      System.err.println("Expected file " + expPath + ":");
-      printFile(file2);
-    }
-    Assert.assertTrue("Expected file (" + expPath + ") was not equal to actual (" + actualPath + ")", contentEquals);
-  }
-
-  private void printFile(File file) throws FileNotFoundException {
-    try (Scanner input = new Scanner(file)) {
-      while (input.hasNextLine()) {
-        System.out.println(input.nextLine());
-      }
-    }
   }
 
   /**

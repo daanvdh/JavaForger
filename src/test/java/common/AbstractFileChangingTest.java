@@ -20,12 +20,15 @@ package common;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
 /**
@@ -34,19 +37,18 @@ import org.junit.Before;
  *
  * @author Daan
  */
-public class AbstractFileChangingTest {
+public abstract class AbstractFileChangingTest {
 
   private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/CLassWithEverything.java";
   private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/CLassWithEverythingTest.java";
-  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverything.java";
-  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverythingTest.java";
+  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/InputClass.java";
+  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/InputClassTest.java";
 
   @Before
   public void setup() throws IOException {
-    removeTestClassIfExists(INPUT_CLASS);
-    removeTestClassIfExists(INPUT_TEST_CLASS);
-    copyClass(ORIGINAL_CLASS, INPUT_CLASS);
-    copyClass(ORIGINAL_TEST_CLASS, INPUT_TEST_CLASS);
+    tearDown();
+    copyClass(getOriginalClass(), INPUT_CLASS);
+    copyClass(getOriginalTestClass(), INPUT_TEST_CLASS);
   }
 
   @After
@@ -55,7 +57,7 @@ public class AbstractFileChangingTest {
     removeTestClassIfExists(INPUT_TEST_CLASS);
   }
 
-  private void removeTestClassIfExists(String input) {
+  protected void removeTestClassIfExists(String input) {
     File f = new File(input);
     if (f.exists() && !f.isDirectory()) {
       f.delete();
@@ -71,6 +73,81 @@ public class AbstractFileChangingTest {
   protected String fileToString(String path) throws IOException {
     byte[] encoded = Files.readAllBytes(Paths.get(path));
     return new String(encoded, StandardCharsets.UTF_8);
+  }
+
+  protected void stringToFile(String path, String content) throws IOException {
+    try (PrintWriter writer = new PrintWriter(path, "UTF-8")) {
+      writer.write(content);
+      writer.close();
+    }
+  }
+
+  protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
+    verifyFileEquals(new File(actualPath), new File(expectedPath));
+  }
+
+  protected void verifyFileEquals(File actualFile, File expectedFile) throws IOException, FileNotFoundException {
+    boolean contentEquals = FileUtils.contentEquals(actualFile, expectedFile);
+    if (contentEquals == false) {
+      System.err.println("Actual file " + actualFile.getAbsolutePath() + ":");
+      printFile(actualFile);
+      System.err.println("Expected file " + expectedFile.getAbsolutePath() + ":");
+      printFile(expectedFile);
+    }
+    Assert.assertTrue("Expected file (" + expectedFile.getAbsolutePath() + ") was not equal to actual (" + actualFile.getAbsolutePath() + ")", contentEquals);
+  }
+
+  protected void printFile(File file) throws FileNotFoundException {
+    try (Scanner input = new Scanner(file)) {
+      while (input.hasNextLine()) {
+        System.out.println(input.nextLine());
+      }
+    }
+  }
+
+  protected String getOriginalClass() {
+    return ORIGINAL_CLASS;
+  }
+
+  protected String getOriginalTestClass() {
+    return ORIGINAL_TEST_CLASS;
+  }
+
+  /**
+   * Method for precisely indicating which char in the two strings is the first that is not equal. Created because of the endless debugging for the different
+   * line-endings.
+   */
+  protected void verifyEquals(String expect, String result) {
+    char[] e = expect.toCharArray();
+    char[] r = result.toCharArray();
+    byte[] eb = expect.getBytes();
+    byte[] rb = result.getBytes();
+
+    int i = 0;
+    int ej = 1;
+    int ei = 1;
+    int rj = 1;
+    int ri = 1;
+
+    if (e.length != r.length) {
+      System.out.println("expected as length " + e.length + " but actual as length " + r.length);
+    }
+
+    for (; i < e.length && i < r.length; i++) {
+      if (!(e[i] == r[i]) && !((e[i] == '\r' || e[i] == '\n') && (r[i] == '\r' || r[i] == '\n'))) {
+        System.out.println("first occurance of not equal string at index " + i + ":");
+        System.out.println("at line " + ej + " and column  " + ei + " expect char: " + e[i]);
+        System.out.println("at line " + rj + " and column  " + ri + " actual char: " + r[i]);
+        System.out.println("at line " + ej + " and column  " + ei + " expect byte: " + eb[i]);
+        System.out.println("at line " + rj + " and column  " + ri + " actual byte: " + rb[i]);
+        System.out.println("actual: ");
+        break;
+      }
+      ej = e[i] == '\n' || e[i] == '\r' ? ej + 1 : ej;
+      rj = r[i] == '\n' || r[i] == '\r' ? rj + 1 : rj;
+      ei = e[i] == '\n' || e[i] == '\r' ? 1 : ei + 1;
+      ri = r[i] == '\n' || r[i] == '\r' ? 1 : ri + 1;
+    }
   }
 
 }

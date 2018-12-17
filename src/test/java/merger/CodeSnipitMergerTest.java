@@ -19,7 +19,7 @@ package merger;
 
 import java.io.IOException;
 
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Test;
 
 import common.AbstractFileChangingTest;
@@ -33,9 +33,18 @@ import generator.JavaForgerConfiguration;
  */
 public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
+  /** Path to the file which will be written to create an expected file */
+  private static final String EXPECTED_CLASS = "src/test/resources/temporaryTestResults/ExpectedClass.java";
   private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();;
 
   private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
+
+  @Override
+  @After
+  public void tearDown() {
+    super.tearDown();
+    removeTestClassIfExists(EXPECTED_CLASS);
+  }
 
   @Test
   public void testMerge_newPublicMethod() throws IOException {
@@ -87,49 +96,9 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
     new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
-    String result = fileToString(INPUT_CLASS);
 
-    String expect = expected;
-
-    verifyEquals(expect, result);
-    Assert.assertEquals(expect, result);
-  }
-
-  /**
-   * Method for precisely indicating which char in the two strings is the first that is not equal. Created because of the endless debugging for the different
-   * line-endings.
-   */
-  private void verifyEquals(String expect, String result) {
-    char[] e = expect.toCharArray();
-    char[] r = result.toCharArray();
-    byte[] eb = expect.getBytes();
-    byte[] rb = result.getBytes();
-
-    int i = 0;
-    int ej = 1;
-    int ei = 1;
-    int rj = 1;
-    int ri = 1;
-
-    if (e.length != r.length) {
-      System.out.println("expected as length " + e.length + " but actual as length " + r.length);
-    }
-
-    for (; i < e.length && i < r.length; i++) {
-      if (!(e[i] == r[i]) && !((e[i] == '\r' || e[i] == '\n') && (r[i] == '\r' || r[i] == '\n'))) {
-        System.out.println("first occurance of not equal string at index " + i + ":");
-        System.out.println("at line " + ej + " and column  " + ei + " expect char: " + e[i]);
-        System.out.println("at line " + rj + " and column  " + ri + " actual char: " + r[i]);
-        System.out.println("at line " + ej + " and column  " + ei + " expect byte: " + eb[i]);
-        System.out.println("at line " + rj + " and column  " + ri + " actual byte: " + rb[i]);
-        System.out.println("actual: ");
-        break;
-      }
-      ej = e[i] == '\n' || e[i] == '\r' ? ej + 1 : ej;
-      rj = r[i] == '\n' || r[i] == '\r' ? rj + 1 : rj;
-      ei = e[i] == '\n' || e[i] == '\r' ? 1 : ei + 1;
-      ri = r[i] == '\n' || r[i] == '\r' ? 1 : ri + 1;
-    }
+    super.stringToFile(EXPECTED_CLASS, expected);
+    verifyFileEqual(EXPECTED_CLASS, INPUT_CLASS);
   }
 
   private String genExpected(String newCode, String atLocation, boolean replace) throws IOException {
