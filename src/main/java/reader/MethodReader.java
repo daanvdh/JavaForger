@@ -28,6 +28,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
 import templateInput.MethodDefinition;
+import templateInput.VariableDefinition;
 
 /**
  * Reads the methods from a given {@link CompilationUnit} created by {@link JavaParser}.
@@ -41,8 +42,14 @@ public class MethodReader extends Reader<MethodDefinition> {
     super.visit(md, gatheredMethods);
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
+
+    // TODO should probably be something else then variableDefinition.
+    List<VariableDefinition> parameters = md.getParameters().stream()
+        .map(par -> VariableDefinition.builder().withName(par.getNameAsString()).withType(par.getTypeAsString()).build()).collect(Collectors.toList());
+
     MethodDefinition method = MethodDefinition.builder().withName(md.getNameAsString()).withType(md.getTypeAsString()).withAccessModifiers(accessModifiers)
-        .withAnnotations(annotations).withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).build();
+        .withAnnotations(annotations).withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1))
+        .withParameters(parameters).build();
     gatheredMethods.add(method);
   }
 

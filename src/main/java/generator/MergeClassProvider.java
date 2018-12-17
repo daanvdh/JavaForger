@@ -84,7 +84,7 @@ public class MergeClassProvider {
       testPath = testPath.replace(".java", "Test.java");
       return testPath;
     };
-    return new MergeClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, function);
+    return new MergeClassProvider(ProvideFrom.INPUT_CLASS, function);
   }
 
   /**

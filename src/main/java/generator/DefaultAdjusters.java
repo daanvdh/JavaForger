@@ -23,6 +23,7 @@ import java.util.function.Function;
 
 import parameters.ParameterAdjuster;
 import parameters.TemplateInputParameters;
+import templateInput.MethodDefinition;
 import templateInput.VariableDefinition;
 
 /**
@@ -45,6 +46,10 @@ public class DefaultAdjusters {
     return (p) -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
   }
 
+  public static ParameterAdjuster removeVoidMethods() {
+    return p -> removeMethodIf(p, met -> met.getType().equals("void"));
+  }
+
   public static void changeVariable(TemplateInputParameters parameters, Consumer<VariableDefinition> f) {
     List<? extends VariableDefinition> fields = parameters.getFields();
     for (int i = 0; i < fields.size(); i++) {
@@ -54,6 +59,17 @@ public class DefaultAdjusters {
 
   public static void removeVariableIf(TemplateInputParameters parameters, Function<VariableDefinition, Boolean> f) {
     List<? extends VariableDefinition> fields = parameters.getFields();
+    for (int i = 0; i < fields.size();) {
+      if (f.apply(fields.get(i))) {
+        fields.remove(i);
+      } else {
+        i++;
+      }
+    }
+  }
+
+  public static void removeMethodIf(TemplateInputParameters parameters, Function<MethodDefinition, Boolean> f) {
+    List<? extends MethodDefinition> fields = parameters.getMethods();
     for (int i = 0; i < fields.size();) {
       if (f.apply(fields.get(i))) {
         fields.remove(i);
