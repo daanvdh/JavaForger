@@ -36,7 +36,11 @@ public class ClassDefinition extends TypeDefinition {
   private String extend;
   private List<String> interfaces;
 
-  private ClassDefinition(Builder builder) {
+  public ClassDefinition() {
+    // public constructor to make it possible to extend this class.
+  }
+
+  protected ClassDefinition(Builder builder) {
     this.name = builder.name;
     this.type = builder.type;
     this.lineNumber = builder.lineNumber;
@@ -91,6 +95,16 @@ public class ClassDefinition extends TypeDefinition {
   }
 
   /**
+   * Creates builder to build {@link VariableDefinition} filled with data from the input {@link ClassDefinition}.
+   *
+   * @param copy The {@link ClassDefinition} to copy.
+   * @return created builder
+   */
+  public static Builder builder(ClassDefinition copy) {
+    return new Builder(copy);
+  }
+
+  /**
    * Builder to build {@link VariableDefinition}.
    */
   public static final class Builder {
@@ -104,6 +118,17 @@ public class ClassDefinition extends TypeDefinition {
     public List<String> interfaces;
 
     private Builder() {
+    }
+
+    private Builder(ClassDefinition copy) {
+      this.name = copy.name;
+      this.type = copy.type;
+      this.lineNumber = copy.lineNumber;
+      this.column = copy.column;
+      this.annotations = copy.annotations;
+      this.accessModifiers = copy.accessModifiers;
+      this.extend = copy.extend;
+      this.interfaces = copy.interfaces;
     }
 
     public Builder withName(String name) {

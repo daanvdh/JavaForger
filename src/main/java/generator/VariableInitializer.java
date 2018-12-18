@@ -158,6 +158,8 @@ public class VariableInitializer {
     defaultValue2.put("Length", "SI.KILOMETER");
     defaultValue1.put("Volume", "SI.CUBIC_METRE");
     defaultValue2.put("Volume", "SI.CUBIC_METRE"); // no alternative
+    defaultValue1.put("Mass", "SI.KILOGRAM");
+    defaultValue2.put("Mass", "SI.KILOGRAM");
   }
 
   private void initializeJavaEmptyInit() {
@@ -194,6 +196,7 @@ public class VariableInitializer {
   }
 
   private void initializeParameterizedJavaDefaults() {
+    parameterizedVariables.put("Collection", "Collections.singletonList(");
     parameterizedVariables.put("List", "Collections.singletonList(");
     parameterizedVariables.put("ArrayList", "Collections.singletonList("); // This will not compile, but better than creating a builder for it.
     parameterizedVariables.put("Map", "Collections.singletonMap(");
@@ -213,6 +216,7 @@ public class VariableInitializer {
     collections.add("ArrayList");
     collections.add("Set");
     collections.add("HashSet");
+    collections.add("Collection");
   }
 
 }

@@ -136,7 +136,7 @@ public class Generator {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      List<VariableDefinition> fields = fieldReader.getFields(config, inputClass);
+      List<VariableDefinition> fields = fieldReader.getFields(inputClass);
       initializer.init(fields);
       inputParameters.put(TemplateInputDefaults.FIELDS.getName(), fields);
       inputParameters.put(TemplateInputDefaults.CLASS.getName(), classReader.read(inputClass));

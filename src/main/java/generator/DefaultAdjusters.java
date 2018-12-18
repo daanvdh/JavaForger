@@ -34,16 +34,16 @@ import templateInput.VariableDefinition;
 public class DefaultAdjusters {
 
   public static ParameterAdjuster removeDepracatedFields() {
-    return (parameters) -> removeVariableIf(parameters, var -> var.getAnnotations().contains("Deprecated"));
+    return p -> removeVariableIf(p, var -> var.getAnnotations().contains("Deprecated"));
   }
 
   public static ParameterAdjuster removeStaticFields() {
-    return (parameters) -> removeVariableIf(parameters, var -> var.getAccessModifiers().contains("static"));
+    return p -> removeVariableIf(p, var -> var.getAccessModifiers().contains("static"));
   }
 
   public static ParameterAdjuster replaceFieldPrimitivesWithObjects() {
     VariableInitializer init = new VariableInitializer();
-    return (p) -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
+    return p -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
   }
 
   public static ParameterAdjuster removeVoidMethods() {
