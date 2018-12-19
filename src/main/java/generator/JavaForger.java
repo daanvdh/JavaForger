@@ -28,6 +28,27 @@ import freemarker.template.TemplateException;
  */
 public class JavaForger {
 
+  private static final Generator generator = new Generator();
+
+  /**
+   * Executes the given {@link JavaForgerConfiguration} that contains the template. The parameters used to fill in the template will also come from the
+   * configuration.
+   *
+   * @param config The Configuration containing the template and settings for how to process the input class to generate code.
+   * @return The {@link CodeSnipit} containing the generated code.
+   */
+  public static CodeSnipit execute(JavaForgerConfiguration config) {
+    Exception caught = null;
+    try {
+      return generator.execute(config);
+    } catch (IOException e) {
+      caught = e;
+    } catch (TemplateException e) {
+      caught = e;
+    }
+    throw new JavaForgerException(caught);
+  }
+
   /**
    * Executes the given {@link JavaForgerConfiguration} that contains the template. The input class is used to fill in the given template with fields, methods
    * etc. derived from it.
@@ -39,7 +60,7 @@ public class JavaForger {
   public static CodeSnipit execute(JavaForgerConfiguration config, String inputClass) {
     Exception caught = null;
     try {
-      return new Generator().execute(config, inputClass);
+      return generator.execute(config, inputClass);
     } catch (IOException e) {
       caught = e;
     } catch (TemplateException e) {
@@ -61,7 +82,7 @@ public class JavaForger {
     Exception caught = null;
     try {
       JavaForgerConfiguration copy = JavaForgerConfiguration.builder(config).withMergeClass(outputClass).build();
-      return new Generator().execute(copy, inputClass);
+      return generator.execute(copy, inputClass);
     } catch (IOException e) {
       caught = e;
     } catch (TemplateException e) {

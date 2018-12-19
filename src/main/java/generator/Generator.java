@@ -31,10 +31,8 @@ import generator.JavaForgerConfiguration.Builder;
 import merger.CodeSnipitMerger;
 import parameters.TemplateInputDefaults;
 import parameters.TemplateInputParameters;
-import reader.ClassReader;
-import reader.FieldReader;
-import reader.MethodReader;
-import templateInput.VariableDefinition;
+import reader.ClassContainerReader;
+import templateInput.ClassContainer;
 
 /**
  * Class for generating code given a template and already existing java class files.
@@ -43,10 +41,7 @@ import templateInput.VariableDefinition;
  */
 public class Generator {
 
-  private FieldReader fieldReader = new FieldReader();
-  private ClassReader classReader = new ClassReader();
-  private MethodReader methodReader = new MethodReader();
-  private VariableInitializer initializer = new VariableInitializer();
+  private ClassContainerReader classReader = new ClassContainerReader();
   private CodeSnipitMerger merger = new CodeSnipitMerger();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
@@ -136,13 +131,11 @@ public class Generator {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      List<VariableDefinition> fields = fieldReader.getFields(inputClass);
-      initializer.init(fields);
-      inputParameters.put(TemplateInputDefaults.FIELDS.getName(), fields);
-      inputParameters.put(TemplateInputDefaults.CLASS.getName(), classReader.read(inputClass));
-      inputParameters.put(TemplateInputDefaults.METHODS.getName(), methodReader.read(inputClass));
-
-      config.getAdjuster().accept(inputParameters);
+      ClassContainer claz = classReader.read(inputClass);
+      config.getAdjuster().accept(claz);
+      inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
+      inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
+      inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
     }
     return inputParameters;
   }

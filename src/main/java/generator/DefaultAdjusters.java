@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import parameters.ParameterAdjuster;
+import parameters.ClassContainerAdjuster;
 import parameters.TemplateInputParameters;
+import templateInput.ClassContainer;
 import templateInput.MethodDefinition;
 import templateInput.VariableDefinition;
 
@@ -33,31 +34,31 @@ import templateInput.VariableDefinition;
  */
 public class DefaultAdjusters {
 
-  public static ParameterAdjuster removeDepracatedFields() {
+  public static ClassContainerAdjuster removeDepracatedFields() {
     return p -> removeVariableIf(p, var -> var.getAnnotations().contains("Deprecated"));
   }
 
-  public static ParameterAdjuster removeStaticFields() {
+  public static ClassContainerAdjuster removeStaticFields() {
     return p -> removeVariableIf(p, var -> var.getAccessModifiers().contains("static"));
   }
 
-  public static ParameterAdjuster replaceFieldPrimitivesWithObjects() {
+  public static ClassContainerAdjuster replaceFieldPrimitivesWithObjects() {
     VariableInitializer init = new VariableInitializer();
     return p -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
   }
 
-  public static ParameterAdjuster removeVoidMethods() {
+  public static ClassContainerAdjuster removeVoidMethods() {
     return p -> removeMethodIf(p, met -> met.getType().equals("void"));
   }
 
-  public static void changeVariable(TemplateInputParameters parameters, Consumer<VariableDefinition> f) {
+  public static void changeVariable(ClassContainer parameters, Consumer<VariableDefinition> f) {
     List<? extends VariableDefinition> fields = parameters.getFields();
     for (int i = 0; i < fields.size(); i++) {
       f.accept(fields.get(i));
     }
   }
 
-  public static void removeVariableIf(TemplateInputParameters parameters, Function<VariableDefinition, Boolean> f) {
+  public static void removeVariableIf(ClassContainer parameters, Function<VariableDefinition, Boolean> f) {
     List<? extends VariableDefinition> fields = parameters.getFields();
     for (int i = 0; i < fields.size();) {
       if (f.apply(fields.get(i))) {
@@ -68,11 +69,11 @@ public class DefaultAdjusters {
     }
   }
 
-  public static void removeMethodIf(TemplateInputParameters parameters, Function<MethodDefinition, Boolean> f) {
-    List<? extends MethodDefinition> fields = parameters.getMethods();
-    for (int i = 0; i < fields.size();) {
-      if (f.apply(fields.get(i))) {
-        fields.remove(i);
+  public static void removeMethodIf(ClassContainer parameters, Function<MethodDefinition, Boolean> f) {
+    List<? extends MethodDefinition> methods = parameters.getMethods();
+    for (int i = 0; i < methods.size();) {
+      if (f.apply(methods.get(i))) {
+        methods.remove(i);
       } else {
         i++;
       }

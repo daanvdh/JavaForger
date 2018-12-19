@@ -32,7 +32,7 @@ import freemarker.template.Configuration;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
-import parameters.ParameterAdjuster;
+import parameters.ClassContainerAdjuster;
 import parameters.TemplateInputParameters;
 
 /**
@@ -57,7 +57,7 @@ public class JavaForgerConfiguration {
   private final List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
 
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
-  private final List<ParameterAdjuster> adjusters = new ArrayList<>();
+  private final List<ClassContainerAdjuster> adjusters = new ArrayList<>();
 
   private Configuration freeMarkerConfiguration;
 
@@ -124,15 +124,15 @@ public class JavaForgerConfiguration {
     this.inputParameters.put(name, value);
   }
 
-  public ParameterAdjuster getAdjuster() {
+  public ClassContainerAdjuster getAdjuster() {
     return parameters -> adjusters.stream().forEach(adj -> adj.accept(parameters));
   }
 
-  public void addParameterAdjusters(ParameterAdjuster... adjusters) {
+  public void addParameterAdjusters(ClassContainerAdjuster... adjusters) {
     this.adjusters.addAll(Arrays.asList(adjusters));
   }
 
-  public void setParameterAdjusters(ParameterAdjuster... adjusters) {
+  public void setParameterAdjusters(ClassContainerAdjuster... adjusters) {
     this.adjusters.clear();
     this.adjusters.addAll(Arrays.asList(adjusters));
   }
@@ -179,7 +179,7 @@ public class JavaForgerConfiguration {
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
     private MergeClassProvider mergeClassProvider;
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
-    private List<ParameterAdjuster> adjusters = new ArrayList<>();
+    private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
 
     private Builder() {
@@ -224,7 +224,7 @@ public class JavaForgerConfiguration {
       return new JavaForgerConfiguration(this);
     }
 
-    public Builder withParameterAdjusters(ParameterAdjuster... adjusters) {
+    public Builder withParameterAdjusters(ClassContainerAdjuster... adjusters) {
       this.adjusters.clear();
       this.adjusters.addAll(Arrays.asList(adjusters));
       return this;
