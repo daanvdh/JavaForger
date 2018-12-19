@@ -25,7 +25,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import generator.JavaForgerConfiguration;
 import templateInput.VariableDefinition;
 
 /**
@@ -34,12 +33,12 @@ import templateInput.VariableDefinition;
  * @author Daan
  */
 public class FieldReaderTest {
-  private static final String INPUT_CLASS = "C:/gitrepo/JavaForger/src/test/java/inputClassesForTests/Product.java";
+  private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/Product.java";
 
   @Test
   public void testGetFields() throws IOException {
     FieldReader reader = new FieldReader();
-    List<VariableDefinition> variables = reader.getFields(JavaForgerConfiguration.builder().build(), "src/test/java/inputClassesForTests/Product.java");
+    List<VariableDefinition> variables = reader.getFields("src/test/java/inputClassesForTests/Product.java");
 
     VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
         .withAccessModifiers(Collections.singleton("private")).build();

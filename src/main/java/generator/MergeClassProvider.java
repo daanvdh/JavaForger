@@ -77,14 +77,17 @@ public class MergeClassProvider {
    *
    * @return The path to the maven unit test.
    */
-  public static MergeClassProvider forMavenUnitTest() {
-    Function<String, String> function = (s) -> {
-      String testPath = s.replace("\\main\\", "\\test\\");
-      s.replace("/main/", "/test/");
-      testPath = testPath.replace(".java", "Test.java");
-      return testPath;
-    };
-    return new MergeClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, function);
+  public static MergeClassProvider forMavenUnitTestFromInput() {
+    return new MergeClassProvider(ProvideFrom.INPUT_CLASS, convertToMavenUnitTestPath());
+  }
+
+  /**
+   * Calculates the path of the maven unit test by replacing 'main' with 'test' and replacing '.java' with 'Test.java'.
+   *
+   * @return The path to the maven unit test.
+   */
+  public static MergeClassProvider forMavenUnitTestFromParent() {
+    return new MergeClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, convertToMavenUnitTestPath());
   }
 
   /**
@@ -104,6 +107,16 @@ public class MergeClassProvider {
    */
   public ProvideFrom provideFrom() {
     return this.provideFrom;
+  }
+
+  private static Function<String, String> convertToMavenUnitTestPath() {
+    Function<String, String> function = (s) -> {
+      String testPath = s.replace("\\main\\", "\\test\\");
+      s.replace("/main/", "/test/");
+      testPath = testPath.replace(".java", "Test.java");
+      return testPath;
+    };
+    return function;
   }
 
 }

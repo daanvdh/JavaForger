@@ -1,9 +1,7 @@
 import org.junit.Assert;
 import org.junit.Test;
 
-<#list fields as field>
-private static final ${field.type} ${field.name_.snakeCase} = ${field.init1};
-</#list>
+<#include "/test/common/staticFieldInit.javat">
 
 @Test 
 public void test${class.name}_minimum() {

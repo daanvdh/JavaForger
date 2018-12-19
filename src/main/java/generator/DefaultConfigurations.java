@@ -64,7 +64,7 @@ public class DefaultConfigurations {
   }
 
   protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
-    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(MergeClassProvider.forMavenUnitTest()).build()).build();
+    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(MergeClassProvider.forMavenUnitTestFromInput()).build()).build();
   }
 
   protected static Builder defaultBuilder(String template) {

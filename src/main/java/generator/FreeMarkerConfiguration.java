@@ -27,6 +27,7 @@ import freemarker.template.TemplateExceptionHandler;
  * @author Daan
  */
 public class FreeMarkerConfiguration {
+  public static final String TEMPLATE_LOCATION = "/templates/";
 
   public static Configuration getDefaultConfig() {
     return initConfig();
@@ -45,7 +46,7 @@ public class FreeMarkerConfiguration {
     // plain directory for it, but non-file-system sources are possible too:
     // TODO later we will use both lines below in a multiTemplateLoader with the relative path from a custom project and the class path from JavaForger
     // config.setDirectoryForTemplateLoading(new File("src\\main\\resources\\templates"));
-    config.setClassForTemplateLoading(Generator.class, "/templates/");
+    config.setClassForTemplateLoading(Generator.class, TEMPLATE_LOCATION);
 
     // Set the preferred charset template files are stored in. UTF-8 is
     // a good choice in most applications:

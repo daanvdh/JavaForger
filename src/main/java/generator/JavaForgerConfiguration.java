@@ -17,12 +17,16 @@
  */
 package generator;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.core.ParseException;
 import freemarker.template.Configuration;
 import freemarker.template.MalformedTemplateNameException;
@@ -139,6 +143,13 @@ public class JavaForgerConfiguration {
 
   public void setFreeMarkerConfiguration(Configuration freeMarkerConfig) {
     this.freeMarkerConfiguration = freeMarkerConfig;
+  }
+
+  public void addTemplateLocation(String templateLocation) throws IOException {
+    FileTemplateLoader loader = new FileTemplateLoader(new File(templateLocation));
+    TemplateLoader original = this.getFreeMarkerConfiguration().getTemplateLoader();
+    MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] {original, loader});
+    this.freeMarkerConfiguration.setTemplateLoader(mtl);
   }
 
   /**

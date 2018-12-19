@@ -81,6 +81,10 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     return type;
   }
 
+  public StringConverter getType_() {
+    return new StringConverter(type);
+  }
+
   public void setType(String type) {
     this.type = type;
   }

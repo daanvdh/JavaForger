@@ -17,7 +17,9 @@
  */
 package templateInput;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,6 +29,9 @@ import java.util.Set;
  */
 public class MethodDefinition extends TypeDefinition {
 
+  // TODO should probably be something else then variableDefinition.
+  private List<VariableDefinition> parameters;
+
   private MethodDefinition(Builder builder) {
     this.name = builder.name;
     this.type = builder.type;
@@ -34,6 +39,15 @@ public class MethodDefinition extends TypeDefinition {
     this.column = builder.column;
     this.annotations = builder.annotations;
     this.accessModifiers = builder.accessModifiers;
+    this.parameters = builder.parameters;
+  }
+
+  public List<VariableDefinition> getParameters() {
+    return parameters;
+  }
+
+  public void setParameters(List<VariableDefinition> parameters) {
+    this.parameters = parameters;
   }
 
   /**
@@ -55,6 +69,7 @@ public class MethodDefinition extends TypeDefinition {
     private int column;
     private Set<String> annotations = new HashSet<>();
     private Set<String> accessModifiers = new HashSet<>();
+    private List<VariableDefinition> parameters = new ArrayList<>();
 
     private Builder() {
     }
@@ -91,6 +106,11 @@ public class MethodDefinition extends TypeDefinition {
 
     public MethodDefinition build() {
       return new MethodDefinition(this);
+    }
+
+    public Builder withParameters(List<VariableDefinition> parameters) {
+      this.parameters = parameters;
+      return this;
     }
   }
 

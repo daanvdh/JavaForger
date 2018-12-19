@@ -23,6 +23,7 @@ import java.util.function.Function;
 
 import parameters.ParameterAdjuster;
 import parameters.TemplateInputParameters;
+import templateInput.MethodDefinition;
 import templateInput.VariableDefinition;
 
 /**
@@ -33,16 +34,20 @@ import templateInput.VariableDefinition;
 public class DefaultAdjusters {
 
   public static ParameterAdjuster removeDepracatedFields() {
-    return (parameters) -> removeVariableIf(parameters, var -> var.getAnnotations().contains("Deprecated"));
+    return p -> removeVariableIf(p, var -> var.getAnnotations().contains("Deprecated"));
   }
 
   public static ParameterAdjuster removeStaticFields() {
-    return (parameters) -> removeVariableIf(parameters, var -> var.getAccessModifiers().contains("static"));
+    return p -> removeVariableIf(p, var -> var.getAccessModifiers().contains("static"));
   }
 
   public static ParameterAdjuster replaceFieldPrimitivesWithObjects() {
     VariableInitializer init = new VariableInitializer();
-    return (p) -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
+    return p -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
+  }
+
+  public static ParameterAdjuster removeVoidMethods() {
+    return p -> removeMethodIf(p, met -> met.getType().equals("void"));
   }
 
   public static void changeVariable(TemplateInputParameters parameters, Consumer<VariableDefinition> f) {
@@ -54,6 +59,17 @@ public class DefaultAdjusters {
 
   public static void removeVariableIf(TemplateInputParameters parameters, Function<VariableDefinition, Boolean> f) {
     List<? extends VariableDefinition> fields = parameters.getFields();
+    for (int i = 0; i < fields.size();) {
+      if (f.apply(fields.get(i))) {
+        fields.remove(i);
+      } else {
+        i++;
+      }
+    }
+  }
+
+  public static void removeMethodIf(TemplateInputParameters parameters, Function<MethodDefinition, Boolean> f) {
+    List<? extends MethodDefinition> fields = parameters.getMethods();
     for (int i = 0; i < fields.size();) {
       if (f.apply(fields.get(i))) {
         fields.remove(i);

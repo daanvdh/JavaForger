@@ -73,12 +73,10 @@ public class CodeSnipitMerger {
    *
    * @param config The {@link JavaForgerConfiguration} containing merge settings and the path of the class to merge with.
    * @param codeSnipit The {@link CodeSnipit} which will be merged into the input class.
+   * @param mergeClassPath The path to the class to merge with
    * @throws IOException
    */
   public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
-    if (config.getMergeClassProvider() == null) {
-      return;
-    }
     CompilationUnit existingCode = read(mergeClassPath);
     CompilationUnit newCode = read(codeSnipit);
     merge(existingCode, newCode);
