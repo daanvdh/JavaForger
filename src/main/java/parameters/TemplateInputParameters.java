@@ -18,19 +18,13 @@
 package parameters;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import templateInput.ClassDefinition;
-import templateInput.MethodDefinition;
-import templateInput.VariableDefinition;
 
 /**
  * Class containing the input parameters for a template.
  *
  * @author Daan
  */
-@SuppressWarnings("unchecked")
 public class TemplateInputParameters extends HashMap<String, Object> {
   private static final long serialVersionUID = 7129701603512062051L;
 
@@ -40,18 +34,6 @@ public class TemplateInputParameters extends HashMap<String, Object> {
 
   public TemplateInputParameters() {
     // empty constructor
-  }
-
-  public List<? extends VariableDefinition> getFields() {
-    return (List<? extends VariableDefinition>) get(TemplateInputDefaults.FIELDS.getName());
-  }
-
-  public ClassDefinition getClassDefinition() {
-    return (ClassDefinition) get(TemplateInputDefaults.CLASS.getName());
-  }
-
-  public List<? extends MethodDefinition> getMethods() {
-    return (List<? extends MethodDefinition>) get(TemplateInputDefaults.METHODS.getName());
   }
 
   public TemplateInputParameters copy() {
