@@ -38,6 +38,7 @@ import templateInput.VariableDefinition;
 public class MethodReader extends Reader<MethodDefinition> {
 
   @Override
+  // FIXME this currently also returns methods from inner classes, which should not be the case.
   public void visit(MethodDeclaration md, List<MethodDefinition> gatheredMethods) {
     super.visit(md, gatheredMethods);
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
