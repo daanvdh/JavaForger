@@ -17,8 +17,9 @@
  */
 package merger;
 
-import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 
 import org.junit.After;
 import org.junit.Test;
@@ -38,8 +39,6 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
   private static final String EXPECTED_CLASS = "src/test/resources/temporaryTestResults/ExpectedClass.java";
   private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();
 
-  private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
-
   @Override
   @After
   public void tearDown() {
@@ -49,11 +48,8 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
   @Test
   public void testMerge_newPublicMethod() throws IOException {
-    String newCode = "public void newMethod() {\n// Does this method-EXPECTED exist?\n}";
-    String expected = genExpected(newCode, METHOD1, false);
-
-    // TODO remove later
-    newCode = "public void newMethod() {\n// Does this method-REAL exist?\n}";
+    String newCode = "public void newMethod() {\n// Does this method exist?\n}";
+    String expected = genExpected(newCode, 44, 44);
 
     executeAndVerify(expected, newCode);
   }
@@ -65,24 +61,33 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
     new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
 
-    // TODO remove later
-    System.out.println("Expected before writing to file:\n" + expected);
-
     super.stringToFile(EXPECTED_CLASS, expected);
-
-    // TODO remove later
-    System.out.println("Expected after writing to file:\n");
-    printFile(new File(EXPECTED_CLASS));
 
     verifyFileEqual(EXPECTED_CLASS, INPUT_CLASS);
   }
 
-  private String genExpected(String newCode, String atLocation, boolean replace) throws IOException {
-    String wholeFile = fileToString(INPUT_CLASS);
-    String verySpecialLineEndingsToMakeItAllWork = "\r\n\r\n";
-    String replaceWith = replace ? newCode + verySpecialLineEndingsToMakeItAllWork : atLocation + newCode + verySpecialLineEndingsToMakeItAllWork;
-    String newFile = wholeFile.replace(atLocation, replaceWith);
-    return newFile;
+  private String genExpected(String newCode, int startRemoveBlock, int endRemoveBlock) throws IOException {
+    try (LineNumberReader reader = new LineNumberReader(new FileReader(INPUT_CLASS))) {
+      StringBuilder sb = new StringBuilder();
+
+      while (reader.getLineNumber() < startRemoveBlock) {
+        String readLine = reader.readLine();
+        sb.append(readLine + "\r\n");
+      }
+
+      reader.setLineNumber(endRemoveBlock);
+      sb.append(newCode + "\r\n\r\n");
+
+      String readLine = reader.readLine();
+      while (readLine != null) {
+        sb.append(readLine + "\r\n");
+        readLine = reader.readLine();
+      }
+
+      reader.close();
+
+      return sb.toString();
+    }
   }
 
 }
