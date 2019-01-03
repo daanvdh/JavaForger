@@ -86,7 +86,7 @@ public abstract class AbstractFileChangingTest {
     verifyFileEquals(new File(actualPath), new File(expectedPath));
   }
 
-  protected void verifyFileEquals(File actualFile, File expectedFile) throws IOException, FileNotFoundException {
+  protected void verifyFileEquals(File expectedFile, File actualFile) throws IOException, FileNotFoundException {
     boolean contentEquals = FileUtils.contentEquals(actualFile, expectedFile);
     if (contentEquals == false) {
       System.err.println("Actual file " + actualFile.getAbsolutePath() + ":");

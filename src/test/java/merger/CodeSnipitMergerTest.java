@@ -35,7 +35,7 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
   /** Path to the file which will be written to create an expected file */
   private static final String EXPECTED_CLASS = "src/test/resources/temporaryTestResults/ExpectedClass.java";
-  private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();;
+  private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();
 
   private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
 
