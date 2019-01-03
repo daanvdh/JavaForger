@@ -17,6 +17,7 @@
  */
 package merger;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.junit.After;
@@ -51,6 +52,7 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
     String newCode = "public void newMethod() {\n// Does this method-EXPECTED exist?\n}";
     String expected = genExpected(newCode, METHOD1, false);
 
+    // TODO remove later
     newCode = "public void newMethod() {\n// Does this method-REAL exist?\n}";
 
     executeAndVerify(expected, newCode);
@@ -63,7 +65,15 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
     new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
 
+    // TODO remove later
+    System.out.println("Expected before writing to file:\n" + expected);
+
     super.stringToFile(EXPECTED_CLASS, expected);
+
+    // TODO remove later
+    System.out.println("Expected after writing to file:\n");
+    printFile(new File(EXPECTED_CLASS));
+
     verifyFileEqual(EXPECTED_CLASS, INPUT_CLASS);
   }
 

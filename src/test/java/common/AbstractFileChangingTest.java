@@ -78,7 +78,6 @@ public abstract class AbstractFileChangingTest {
   protected void stringToFile(String path, String content) throws IOException {
     try (PrintWriter writer = new PrintWriter(path, "UTF-8")) {
       writer.write(content);
-      writer.close();
     }
   }
 
