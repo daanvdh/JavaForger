@@ -38,11 +38,8 @@ import templateInput.VariableDefinition;
  *
  * @author Daan
  */
-// TODO this should extend Reader<VariableDefinition> instead of current implementation.
-public class FieldReader extends Reader<VariableDefinition> {
+public class FieldReader {
 
-  // TODO this should be removed, it is replaced by extending Reader, call Reader::read instead
-  @Deprecated
   public List<VariableDefinition> getFields(String className) throws IOException {
     ArrayList<VariableDefinition> fields = new ArrayList<>();
     try (FileInputStream in = new FileInputStream(className)) {
@@ -55,7 +52,6 @@ public class FieldReader extends Reader<VariableDefinition> {
     return fields.stream().sorted().collect(Collectors.toList());
   }
 
-  @Deprecated
   private void getFields(ArrayList<VariableDefinition> fields, CompilationUnit cu) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       List<Node> childNodes = type.getChildNodes();
@@ -70,16 +66,6 @@ public class FieldReader extends Reader<VariableDefinition> {
         }
       }
     }
-  }
-
-  @Override
-  public void visit(FieldDeclaration fd, List<VariableDefinition> fields) {
-    super.visit(fd, fields);
-    Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
-    Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
-    fields.add(VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
-        .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
-        .withAccessModifiers(accessModifiers).build());
   }
 
 }

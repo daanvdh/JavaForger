@@ -40,7 +40,7 @@ public class ClassContainerReader {
   public ClassContainer read(String inputClass) throws IOException {
     ClassDefinition def = classReader.read(inputClass);
     ClassContainer claz = new ClassContainer(def);
-    List<VariableDefinition> fields = fieldReader.read(inputClass);
+    List<VariableDefinition> fields = fieldReader.getFields(inputClass);
     initializer.init(fields);
     claz.setFields(fields);
     claz.setMethods(methodReader.read(inputClass));

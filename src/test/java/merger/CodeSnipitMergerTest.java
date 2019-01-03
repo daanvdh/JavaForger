@@ -17,7 +17,9 @@
  */
 package merger;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 
 import org.junit.After;
 import org.junit.Test;
@@ -35,9 +37,7 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
   /** Path to the file which will be written to create an expected file */
   private static final String EXPECTED_CLASS = "src/test/resources/temporaryTestResults/ExpectedClass.java";
-  private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();;
-
-  private static final String METHOD1 = "  public void method1() {\r\n" + "    method2(i, s);\r\n" + "  }\r\n" + "\r\n";
+  private static final JavaForgerConfiguration CONFIG = JavaForgerConfiguration.builder().build();
 
   @Override
   @After
@@ -49,45 +49,9 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
   @Test
   public void testMerge_newPublicMethod() throws IOException {
     String newCode = "public void newMethod() {\n// Does this method exist?\n}";
-    String expected = genExpected(newCode, METHOD1, false);
+    String expected = genExpected(newCode, 44, 44);
 
     executeAndVerify(expected, newCode);
-  }
-
-  @Test
-  public void testMerge_newMethodSameNameDifferentSignature() {
-
-  }
-
-  @Test
-  public void testMerge_existingMethod() {
-
-  }
-
-  @Test
-  public void testMerge_newVariable() {
-
-  }
-
-  @Test
-  public void testMerge_existingVariable() {
-
-  }
-
-  @Test
-  public void testMerge_newClass() {
-
-  }
-
-  @Test
-  public void testMerge_existingClass() {
-
-  }
-
-  @Test
-  public void testMerge_failingJavaParserPrinter() {
-    // TODO anonymously overwrite CodeSnipitPrinter::write(CompilationUnit existingCode, PrintWriter writer) to throw an exception and delete everything in the
-    // existing file. Then check if the file is still the same afterwards.
   }
 
   private void executeAndVerify(String expected, String merge) throws IOException {
@@ -98,15 +62,32 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
     new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
 
     super.stringToFile(EXPECTED_CLASS, expected);
+
     verifyFileEqual(EXPECTED_CLASS, INPUT_CLASS);
   }
 
-  private String genExpected(String newCode, String atLocation, boolean replace) throws IOException {
-    String wholeFile = fileToString(INPUT_CLASS);
-    String verySpecialLineEndingsToMakeItAllWork = "\r\n\r\n";
-    String replaceWith = replace ? newCode + verySpecialLineEndingsToMakeItAllWork : atLocation + newCode + verySpecialLineEndingsToMakeItAllWork;
-    String newFile = wholeFile.replace(atLocation, replaceWith);
-    return newFile;
+  private String genExpected(String newCode, int startRemoveBlock, int endRemoveBlock) throws IOException {
+    try (LineNumberReader reader = new LineNumberReader(new FileReader(INPUT_CLASS))) {
+      StringBuilder sb = new StringBuilder();
+
+      while (reader.getLineNumber() < startRemoveBlock) {
+        String readLine = reader.readLine();
+        sb.append(readLine + "\r\n");
+      }
+
+      reader.setLineNumber(endRemoveBlock);
+      sb.append(newCode + "\r\n\r\n");
+
+      String readLine = reader.readLine();
+      while (readLine != null) {
+        sb.append(readLine + "\r\n");
+        readLine = reader.readLine();
+      }
+
+      reader.close();
+
+      return sb.toString();
+    }
   }
 
 }

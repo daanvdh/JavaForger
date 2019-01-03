@@ -50,7 +50,7 @@ public class FieldReaderTest {
   @Test
   public void testRead() throws IOException {
     FieldReader reader = new FieldReader();
-    List<VariableDefinition> variables = reader.read(INPUT_CLASS);
+    List<VariableDefinition> variables = reader.getFields(INPUT_CLASS);
 
     VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
         .withAccessModifiers(Collections.singleton("private")).build();

@@ -27,26 +27,26 @@ import java.util.List;
  */
 public class ClassContainer extends ClassDefinition {
 
-  List<VariableDefinition> fields = new ArrayList<>();
-  List<MethodDefinition> methods = new ArrayList<>();
+  List<? extends VariableDefinition> fields = new ArrayList<>();
+  List<? extends MethodDefinition> methods = new ArrayList<>();
 
   public ClassContainer(ClassDefinition def) {
     super(builder(def));
   }
 
-  public List<VariableDefinition> getFields() {
+  public List<? extends VariableDefinition> getFields() {
     return fields;
   }
 
-  public void setFields(List<VariableDefinition> fields) {
+  public void setFields(List<? extends VariableDefinition> fields) {
     this.fields = fields;
   }
 
-  public List<MethodDefinition> getMethods() {
+  public List<? extends MethodDefinition> getMethods() {
     return methods;
   }
 
-  public void setMethods(List<MethodDefinition> methods) {
+  public void setMethods(List<? extends MethodDefinition> methods) {
     this.methods = methods;
   }
 

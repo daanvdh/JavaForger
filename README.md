@@ -1,4 +1,7 @@
 # JavaForger
+
+[![Build Status](https://travis-ci.com/daanvdh/JavaForger.svg?branch=master)](https://travis-ci.com/daanvdh/JavaForger)
+
 JavaForger can create source code from templates using existing java classes as input. 
 It reads field, methods and other class data to fill in variables in a template. 
 JavaForger includes default templates for generic java code like equals, hashCode, innerBuilders and unit tests for them. 

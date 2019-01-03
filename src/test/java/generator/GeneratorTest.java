@@ -19,6 +19,8 @@ package generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -139,14 +141,31 @@ public class GeneratorTest {
   /**
    * We don't care about all the stupid line endings, so this is an assert that is agnostic to some differences. Not everything you can think of is covered
    * within this method, just the bare minimum.
+   *
+   * @throws IOException
    */
-  private void verifyEquals(String expected, String actual) {
-    String e = expected.replace("\n", "\r\n");
-    if (e.equals(actual)) {
-      Assert.assertEquals(e, actual);
-    } else {
-      Assert.assertEquals(e + "\r\n", actual);
+  private void verifyEquals(String expected, String actual) throws IOException {
+    LineNumberReader reader1 = new LineNumberReader(new StringReader(expected));
+    LineNumberReader reader2 = new LineNumberReader(new StringReader(actual));
+
+    String line1 = reader1.readLine();
+    String line2 = reader2.readLine();
+    boolean equal = true;
+
+    while (equal && line1 != null) {
+      equal = line1.equals(line2);
+      line1 = reader1.readLine();
+      line2 = reader2.readLine();
     }
+
+    equal = equal && line1 == null && line2 == null;
+
+    if (!equal) {
+      System.err.println("Actual: " + actual);
+      System.err.println("Expected: " + expected);
+    }
+
+    Assert.assertTrue("Was not equal on line " + reader1.getLineNumber() + " expected: " + line1 + " actual: " + line2, equal);
   }
 
 }

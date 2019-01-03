@@ -19,7 +19,9 @@ package common;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -78,23 +80,35 @@ public abstract class AbstractFileChangingTest {
   protected void stringToFile(String path, String content) throws IOException {
     try (PrintWriter writer = new PrintWriter(path, "UTF-8")) {
       writer.write(content);
-      writer.close();
     }
   }
 
   protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
-    verifyFileEquals(new File(actualPath), new File(expectedPath));
-  }
+    try (LineNumberReader reader1 = new LineNumberReader(new FileReader(expectedPath));
+        LineNumberReader reader2 = new LineNumberReader(new FileReader(actualPath))) {
 
-  protected void verifyFileEquals(File actualFile, File expectedFile) throws IOException, FileNotFoundException {
-    boolean contentEquals = FileUtils.contentEquals(actualFile, expectedFile);
-    if (contentEquals == false) {
-      System.err.println("Actual file " + actualFile.getAbsolutePath() + ":");
-      printFile(actualFile);
-      System.err.println("Expected file " + expectedFile.getAbsolutePath() + ":");
-      printFile(expectedFile);
+      String line1 = reader1.readLine();
+      String line2 = reader2.readLine();
+      boolean equal = true;
+
+      while (equal && line1 != null) {
+        equal = line1.equals(line2);
+        line1 = reader1.readLine();
+        line2 = reader2.readLine();
+      }
+
+      equal = equal && line1 == null && line2 == null;
+
+      if (!equal) {
+        System.err.println("Actual file " + actualPath + ":");
+        printFile(new File(actualPath));
+        System.err.println("Expected file " + expectedPath + ":");
+        printFile(new File(expectedPath));
+      }
+
+      Assert.assertTrue("Was not equal on line " + reader1.getLineNumber() + " expected: " + line1 + " actual: " + line2, equal);
     }
-    Assert.assertTrue("Expected file (" + expectedFile.getAbsolutePath() + ") was not equal to actual (" + actualFile.getAbsolutePath() + ")", contentEquals);
+
   }
 
   protected void printFile(File file) throws FileNotFoundException {

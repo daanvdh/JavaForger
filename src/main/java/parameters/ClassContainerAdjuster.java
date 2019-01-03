@@ -19,11 +19,13 @@ package parameters;
 
 import java.util.function.Consumer;
 
+import templateInput.ClassContainer;
+
 /**
- * Interface to implement a consumer of {@link TemplateInputParameters} so that the input parameters can be changed after parsing.
+ * Interface to implement a consumer of {@link ClassContainer} so that the input parameters can be changed after parsing.
  *
  * @author Daan
  */
-public interface ParameterAdjuster extends Consumer<TemplateInputParameters> {
+public interface ClassContainerAdjuster extends Consumer<ClassContainer> {
   // Class is empty because Consumer already defines required methods. This class is mainly needed to ensure type safety.
 }
