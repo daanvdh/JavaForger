@@ -48,7 +48,10 @@ public class MergeClassProvider {
    */
   public MergeClassProvider() {
     this.provideFrom = ProvideFrom.INPUT_CLASS;
-    this.provide = (s) -> s;
+    this.provide = s -> {
+      validate(s);
+      return s;
+    };
   }
 
   /**
@@ -58,7 +61,7 @@ public class MergeClassProvider {
    */
   public MergeClassProvider(String path) {
     this.provideFrom = ProvideFrom.SELF;
-    this.provide = (s) -> path;
+    this.provide = s -> path;
   }
 
   /**
@@ -107,6 +110,15 @@ public class MergeClassProvider {
    */
   public ProvideFrom provideFrom() {
     return this.provideFrom;
+  }
+
+  private void validate(String claz) {
+    if (claz == null) {
+      throw new JavaForgerException("input class path may not be null");
+    }
+    if (claz.isEmpty()) {
+      throw new JavaForgerException("input class path may not be empty");
+    }
   }
 
   private static Function<String, String> convertToMavenUnitTestPath() {

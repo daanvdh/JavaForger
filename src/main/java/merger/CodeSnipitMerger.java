@@ -56,6 +56,7 @@ import generator.CodeSnipit;
 import generator.DefaultAdjusters;
 import generator.Generator;
 import generator.JavaForgerConfiguration;
+import generator.JavaForgerException;
 import reader.Parser;
 
 /**
@@ -77,11 +78,21 @@ public class CodeSnipitMerger {
    * @throws IOException
    */
   public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+    validate(mergeClassPath);
     CompilationUnit existingCode = read(mergeClassPath);
     CompilationUnit newCode = read(codeSnipit);
     merge(existingCode, newCode);
     write(mergeClassPath, existingCode);
     format(config, mergeClassPath);
+  }
+
+  private void validate(String mergeClassPath) {
+    if (mergeClassPath == null) {
+      throw new JavaForgerException("merge class path may not be null");
+    }
+    if (mergeClassPath.isEmpty()) {
+      throw new JavaForgerException("merge class path may not be empty");
+    }
   }
 
   private void format(JavaForgerConfiguration config, String mergeClassPath) {

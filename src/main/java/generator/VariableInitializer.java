@@ -113,10 +113,20 @@ public class VariableInitializer {
     int indexOf = var.getType().indexOf("<");
     String subString = var.getType().substring(indexOf + 1, var.getType().length() - 1);
     String[] split = subString.split(",");
-    List<VariableDefinition> subTypes =
-        Arrays.stream(split).map(subType -> VariableDefinition.builder().withType(subType).build()).collect(Collectors.toList());
+    List<VariableDefinition> subTypes = Arrays.stream(split).map(subType -> removeExtends(subType))
+        .map(subType -> VariableDefinition.builder().withType(subType).build()).collect(Collectors.toList());
     subTypes.forEach(subVar -> init(subVar));
     return subTypes;
+  }
+
+  private String removeExtends(String subType) {
+    String a = subType;
+    String s = "extends";
+    if (subType.contains(s)) {
+      int firstIndex = subType.indexOf(s) + s.length() + 1;
+      a = subType.substring(firstIndex);
+    }
+    return a;
   }
 
   private String getNoInitFor(String type) {
