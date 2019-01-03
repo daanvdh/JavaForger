@@ -106,7 +106,7 @@ public abstract class AbstractFileChangingTest {
         printFile(new File(expectedPath));
       }
 
-      Assert.assertTrue("Was not equal on line " + reader1.getLineNumber(), equal);
+      Assert.assertTrue("Was not equal on line " + reader1.getLineNumber() + " expected: " + line1 + " actual: " + line2, equal);
     }
 
   }
