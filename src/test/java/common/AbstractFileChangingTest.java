@@ -83,7 +83,7 @@ public abstract class AbstractFileChangingTest {
   }
 
   protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
-    verifyFileEquals(new File(actualPath), new File(expectedPath));
+    verifyFileEquals(new File(expectedPath), new File(actualPath));
   }
 
   protected void verifyFileEquals(File expectedFile, File actualFile) throws IOException, FileNotFoundException {

@@ -48,46 +48,12 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
 
   @Test
   public void testMerge_newPublicMethod() throws IOException {
-    String newCode = "public void newMethod() {\n// Does this method exist?\n}";
+    String newCode = "public void newMethod() {\n// Does this method-EXPECTED exist?\n}";
     String expected = genExpected(newCode, METHOD1, false);
 
+    newCode = "public void newMethod() {\n// Does this method-REAL exist?\n}";
+
     executeAndVerify(expected, newCode);
-  }
-
-  @Test
-  public void testMerge_newMethodSameNameDifferentSignature() {
-
-  }
-
-  @Test
-  public void testMerge_existingMethod() {
-
-  }
-
-  @Test
-  public void testMerge_newVariable() {
-
-  }
-
-  @Test
-  public void testMerge_existingVariable() {
-
-  }
-
-  @Test
-  public void testMerge_newClass() {
-
-  }
-
-  @Test
-  public void testMerge_existingClass() {
-
-  }
-
-  @Test
-  public void testMerge_failingJavaParserPrinter() {
-    // TODO anonymously overwrite CodeSnipitPrinter::write(CompilationUnit existingCode, PrintWriter writer) to throw an exception and delete everything in the
-    // existing file. Then check if the file is still the same afterwards.
   }
 
   private void executeAndVerify(String expected, String merge) throws IOException {
