@@ -118,7 +118,7 @@ public class GeneratorTest {
   public void testExecute_fillFromClassFile() throws IOException, TemplateException {
     String template = "classFields.ftlh";
     String inputClass = "src/test/java/inputClassesForTests/Product.java";
-    String expected = "The input class has the following fields:\n" + "String url\n" + "String name";
+    String expected = "The input class has the following fields:\n" + "String url\n" + "String name\n" + "Product prod";
     executeAndVerify(template, inputClass, null, expected);
   }
 

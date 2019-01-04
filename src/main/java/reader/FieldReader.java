@@ -30,11 +30,14 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.resolution.types.ResolvedType;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 
 import templateInput.VariableDefinition;
 
 /**
- * Reader for .java files, for getting defined variables, methods or other class defined data.
+ * Reader for .java files, for getting the fields. If the {@link JavaSymbolSolver} is setup properly by calling
+ * {@link JavaParser#getStaticConfiguration()}::setSymbolSolver before using this class, it will use the symbolSolver to find out the imports of the fields.
  *
  * @author Daan
  */
@@ -60,11 +63,26 @@ public class FieldReader {
           FieldDeclaration fd = (FieldDeclaration) node;
           Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
           Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
-          fields.add(VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
+          VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
               .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
-              .withAccessModifiers(accessModifiers).build());
+              .withAccessModifiers(accessModifiers).build();
+          fields.add(variable);
+
+          resolveAndSetImport(fd, variable);
         }
       }
+    }
+  }
+
+  private void resolveAndSetImport(FieldDeclaration fd, VariableDefinition variable) {
+    try {
+      ResolvedType resolve = fd.getElementType().resolve();
+      String imp = resolve.describe();
+      if (!imp.startsWith("java.lang.")) {
+        variable.setTypeImport(imp);
+      }
+    } catch (@SuppressWarnings("unused") Exception e) {
+      System.err.println("FieldReader: Could not resolve import for " + fd.getElementType().asString());
     }
   }
 

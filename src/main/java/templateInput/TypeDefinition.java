@@ -35,6 +35,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
 
   protected String name;
   protected String type;
+  protected String typeImport;
   protected int lineNumber;
   protected int column;
   protected Set<String> annotations = new HashSet<>();
@@ -121,6 +122,14 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.accessModifiers = accessModifiers;
   }
 
+  public String getTypeImport() {
+    return typeImport;
+  }
+
+  public void setTypeImport(String typeImport) {
+    this.typeImport = typeImport;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(name, type, annotations, lineNumber, column);
@@ -129,7 +138,8 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("name", name).append("type", type)
-        .append("annotations", annotations).append("lineNumber", lineNumber).append("column", column).append("accessModifiers", accessModifiers).build();
+        .append("annotations", annotations).append("lineNumber", lineNumber).append("column", column).append("accessModifiers", accessModifiers)
+        .append("typeImport", typeImport).build();
   }
 
   @Override
@@ -140,7 +150,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     } else if (obj != null && getClass() == obj.getClass()) {
       TypeDefinition other = (TypeDefinition) obj;
       equals = new EqualsBuilder().append(name, other.name).append(type, other.type).append(lineNumber, other.lineNumber).append(column, other.column)
-          .append(annotations, other.annotations).append(accessModifiers, other.accessModifiers).isEquals();
+          .append(annotations, other.annotations).append(accessModifiers, other.accessModifiers).append(typeImport, other.typeImport).isEquals();
     }
     return equals;
   }

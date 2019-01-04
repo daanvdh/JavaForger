@@ -31,10 +31,16 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class Product {
   private String url;
   private String name;
+  public Product prod;
 
-  public Product(String name, String url) {
-    this.name = name;
+  public Product(String name2, String url) {
+    this.prod = new Product();
+    name = name2;
     this.url = url;
+  }
+
+  public Product() {
+    //
   }
 
   public String getUrl() {

@@ -61,10 +61,12 @@ public class VariableDefinition extends TypeDefinition {
     this.lineNumber = builder.lineNumber;
     this.column = builder.column;
     this.annotations = builder.annotations;
+    this.typeImport = builder.typeImport;
     this.accessModifiers = builder.accessModifiers;
     this.init1 = builder.init1;
     this.init2 = builder.init2;
     this.noInit = builder.noInit;
+
   }
 
   public boolean isCollection() {
@@ -141,6 +143,7 @@ public class VariableDefinition extends TypeDefinition {
     private String init1;
     private String init2;
     private String noInit;
+    private String typeImport;
 
     private Builder() {
     }
@@ -187,6 +190,11 @@ public class VariableDefinition extends TypeDefinition {
 
     public Builder withNoInit(String noInit) {
       this.noInit = noInit;
+      return this;
+    }
+
+    public Builder withTypeImport(String typeImport) {
+      this.typeImport = typeImport;
       return this;
     }
 

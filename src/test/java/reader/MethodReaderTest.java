@@ -43,13 +43,13 @@ public class MethodReaderTest {
     List<MethodDefinition> methods = mr.read(INPUT_CLASS);
 
     Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("String");
-    MethodDefinition m1 = build.withName("getUrl").withLineNumber(40).withColumn(3).build();
-    MethodDefinition m2 = build.withName("getName").withLineNumber(44).withColumn(3).build();
-    MethodDefinition m3 = build.withName("toString").withLineNumber(48).withColumn(3).withAnnotations(Collections.singleton("Override")).build();
+    MethodDefinition m1 = build.withName("getUrl").withLineNumber(46).withColumn(3).build();
+    MethodDefinition m2 = build.withName("getName").withLineNumber(50).withColumn(3).build();
+    MethodDefinition m3 = build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton("Override")).build();
     MethodDefinition m4 =
-        build.withName("hashCode").withLineNumber(53).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("int").build();
+        build.withName("hashCode").withLineNumber(59).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("int").build();
     MethodDefinition m5 =
-        build.withName("equals").withLineNumber(58).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean").build();
+        build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean").build();
 
     Assert.assertEquals(Arrays.asList(m1, m2, m3, m4, m5), methods);
   }
