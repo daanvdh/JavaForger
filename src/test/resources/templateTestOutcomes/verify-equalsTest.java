@@ -39,6 +39,7 @@ public class CLassWithEverythingTest {
 @Test
   public void testEquals_Different() {
     verifyEqualsDifferent(CLassWithEverything.Builder::i, 1);
+    verifyEqualsDifferent(CLassWithEverything.Builder::c, CLassWithEverything.builder().build());
     verifyEqualsDifferent(CLassWithEverything.Builder::s, "a");
   }
 
@@ -52,6 +53,7 @@ private <T> void verifyEqualsDifferent(BiFunction<CLassWithEverything.Builder, T
 private CLassWithEverything.Builder createAndFillBuilder() {
     return CLassWithEverything.builder()
       .i(1)
+      .c(CLassWithEverything.builder().build())
       .s("a")
 ;
   }

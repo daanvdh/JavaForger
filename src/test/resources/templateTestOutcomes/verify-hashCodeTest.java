@@ -39,6 +39,7 @@ public class CLassWithEverythingTest {
 @Test
   public void testHashCode_Different() {
     verifyHashCode_Different(CLassWithEverything.Builder::i, 2);
+    verifyHashCode_Different(CLassWithEverything.Builder::c, CLassWithEverything.builder().build());
     verifyHashCode_Different(CLassWithEverything.Builder::s, "b");
   }
 
@@ -52,6 +53,7 @@ private <T> void verifyHashCode_Different(BiFunction<CLassWithEverything.Builder
 private CLassWithEverything.Builder createAndFillBuilder() {
     return CLassWithEverything.builder()
       .i(1)
+      .c(CLassWithEverything.builder().build())
       .s("a")
       ;
   }

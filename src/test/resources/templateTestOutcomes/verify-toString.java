@@ -30,6 +30,7 @@ public class CLassWithEverything {
   public static final Boolean PUB_STAT_FIN = false;
 
   public int i = 0;
+  protected CLassWithEverything c;
   private String s;
 
   public CLassWithEverything(int j) {
@@ -49,6 +50,7 @@ public class CLassWithEverything {
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
       .append("i", i)
+      .append("c", c)
       .append("s", s)
       .build();
   }

@@ -27,6 +27,7 @@ public class CLassWithEverything {
   public static final Boolean PUB_STAT_FIN = false;
 
   public int i = 0;
+  protected CLassWithEverything c;
   private String s;
 
   public CLassWithEverything(int j) {
@@ -40,6 +41,7 @@ public class CLassWithEverything {
 
 private CLassWithEverything(Builder builder) {
     this.i = builder.i == null ? this.i : builder.i;
+    this.c = builder.c == null ? this.c : builder.c;
     this.s = builder.s == null ? this.s : builder.s;
   }
 
@@ -73,6 +75,7 @@ public static Builder builder() {
   
   public static final class Builder {
     private Integer i;
+    private CLassWithEverything c;
     private String s;
 
     private Builder() {
@@ -81,6 +84,11 @@ public static Builder builder() {
 
     public Builder i(Integer i) {
       this.i = i;
+      return this;
+    }
+    
+    public Builder c(CLassWithEverything c) {
+      this.c = c;
       return this;
     }
     

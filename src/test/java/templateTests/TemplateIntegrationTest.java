@@ -117,8 +117,8 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
     TemplateIntegrationTest test = new TemplateIntegrationTest() {
       @Override
       protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
-        System.out.println("hi");
-        super.copyClass(actualPath, EXPECTED_RESULTS_PATH + expectedPath);
+        System.out.println("Copying:\n" + actualPath + " to:\n" + expectedPath);
+        super.copyClass(actualPath, expectedPath);
       }
     };
 

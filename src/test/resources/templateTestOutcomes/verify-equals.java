@@ -29,6 +29,7 @@ public class CLassWithEverything {
   public static final Boolean PUB_STAT_FIN = false;
 
   public int i = 0;
+  protected CLassWithEverything c;
   private String s;
 
   public CLassWithEverything(int j) {
@@ -53,6 +54,7 @@ public class CLassWithEverything {
       CLassWithEverything other = (CLassWithEverything) obj;
       equals = new EqualsBuilder()
         .append(i, other.i)
+        .append(c, other.c)
         .append(s, other.s)
         .isEquals();
       }

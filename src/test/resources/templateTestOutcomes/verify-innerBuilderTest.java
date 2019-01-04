@@ -32,6 +32,7 @@ public void testCLassWithEverything_minimum() {
 CLassWithEverything cLassWithEverything= CLassWithEverything.builder().build();
 
 Assert.assertEquals("Unexpected i", 0, cLassWithEverything.getI());
+Assert.assertNull("Unexpected c", cLassWithEverything.getC());
 Assert.assertNull("Unexpected s", cLassWithEverything.getS());
 }
 
@@ -39,14 +40,18 @@ Assert.assertNull("Unexpected s", cLassWithEverything.getS());
 public void testCLassWithEverything_maximum() {
 CLassWithEverything cLassWithEverything= CLassWithEverything.builder()
 .i(I)
+.c(C)
 .s(S)
 .build();
 
 Assert.assertEquals("Unexpected i", I, cLassWithEverything.getI());
+Assert.assertEquals("Unexpected c", C, cLassWithEverything.getC());
 Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
 }
 
 private static final Integer I = 1;
+
+private static final CLassWithEverything C = CLassWithEverything.builder().build();
 
 private static final String S = "a";
 
