@@ -28,6 +28,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Product prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;
@@ -53,6 +54,7 @@ public class CLassWithEverything {
     } else if (obj != null && getClass() == obj.getClass()) {
       CLassWithEverything other = (CLassWithEverything) obj;
       equals = new EqualsBuilder()
+        .append(prod, other.prod)
         .append(i, other.i)
         .append(c, other.c)
         .append(s, other.s)

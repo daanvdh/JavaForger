@@ -26,6 +26,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Product prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;
@@ -40,6 +41,7 @@ public class CLassWithEverything {
   }
 
 private CLassWithEverything(Builder builder) {
+    this.prod = builder.prod == null ? this.prod : builder.prod;
     this.i = builder.i == null ? this.i : builder.i;
     this.c = builder.c == null ? this.c : builder.c;
     this.s = builder.s == null ? this.s : builder.s;
@@ -74,6 +76,7 @@ public static Builder builder() {
   }
   
   public static final class Builder {
+    private Product prod;
     private Integer i;
     private CLassWithEverything c;
     private String s;
@@ -82,6 +85,11 @@ public static Builder builder() {
       // Builder should only be used via the parent class
     }
 
+    public Builder prod(Product prod) {
+      this.prod = prod;
+      return this;
+    }
+    
     public Builder i(Integer i) {
       this.i = i;
       return this;

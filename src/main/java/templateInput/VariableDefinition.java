@@ -53,6 +53,7 @@ public class VariableDefinition extends TypeDefinition {
     this.init2 = var.init2;
     this.noInit = var.noInit;
     this.collection = var.collection;
+    this.typeImport = var.typeImport;
   }
 
   private VariableDefinition(Builder builder) {

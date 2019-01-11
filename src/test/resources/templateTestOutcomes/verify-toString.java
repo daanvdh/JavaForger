@@ -29,6 +29,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Product prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;
@@ -49,6 +50,7 @@ public class CLassWithEverything {
 @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+      .append("prod", prod)
       .append("i", i)
       .append("c", c)
       .append("s", s)

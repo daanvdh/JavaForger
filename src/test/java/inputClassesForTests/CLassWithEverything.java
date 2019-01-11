@@ -26,6 +26,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Product prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;

@@ -17,6 +17,7 @@
  */
 package inputClassesForTests;import org.junit.Assert;
 import org.junit.Test;
+import inputClassesForTests.Product;
 import inputClassesForTests.CLassWithEverything;
 
 
@@ -32,6 +33,7 @@ public class CLassWithEverythingTest {
 public void testCLassWithEverything_minimum() {
 CLassWithEverything cLassWithEverything= CLassWithEverything.builder().build();
 
+Assert.assertNull("Unexpected prod", cLassWithEverything.getProd());
 Assert.assertEquals("Unexpected i", 0, cLassWithEverything.getI());
 Assert.assertNull("Unexpected c", cLassWithEverything.getC());
 Assert.assertNull("Unexpected s", cLassWithEverything.getS());
@@ -40,15 +42,19 @@ Assert.assertNull("Unexpected s", cLassWithEverything.getS());
 @Test 
 public void testCLassWithEverything_maximum() {
 CLassWithEverything cLassWithEverything= CLassWithEverything.builder()
+.prod(PROD)
 .i(I)
 .c(C)
 .s(S)
 .build();
 
+Assert.assertEquals("Unexpected prod", PROD, cLassWithEverything.getProd());
 Assert.assertEquals("Unexpected i", I, cLassWithEverything.getI());
 Assert.assertEquals("Unexpected c", C, cLassWithEverything.getC());
 Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
 }
+
+private static final Product PROD = Product.builder().build();
 
 private static final Integer I = 1;
 

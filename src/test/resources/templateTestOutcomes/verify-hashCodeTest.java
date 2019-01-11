@@ -18,6 +18,7 @@
 package inputClassesForTests;import java.util.function.BiFunction;
 import org.junit.Assert;
 import org.junit.Test;
+import inputClassesForTests.Product;
 import inputClassesForTests.CLassWithEverything;
 
 
@@ -39,6 +40,7 @@ public class CLassWithEverythingTest {
 
 @Test
   public void testHashCode_Different() {
+    verifyHashCode_Different(CLassWithEverything.Builder::prod, Product.builder().build());
     verifyHashCode_Different(CLassWithEverything.Builder::i, 2);
     verifyHashCode_Different(CLassWithEverything.Builder::c, CLassWithEverything.builder().build());
     verifyHashCode_Different(CLassWithEverything.Builder::s, "b");
@@ -53,6 +55,7 @@ private <T> void verifyHashCode_Different(BiFunction<CLassWithEverything.Builder
 
 private CLassWithEverything.Builder createAndFillBuilder() {
     return CLassWithEverything.builder()
+      .prod(Product.builder().build())
       .i(1)
       .c(CLassWithEverything.builder().build())
       .s("a")
