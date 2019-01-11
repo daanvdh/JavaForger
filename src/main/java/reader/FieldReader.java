@@ -78,7 +78,7 @@ public class FieldReader {
     try {
       ResolvedType resolve = fd.getElementType().resolve();
       String imp = resolve.describe();
-      if (!imp.startsWith("java.lang.")) {
+      if (!imp.startsWith("java.lang.") && !resolve.isPrimitive()) {
         variable.setTypeImport(imp);
       }
     } catch (@SuppressWarnings("unused") Exception e) {

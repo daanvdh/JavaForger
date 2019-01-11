@@ -17,6 +17,7 @@
  */
 package inputClassesForTests;import org.junit.Assert;
 import org.junit.Test;
+import inputClassesForTests.CLassWithEverything;
 
 
 

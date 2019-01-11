@@ -2,6 +2,8 @@ import java.util.function.BiFunction;
 import org.junit.Assert;
 import org.junit.Test;
 
+<#include "/test/common/imports.javat">
+
   @Test
   public void testHashCode_Same() {
     ${class.name}.Builder builder = createAndFillBuilder();
