@@ -49,7 +49,7 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
   @Test
   public void testMerge_newPublicMethod() throws IOException {
     String newCode = "public void newMethod() {\n// Does this method exist?\n}";
-    String expected = genExpected(newCode, 44, 44);
+    String expected = genExpected(newCode, 48, 48);
 
     executeAndVerify(expected, newCode);
   }
