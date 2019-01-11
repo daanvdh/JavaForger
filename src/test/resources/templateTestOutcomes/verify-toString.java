@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package inputClassesForTests;import org.apache.commons.lang3.builder.ToStringBuilder;
+package inputClassesForTests;
+
+import java.util.Set;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-
 
 /**
  * Input class for unit tests.
@@ -29,7 +30,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
-  public Product prod;
+  public Set<Product> prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;

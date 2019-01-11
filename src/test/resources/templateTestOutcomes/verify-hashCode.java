@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package inputClassesForTests;import java.util.Objects;
+package inputClassesForTests;
 
-
+import java.util.Set;
+import java.util.Objects;
 
 /**
  * Input class for unit tests.
@@ -28,7 +29,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
-  public Product prod;
+  public Set<Product> prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;

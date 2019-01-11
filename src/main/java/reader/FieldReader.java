@@ -30,6 +30,8 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
+import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 
@@ -77,13 +79,34 @@ public class FieldReader {
   private void resolveAndSetImport(FieldDeclaration fd, VariableDefinition variable) {
     try {
       ResolvedType resolve = fd.getElementType().resolve();
-      String imp = resolve.describe();
-      if (!imp.startsWith("java.lang.") && !resolve.isPrimitive()) {
-        variable.setTypeImport(imp);
+      List<String> imports = getImports(resolve);
+      if (!imports.isEmpty()) {
+        variable.addTypeImports(imports);
       }
     } catch (@SuppressWarnings("unused") Exception e) {
       System.err.println("FieldReader: Could not resolve import for " + fd.getElementType().asString());
     }
+  }
+
+  private List<String> getImports(ResolvedType resolve) {
+    List<String> imports = new ArrayList<>();
+    String imp;
+    if (resolve.isReferenceType()) {
+      ResolvedReferenceType refType = resolve.asReferenceType();
+      ResolvedReferenceTypeDeclaration type = refType.getTypeDeclaration();
+      imp = type.getQualifiedName();
+      List<ResolvedType> innerResolvedTypes =
+          type.getTypeParameters().stream().map(tp -> refType.typeParametersMap().getValue(tp)).collect(Collectors.toList());
+      // This is a recursive call to resolve all imports of parameterized types
+      List<String> collect = innerResolvedTypes.stream().flatMap(t -> getImports(t).stream()).collect(Collectors.toList());
+      imports.addAll(collect);
+    } else {
+      imp = resolve.describe();
+    }
+    if (!imp.startsWith("java.lang.") && !resolve.isPrimitive()) {
+      imports.add(imp);
+    }
+    return imports;
   }
 
 }

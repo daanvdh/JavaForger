@@ -1,6 +1,5 @@
-
 <#list fields as field>
-<#if (field.typeImport??)>
-import ${field.typeImport};
-</#if>
+<#list field.typeImports as import>
+import ${import};
+</#list>
 </#list>

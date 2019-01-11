@@ -17,7 +17,10 @@
  */
 package templateInput;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -35,7 +38,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
 
   protected String name;
   protected String type;
-  protected String typeImport;
+  protected List<String> typeImports = new ArrayList<>();
   protected int lineNumber;
   protected int column;
   protected Set<String> annotations = new HashSet<>();
@@ -122,12 +125,16 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.accessModifiers = accessModifiers;
   }
 
-  public String getTypeImport() {
-    return typeImport;
+  public List<String> getTypeImports() {
+    return typeImports;
   }
 
-  public void setTypeImport(String typeImport) {
-    this.typeImport = typeImport;
+  public void addTypeImport(String typeImport) {
+    this.typeImports.add(typeImport);
+  }
+
+  public void addTypeImports(Collection<String> imports) {
+    this.typeImports.addAll(imports);
   }
 
   @Override
@@ -139,7 +146,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("name", name).append("type", type)
         .append("annotations", annotations).append("lineNumber", lineNumber).append("column", column).append("accessModifiers", accessModifiers)
-        .append("typeImport", typeImport).build();
+        .append("typeImports", typeImports).build();
   }
 
   @Override
@@ -150,7 +157,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     } else if (obj != null && getClass() == obj.getClass()) {
       TypeDefinition other = (TypeDefinition) obj;
       equals = new EqualsBuilder().append(name, other.name).append(type, other.type).append(lineNumber, other.lineNumber).append(column, other.column)
-          .append(annotations, other.annotations).append(accessModifiers, other.accessModifiers).append(typeImport, other.typeImport).isEquals();
+          .append(annotations, other.annotations).append(accessModifiers, other.accessModifiers).append(typeImports, other.typeImports).isEquals();
     }
     return equals;
   }

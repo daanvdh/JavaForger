@@ -19,6 +19,7 @@ package inputClassesForTests;import java.util.function.BiFunction;
 import org.junit.Assert;
 import org.junit.Test;
 import inputClassesForTests.Product;
+import java.util.Set;
 import inputClassesForTests.CLassWithEverything;
 
 
@@ -40,7 +41,7 @@ public class CLassWithEverythingTest {
 
 @Test
   public void testEquals_Different() {
-    verifyEqualsDifferent(CLassWithEverything.Builder::prod, Product.builder().build());
+    verifyEqualsDifferent(CLassWithEverything.Builder::prod, Collections.singleton(Product.builder().build()));
     verifyEqualsDifferent(CLassWithEverything.Builder::i, 1);
     verifyEqualsDifferent(CLassWithEverything.Builder::c, CLassWithEverything.builder().build());
     verifyEqualsDifferent(CLassWithEverything.Builder::s, "a");
@@ -55,7 +56,7 @@ private <T> void verifyEqualsDifferent(BiFunction<CLassWithEverything.Builder, T
 
 private CLassWithEverything.Builder createAndFillBuilder() {
     return CLassWithEverything.builder()
-      .prod(Product.builder().build())
+      .prod(Collections.singleton(Product.builder().build()))
       .i(1)
       .c(CLassWithEverything.builder().build())
       .s("a")

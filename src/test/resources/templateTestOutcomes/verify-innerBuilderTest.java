@@ -18,6 +18,7 @@
 package inputClassesForTests;import org.junit.Assert;
 import org.junit.Test;
 import inputClassesForTests.Product;
+import java.util.Set;
 import inputClassesForTests.CLassWithEverything;
 
 
@@ -33,7 +34,7 @@ public class CLassWithEverythingTest {
 public void testCLassWithEverything_minimum() {
 CLassWithEverything cLassWithEverything= CLassWithEverything.builder().build();
 
-Assert.assertNull("Unexpected prod", cLassWithEverything.getProd());
+Assert.assertTrue("Unexpected prod", cLassWithEverything.getProd().isEmpty());
 Assert.assertEquals("Unexpected i", 0, cLassWithEverything.getI());
 Assert.assertNull("Unexpected c", cLassWithEverything.getC());
 Assert.assertNull("Unexpected s", cLassWithEverything.getS());
@@ -54,7 +55,7 @@ Assert.assertEquals("Unexpected c", C, cLassWithEverything.getC());
 Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
 }
 
-private static final Product PROD = Product.builder().build();
+private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
 
 private static final Integer I = 1;
 

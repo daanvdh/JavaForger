@@ -17,6 +17,8 @@
  */
 package inputClassesForTests;
 
+import java.util.Set;
+
 /**
  * Input class for unit tests.
  *
@@ -26,7 +28,7 @@ public class CLassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
-  public Product prod;
+  public Set<Product> prod;
   public int i = 0;
   protected CLassWithEverything c;
   private String s;
@@ -76,7 +78,7 @@ public static Builder builder() {
   }
   
   public static final class Builder {
-    private Product prod;
+    private Set<Product> prod = new HashSet<>();
     private Integer i;
     private CLassWithEverything c;
     private String s;
@@ -85,8 +87,9 @@ public static Builder builder() {
       // Builder should only be used via the parent class
     }
 
-    public Builder prod(Product prod) {
-      this.prod = prod;
+    public Builder prod(Set<Product> prod) {
+      this.prod.clear();
+      this.prod.addAll(prod);
       return this;
     }
     

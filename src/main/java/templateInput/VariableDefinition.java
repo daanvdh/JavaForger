@@ -17,7 +17,9 @@
  */
 package templateInput;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -53,7 +55,7 @@ public class VariableDefinition extends TypeDefinition {
     this.init2 = var.init2;
     this.noInit = var.noInit;
     this.collection = var.collection;
-    this.typeImport = var.typeImport;
+    this.typeImports = var.typeImports;
   }
 
   private VariableDefinition(Builder builder) {
@@ -62,7 +64,7 @@ public class VariableDefinition extends TypeDefinition {
     this.lineNumber = builder.lineNumber;
     this.column = builder.column;
     this.annotations = builder.annotations;
-    this.typeImport = builder.typeImport;
+    this.typeImports = builder.typeImports;
     this.accessModifiers = builder.accessModifiers;
     this.init1 = builder.init1;
     this.init2 = builder.init2;
@@ -144,7 +146,7 @@ public class VariableDefinition extends TypeDefinition {
     private String init1;
     private String init2;
     private String noInit;
-    private String typeImport;
+    private List<String> typeImports = new ArrayList<>();
 
     private Builder() {
     }
@@ -195,7 +197,7 @@ public class VariableDefinition extends TypeDefinition {
     }
 
     public Builder withTypeImport(String typeImport) {
-      this.typeImport = typeImport;
+      this.typeImports.add(typeImport);
       return this;
     }
 
