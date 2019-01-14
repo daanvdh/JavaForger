@@ -121,7 +121,10 @@ public class CodeSnipitMerger {
 
   private void mergeImports(CompilationUnit existingCode, CompilationUnit newCode) {
     Set<ImportDeclaration> existingSet = new HashSet<>(existingCode.getImports());
-    newCode.getImports().stream().filter(imp -> !existingSet.contains(imp)).forEach(existingCode::addImport);
+    newCode.getImports().stream().filter(imp -> !existingSet.contains(imp)).forEach(t -> {
+      existingCode.addImport(t);
+      existingSet.add(t);
+    });
   }
 
   private int findInsertionLocation(NodeList<BodyDeclaration<?>> existingMembers, BodyDeclaration<?> member) {
