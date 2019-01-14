@@ -18,6 +18,7 @@
 package initialization;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,9 +32,9 @@ public class InitValue {
   private final String value;
   private final List<String> imports = new ArrayList<>();
 
-  public InitValue(String value, String impord) {
+  public InitValue(String value, String... imports) {
     this.value = value;
-    this.imports.add(impord);
+    this.imports.addAll(Arrays.asList(imports));
   }
 
   public InitValue(String value) {

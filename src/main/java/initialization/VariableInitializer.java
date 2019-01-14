@@ -39,8 +39,8 @@ public class VariableInitializer {
   private static Map<String, InitValue> defaultValue1 = new HashMap<>();
   /** The second value that can be used to initialize the type given by the key of this hashMap. This value is different from defaultValue1. */
   private static Map<String, InitValue> defaultValue2 = new HashMap<>();
-  private static Map<String, String> parameterizedVariables = new HashMap<>();
-  private static Map<String, String> emptyInit = new HashMap<>();
+  private static Map<String, InitValue> parameterizedVariables = new HashMap<>();
+  private static Map<String, InitValue> emptyInit = new HashMap<>();
   private static Set<String> collections = new HashSet<>();
 
   private static Map<String, String> primitiveToObject = new HashMap<>();
@@ -76,7 +76,7 @@ public class VariableInitializer {
       var.setInit2(init);
       var.setNoInit(getNoInitFor(var.getType()));
     }
-    var.setDefaultInit(emptyInit.get(var.getTypeWithoutParameters()));
+    var.setDefaultInit(emptyInit.containsKey(var.getTypeWithoutParameters()) ? emptyInit.get(var.getTypeWithoutParameters()).getValue() : null);
     var.setCollection(collections.contains(var.getTypeWithoutParameters()));
   }
 
@@ -85,8 +85,8 @@ public class VariableInitializer {
     StringBuilder sb1 = new StringBuilder();
     StringBuilder sb2 = new StringBuilder();
     if (this.parameterizedVariables.containsKey(mainType)) {
-      sb1.append(this.parameterizedVariables.get(mainType));
-      sb2.append(this.parameterizedVariables.get(mainType));
+      sb1.append(this.parameterizedVariables.get(mainType).getValue());
+      sb2.append(this.parameterizedVariables.get(mainType).getValue());
       List<VariableDefinition> subTypes = getSubTypes(var);
 
       String init1 = subTypes.stream().map(VariableDefinition::getInit1).collect(Collectors.joining(", "));
@@ -104,11 +104,11 @@ public class VariableInitializer {
   }
 
   private String init1(String type) {
-    return defaultValue1.get(type).getValue();
+    return defaultValue1.containsKey(type) ? defaultValue1.get(type).getValue() : null;
   }
 
   private String init2(String type) {
-    return defaultValue2.get(type).getValue();
+    return defaultValue2.containsKey(type) ? defaultValue2.get(type).getValue() : null;
   }
 
   private List<VariableDefinition> getSubTypes(VariableDefinition var) {
@@ -132,7 +132,7 @@ public class VariableInitializer {
   }
 
   private String getNoInitFor(String type) {
-    return (this.testNoInit.containsKey(type)) ? this.testNoInit.get(type).getValue() : "null";
+    return this.testNoInit.containsKey(type) ? this.testNoInit.get(type).getValue() : "null";
   }
 
   private void initializeJavaDefaults() {
@@ -162,8 +162,8 @@ public class VariableInitializer {
     // Special ones
     defaultValue1.put("LocalDateTime", new InitValue("LocalDateTime.of(2017, 3, 25, 0, 0)"));
     defaultValue2.put("LocalDateTime", new InitValue("LocalDateTime.of(2018, 4, 26, 1, 1)"));
-    defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(5)"));
-    defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(6)"));
+    defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(5)", "java.math.BigDecimal"));
+    defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(6)", "java.math.BigDecimal"));
     defaultValue1.put("Date", new InitValue("Date.from(ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())"));
     defaultValue2.put("Date", new InitValue("Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())"));
     defaultValue1.put("Length", new InitValue("SI.METER"));
@@ -175,13 +175,13 @@ public class VariableInitializer {
   }
 
   private void initializeJavaEmptyInit() {
-    emptyInit.put("Optional", "Optional.empty()");
-    emptyInit.put("List", "new ArrayList<>()");
-    emptyInit.put("HashMap", "new HashMap<>()");
-    emptyInit.put("Map", "new HashMap<>()");
-    emptyInit.put("Set", "new HashSet<>()");
-    emptyInit.put("HashSet", "new HashSet<>()");
-    emptyInit.put("ArrayListValuedHashMap", "new ArrayListValuedHashMap<>()");
+    emptyInit.put("Optional", new InitValue("Optional.empty()"));
+    emptyInit.put("List", new InitValue("new ArrayList<>()"));
+    emptyInit.put("HashMap", new InitValue("new HashMap<>()"));
+    emptyInit.put("Map", new InitValue("new HashMap<>()"));
+    emptyInit.put("Set", new InitValue("new HashSet<>()"));
+    emptyInit.put("HashSet", new InitValue("new HashSet<>()"));
+    emptyInit.put("ArrayListValuedHashMap", new InitValue("new ArrayListValuedHashMap<>()"));
   }
 
   private void initializeJavaNoInit() {
@@ -191,12 +191,12 @@ public class VariableInitializer {
     testNoInit.put("double", new InitValue("0.0"));
     testNoInit.put("float", new InitValue("0.0"));
     testNoInit.put("Optional", new InitValue("Optional.empty()"));
-    testNoInit.put("List", new InitValue("Collections.emptyList()"));
-    testNoInit.put("ArrayList", new InitValue("Collections.emptyList()"));
-    testNoInit.put("HashMap", new InitValue("Collections.emptyMap()"));
-    testNoInit.put("Map", new InitValue("Collections.emptyMap()"));
-    testNoInit.put("Set", new InitValue("Collections.emptySet()"));
-    testNoInit.put("HashSet", new InitValue("Collections.emptySet()"));
+    testNoInit.put("List", new InitValue("Collections.emptyList()", "java.util.Collections"));
+    testNoInit.put("ArrayList", new InitValue("Collections.emptyList()", "java.util.Collections"));
+    testNoInit.put("HashMap", new InitValue("Collections.emptyMap()", "java.util.Collections"));
+    testNoInit.put("Map", new InitValue("Collections.emptyMap()", "java.util.Collections"));
+    testNoInit.put("Set", new InitValue("Collections.emptySet()", "java.util.Collections"));
+    testNoInit.put("HashSet", new InitValue("Collections.emptySet()", "java.util.Collections"));
   }
 
   private void initializePrimitiveToObject() {
@@ -208,18 +208,19 @@ public class VariableInitializer {
   }
 
   private void initializeParameterizedJavaDefaults() {
-    parameterizedVariables.put("Collection", "Collections.singletonList(");
-    parameterizedVariables.put("List", "Collections.singletonList(");
-    parameterizedVariables.put("ArrayList", "Collections.singletonList("); // This will not compile, but better than creating a builder for it.
-    parameterizedVariables.put("Map", "Collections.singletonMap(");
-    parameterizedVariables.put("HashMap", "Collections.singletonMap(");
-    parameterizedVariables.put("Set", "Collections.singleton(");
-    parameterizedVariables.put("HashSet", "Collections.singleton(");
-    parameterizedVariables.put("ArrayListValuedHashMap", "new ArrayListValuedHashMap<>(");
+    parameterizedVariables.put("Collection", new InitValue("Collections.singletonList(", "java.util.Collections"));
+    parameterizedVariables.put("List", new InitValue("Collections.singletonList(", "java.util.List", "java.util.Collections"));
+    // This will not compile, but better than creating a builder for it.
+    parameterizedVariables.put("ArrayList", new InitValue("Collections.singletonList(", "java.util.Collections"));
+    parameterizedVariables.put("Map", new InitValue("Collections.singletonMap(", "java.util.Collections"));
+    parameterizedVariables.put("HashMap", new InitValue("Collections.singletonMap(", "java.util.Collections"));
+    parameterizedVariables.put("Set", new InitValue("Collections.singleton(", "java.util.Collections"));
+    parameterizedVariables.put("HashSet", new InitValue("Collections.singleton(", "java.util.Collections"));
+    parameterizedVariables.put("ArrayListValuedHashMap", new InitValue("new ArrayListValuedHashMap<>("));
 
     // Special ones
 
-    parameterizedVariables.put("DecimalMeasure", "DecimalMeasure.valueOf(BigDecimal.ZERO, ");
+    parameterizedVariables.put("DecimalMeasure", new InitValue("DecimalMeasure.valueOf(BigDecimal.ZERO, ", "java.math.BigDecimal"));
 
   }
 
