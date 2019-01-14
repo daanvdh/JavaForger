@@ -25,8 +25,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import templateInput.MethodDefinition;
-import templateInput.MethodDefinition.Builder;
+import templateInput.definition.MethodDefinition;
+import templateInput.definition.MethodDefinition.Builder;
 
 /**
  * Unit test for {@link MethodReader}

@@ -33,8 +33,7 @@ import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
 import generator.Generator;
-import parameters.ClassContainerAdjuster;
-import parameters.TemplateInputParameters;
+import templateInput.TemplateInputParameters;
 
 /**
  * DTO containing the configuration for the execution of a template.

@@ -20,6 +20,10 @@ package templateInput;
 import java.util.ArrayList;
 import java.util.List;
 
+import templateInput.definition.ClassDefinition;
+import templateInput.definition.MethodDefinition;
+import templateInput.definition.VariableDefinition;
+
 /**
  * Container class for everything defined within a class.
  *

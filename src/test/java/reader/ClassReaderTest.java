@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import templateInput.ClassDefinition;
+import templateInput.definition.ClassDefinition;
 
 /**
  * Unit test for {@link ClassReader}.

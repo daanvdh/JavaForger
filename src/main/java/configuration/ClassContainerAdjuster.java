@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package parameters;
+package configuration;
 
 import java.util.function.Consumer;
 

@@ -35,7 +35,7 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 
-import templateInput.VariableDefinition;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Reader for .java files, for getting the fields. If the {@link JavaSymbolSolver} is setup properly by calling

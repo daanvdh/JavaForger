@@ -17,6 +17,8 @@
  */
 package templateInput;
 
+import templateInput.definition.TypeDefinition;
+
 /**
  * Class for frequently used string conversions of the name of {@link TypeDefinition}, like uppercasing the first char, or creating a getter.
  *

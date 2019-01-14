@@ -22,8 +22,8 @@ import java.util.List;
 
 import initialization.VariableInitializer;
 import templateInput.ClassContainer;
-import templateInput.ClassDefinition;
-import templateInput.VariableDefinition;
+import templateInput.definition.ClassDefinition;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Reader for all data within a class.

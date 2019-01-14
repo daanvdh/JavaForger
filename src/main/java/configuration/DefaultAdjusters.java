@@ -22,11 +22,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import initialization.VariableInitializer;
-import parameters.ClassContainerAdjuster;
-import parameters.TemplateInputParameters;
 import templateInput.ClassContainer;
-import templateInput.MethodDefinition;
-import templateInput.VariableDefinition;
+import templateInput.TemplateInputParameters;
+import templateInput.definition.MethodDefinition;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Default adjusters for adding or removing input to/from the {@link TemplateInputParameters} after parsing is done.

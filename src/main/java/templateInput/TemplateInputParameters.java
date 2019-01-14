@@ -15,29 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package parameters;
+package templateInput;
 
-import generator.Generator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Enumeration of all possible custom input variable names that can be used inside a template. Any name, which is defined inside this enum, used inside a
- * template as variable will be filled with custom logic depending on other input by the {@link Generator}.
+ * Class containing the input parameters for a template.
  *
  * @author Daan
  */
-public enum TemplateInputDefaults {
-  FIELDS("fields"),
-  METHODS("methods"),
-  CLASS("class");
+public class TemplateInputParameters extends HashMap<String, Object> {
+  private static final long serialVersionUID = 7129701603512062051L;
 
-  private final String name;
-
-  private TemplateInputDefaults(String name) {
-    this.name = name;
+  public TemplateInputParameters(Map<String, Object> collect) {
+    super(collect);
   }
 
-  public String getName() {
-    return this.name;
+  public TemplateInputParameters() {
+    // empty constructor
+  }
+
+  public TemplateInputParameters copy() {
+    return new TemplateInputParameters(this);
   }
 
 }

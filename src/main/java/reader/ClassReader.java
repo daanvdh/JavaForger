@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
-import templateInput.ClassDefinition;
+import templateInput.definition.ClassDefinition;
 
 /**
  * Reader to fill {@link ClassDefinition} from a java input file using {@link JavaParser}.

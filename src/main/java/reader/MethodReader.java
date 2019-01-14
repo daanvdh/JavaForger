@@ -27,8 +27,8 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
-import templateInput.MethodDefinition;
-import templateInput.VariableDefinition;
+import templateInput.definition.MethodDefinition;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Reads the methods from a given {@link CompilationUnit} created by {@link JavaParser}.

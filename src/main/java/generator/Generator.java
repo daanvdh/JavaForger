@@ -31,10 +31,10 @@ import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
 import merger.CodeSnipitMerger;
-import parameters.TemplateInputDefaults;
-import parameters.TemplateInputParameters;
 import reader.ClassContainerReader;
 import templateInput.ClassContainer;
+import templateInput.TemplateInputDefaults;
+import templateInput.TemplateInputParameters;
 
 /**
  * Class for generating code given a template and already existing java class files.

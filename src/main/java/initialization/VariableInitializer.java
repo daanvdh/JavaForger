@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import templateInput.VariableDefinition;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Class for initializing {@link VariableDefinition} for creating java code or unit tests from templates.

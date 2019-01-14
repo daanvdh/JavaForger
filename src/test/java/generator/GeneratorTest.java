@@ -33,7 +33,7 @@ import configuration.JavaForgerConfiguration;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import inputClassesForTests.Product;
-import parameters.TemplateInputParameters;
+import templateInput.TemplateInputParameters;
 
 /**
  * Unit test for {@link Generator}.

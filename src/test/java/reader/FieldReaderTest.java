@@ -32,7 +32,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSol
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
-import templateInput.VariableDefinition;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Unit test for {@link FieldReader}.
