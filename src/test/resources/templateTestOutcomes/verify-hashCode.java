@@ -50,7 +50,6 @@ public class CLassWithEverything {
 @Override
   public int hashCode() {
     return Objects.hash(
-    
       prod
 , 
       i
@@ -58,6 +57,7 @@ public class CLassWithEverything {
       c
 , 
       s
+
 );
   }
 

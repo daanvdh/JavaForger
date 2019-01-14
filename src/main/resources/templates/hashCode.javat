@@ -3,8 +3,8 @@ import java.util.Objects;
   @Override
   public int hashCode() {
     return Objects.hash(
-    <#assign first = 0>
-<#list fields as field><#if first !=0>, </#if><#assign first = 1>
+<#list fields as field>
       ${field.name}
+<#if !field?is_last>, </#if>
 </#list>);
   }
