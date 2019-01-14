@@ -25,8 +25,8 @@ import org.junit.After;
 import org.junit.Test;
 
 import common.AbstractFileChangingTest;
+import configuration.JavaForgerConfiguration;
 import generator.CodeSnipit;
-import generator.JavaForgerConfiguration;
 
 /**
  * Unit test for {@link CodeSnipitMerger}.

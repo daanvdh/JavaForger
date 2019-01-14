@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package generator;
+package configuration;
 
 import freemarker.core.PlainTextOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
+import generator.Generator;
 
 /**
  * This class holds the default configurations for Freemarker.

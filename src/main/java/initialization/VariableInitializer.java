@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package generator;
+package initialization;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,7 +35,9 @@ import templateInput.VariableDefinition;
 public class VariableInitializer {
 
   private static Map<String, String> testNoInit = new HashMap<>();
+  /** The first value that can be used to initialize the type given by the key of this hashMap. */
   private static Map<String, String> defaultValue1 = new HashMap<>();
+  /** The second value that can be used to initialize the type given by the key of this hashMap. This value is different from defaultValue1. */
   private static Map<String, String> defaultValue2 = new HashMap<>();
   private static Map<String, String> parameterizedVariables = new HashMap<>();
   private static Map<String, String> emptyInit = new HashMap<>();

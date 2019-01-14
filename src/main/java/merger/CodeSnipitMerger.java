@@ -51,11 +51,11 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 
+import configuration.DefaultAdjusters;
+import configuration.JavaForgerConfiguration;
 import freemarker.template.TemplateException;
 import generator.CodeSnipit;
-import generator.DefaultAdjusters;
 import generator.Generator;
-import generator.JavaForgerConfiguration;
 import generator.JavaForgerException;
 import reader.Parser;
 

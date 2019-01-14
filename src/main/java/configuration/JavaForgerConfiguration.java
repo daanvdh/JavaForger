@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package generator;
+package configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +32,7 @@ import freemarker.template.Configuration;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.Template;
 import freemarker.template.TemplateNotFoundException;
+import generator.Generator;
 import parameters.ClassContainerAdjuster;
 import parameters.TemplateInputParameters;
 

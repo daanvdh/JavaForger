@@ -20,7 +20,7 @@ package reader;
 import java.io.IOException;
 import java.util.List;
 
-import generator.VariableInitializer;
+import initialization.VariableInitializer;
 import templateInput.ClassContainer;
 import templateInput.ClassDefinition;
 import templateInput.VariableDefinition;

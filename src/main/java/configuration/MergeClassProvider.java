@@ -15,10 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package generator;
+package configuration;
 
 import java.util.function.Function;
 
+import generator.Generator;
+import generator.JavaForgerException;
 import merger.CodeSnipitMerger;
 
 /**

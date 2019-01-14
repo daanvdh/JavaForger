@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package generator;
+package configuration;
 
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import initialization.VariableInitializer;
 import parameters.ClassContainerAdjuster;
 import parameters.TemplateInputParameters;
 import templateInput.ClassContainer;

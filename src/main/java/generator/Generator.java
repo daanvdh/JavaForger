@@ -23,11 +23,13 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import configuration.DefaultAdjusters;
+import configuration.JavaForgerConfiguration;
+import configuration.MergeClassProvider;
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
-import generator.JavaForgerConfiguration.Builder;
 import merger.CodeSnipitMerger;
 import parameters.TemplateInputDefaults;
 import parameters.TemplateInputParameters;
@@ -152,7 +154,8 @@ public class Generator {
     String testMergeClass = "src/test/java/inputClassesForTests/Product.java";
     String testTemplate = "innerBuilderUnitTest.javat";
 
-    Builder builder = JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(template); // .withMergeClass(inputClass);
+    JavaForgerConfiguration.Builder builder =
+        JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(template); // .withMergeClass(inputClass);
     builder.withChildConfig(JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(testTemplate) // .withMergeClass(testMergeClass)
         .build());
 

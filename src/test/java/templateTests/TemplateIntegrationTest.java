@@ -30,10 +30,10 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import common.AbstractFileChangingTest;
+import configuration.DefaultConfigurations;
+import configuration.JavaForgerConfiguration;
 import freemarker.template.TemplateException;
-import generator.DefaultConfigurations;
 import generator.JavaForger;
-import generator.JavaForgerConfiguration;
 
 /**
  * Integration test testing the whole flow of inserting code into a class. If this test fails, comment out deleting the created file in the tearDown method.

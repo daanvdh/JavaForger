@@ -28,6 +28,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import configuration.FreeMarkerConfiguration;
+import configuration.JavaForgerConfiguration;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import inputClassesForTests.Product;
