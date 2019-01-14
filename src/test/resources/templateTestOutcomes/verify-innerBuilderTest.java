@@ -19,6 +19,7 @@ package inputClassesForTests;import org.junit.Assert;
 import org.junit.Test;
 import inputClassesForTests.Product;
 import java.util.Set;
+import java.util.Collections;
 import inputClassesForTests.CLassWithEverything;
 
 

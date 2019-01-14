@@ -17,9 +17,8 @@
  */
 package templateInput.definition;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -146,7 +145,7 @@ public class VariableDefinition extends TypeDefinition {
     private String init1;
     private String init2;
     private String noInit;
-    private List<String> typeImports = new ArrayList<>();
+    private LinkedHashSet<String> typeImports = new LinkedHashSet<>();
 
     private Builder() {
     }

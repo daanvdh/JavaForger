@@ -131,6 +131,8 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
     test.setup();
     test.testToString();
     test.tearDown();
+
+    Assert.fail();
   }
 
 }

@@ -17,9 +17,8 @@
  */
 package templateInput.definition;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -40,7 +39,8 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
 
   protected String name;
   protected String type;
-  protected List<String> typeImports = new ArrayList<>();
+  /** The imports required for this type. This list is sorted on insertion order so that template generation is consistent. */
+  protected LinkedHashSet<String> typeImports = new LinkedHashSet<>();
   protected int lineNumber;
   protected int column;
   protected Set<String> annotations = new HashSet<>();
@@ -127,7 +127,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.accessModifiers = accessModifiers;
   }
 
-  public List<String> getTypeImports() {
+  public LinkedHashSet<String> getTypeImports() {
     return typeImports;
   }
 
@@ -135,7 +135,13 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.typeImports.add(typeImport);
   }
 
-  public void addTypeImports(Collection<String> imports) {
+  // Only sorted collections may be input for the sorted typeImports
+  public void addTypeImports(List<String> imports) {
+    this.typeImports.addAll(imports);
+  }
+
+  // Only sorted collections may be input for the sorted typeImports
+  public void addTypeImports(LinkedHashSet<String> imports) {
     this.typeImports.addAll(imports);
   }
 
