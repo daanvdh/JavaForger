@@ -51,7 +51,6 @@ public class DefaultConfigurations {
   public static JavaForgerConfiguration forBuilderAndTest() {
     JavaForgerConfiguration config = defaultConfiguration("innerBuilder.javat", "innerBuilderTest.javat");
     config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
-    config.getChildConfigs().stream().forEach(c -> c.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects()));
     return config;
   }
 
@@ -64,7 +63,8 @@ public class DefaultConfigurations {
   }
 
   protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
-    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(MergeClassProvider.forMavenUnitTestFromInput()).build()).build();
+    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(MergeClassProvider.forMavenUnitTestFromInput()).build())
+        .build();
   }
 
   protected static Builder defaultBuilder(String template) {

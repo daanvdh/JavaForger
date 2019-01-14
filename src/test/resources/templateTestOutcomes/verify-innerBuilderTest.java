@@ -58,7 +58,7 @@ Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
 
 private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
 
-private static final Integer I = 1;
+private static final int I = 1;
 
 private static final CLassWithEverything C = CLassWithEverything.builder().build();
 
