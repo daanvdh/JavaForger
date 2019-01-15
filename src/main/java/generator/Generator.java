@@ -71,6 +71,7 @@ public class Generator {
   }
 
   private CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
+    // TODO should be removed
     setupSymbolSolver(config);
     TemplateInputParameters inputParameters = getInputParameters(config, inputClass);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
@@ -165,16 +166,19 @@ public class Generator {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      ClassContainer claz = classReader.read(inputClass, config);
-      config.getAdjuster().accept(claz);
-      if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
-        inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
-      }
-      if (!inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())) {
-        inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
-      }
-      if (!inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
-        inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
+      if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) && !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
+          && !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
+        ClassContainer claz = classReader.read(inputClass, config);
+        config.getAdjuster().accept(claz);
+        if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
+          inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
+        }
+        if (!inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())) {
+          inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
+        }
+        if (!inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
+          inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
+        }
       }
     }
     return inputParameters;

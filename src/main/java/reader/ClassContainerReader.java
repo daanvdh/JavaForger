@@ -20,6 +20,8 @@ package reader;
 import java.io.IOException;
 import java.util.List;
 
+import com.github.javaparser.JavaParser;
+
 import configuration.JavaForgerConfiguration;
 import initialization.VariableInitializer;
 import templateInput.ClassContainer;
@@ -43,6 +45,7 @@ public class ClassContainerReader {
   }
 
   public ClassContainer read(String inputClass, JavaForgerConfiguration config) throws IOException {
+    setupSymbolSolver(config);
     ClassDefinition def = classReader.read(inputClass);
     ClassContainer claz = new ClassContainer(def);
     List<VariableDefinition> fields = fieldReader.getFields(inputClass, config);
@@ -50,6 +53,10 @@ public class ClassContainerReader {
     claz.setFields(fields);
     claz.setMethods(methodReader.read(inputClass));
     return claz;
+  }
+
+  private void setupSymbolSolver(JavaForgerConfiguration config) {
+    JavaParser.getStaticConfiguration().setSymbolResolver(config.getSymbolSolver());
   }
 
 }

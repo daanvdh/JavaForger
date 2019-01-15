@@ -1,0 +1,8 @@
+<#list fields as field>
+<#list field.typeImports as import>
+import ${import};
+</#list>
+</#list>
+<#list class.typeImports as import>
+import ${import};
+</#list>
