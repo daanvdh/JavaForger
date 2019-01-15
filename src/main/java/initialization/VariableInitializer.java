@@ -84,7 +84,7 @@ public class VariableInitializer {
     if (this.testNoInit.containsKey(var.getType())) {
       InitValue value = this.testNoInit.get(var.getType());
       var.setNoInit(value.getValue());
-      var.addTypeImports(value.getImports());
+      var.addInitImports(value.getImports());
     } else {
       var.setNoInit("null");
     }
@@ -94,7 +94,7 @@ public class VariableInitializer {
     if (defaultValue1.containsKey(var.getType())) {
       InitValue value = defaultValue1.get(var.getType());
       var.setInit1(value.getValue());
-      var.addTypeImports(value.getImports());
+      var.addInitImports(value.getImports());
     }
   }
 
@@ -102,7 +102,7 @@ public class VariableInitializer {
     if (defaultValue2.containsKey(var.getType())) {
       InitValue value = defaultValue2.get(var.getType());
       var.setInit2(value.getValue());
-      var.addTypeImports(value.getImports());
+      var.addInitImports(value.getImports());
     }
   }
 
@@ -114,7 +114,7 @@ public class VariableInitializer {
       InitValue value = this.parameterizedVariables.get(mainType);
       sb1.append(value.getValue());
       sb2.append(value.getValue());
-      var.addTypeImports(value.getImports());
+      var.addInitImports(value.getImports());
       List<VariableDefinition> subTypes = getSubTypes(var);
 
       String init1 = subTypes.stream().map(VariableDefinition::getInit1).collect(Collectors.joining(", "));
@@ -123,7 +123,7 @@ public class VariableInitializer {
       sb1.append(init1 + ")");
       sb2.append(init2 + ")");
 
-      subTypes.stream().forEach(v -> var.addTypeImports(v.getTypeImports()));
+      subTypes.stream().forEach(v -> var.addInitImports(v.getInitImports()));
 
     } else {
       sb1.append(mainType + ".builder().build()");

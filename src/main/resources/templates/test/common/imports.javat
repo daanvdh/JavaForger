@@ -2,4 +2,7 @@
 <#list field.typeImports as import>
 import ${import};
 </#list>
+<#list field.initImports as import>
+import ${import};
+</#list>
 </#list>

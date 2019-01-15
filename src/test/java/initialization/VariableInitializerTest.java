@@ -44,7 +44,9 @@ public class VariableInitializerTest {
     Assert.assertEquals(
         "Collections.singletonMap(Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(6))",
         var.getInit2());
-    Assert.assertThat(var.getTypeImports(),
+
+    Assert.assertTrue(var.getTypeImports().isEmpty());
+    Assert.assertThat(var.getInitImports(),
         Matchers.containsInAnyOrder("java.math.BigDecimal", "java.util.Collections", "java.time.ZonedDateTime", "java.util.TimeZone"));
   }
 
@@ -56,7 +58,8 @@ public class VariableInitializerTest {
 
     Assert.assertEquals("Collections.singletonMap(Collections.singletonMap(1, \"a\"), Collections.singletonMap(new Object(), 1.0))", var.getInit1());
     Assert.assertEquals("Collections.singletonMap(Collections.singletonMap(2, \"b\"), Collections.singletonMap(new Object(), 2.0))", var.getInit2());
-    Assert.assertThat(var.getTypeImports(), Matchers.containsInAnyOrder("java.util.Collections"));
+    Assert.assertTrue(var.getTypeImports().isEmpty());
+    Assert.assertThat(var.getInitImports(), Matchers.containsInAnyOrder("java.util.Collections"));
   }
 
   @Test
@@ -67,7 +70,8 @@ public class VariableInitializerTest {
 
     Assert.assertEquals("Collections.singletonList(BigDecimal.valueOf(5))", var.getInit1());
     Assert.assertEquals("Collections.singletonList(BigDecimal.valueOf(6))", var.getInit2());
-    Assert.assertThat(var.getTypeImports(), Matchers.containsInAnyOrder("java.util.Collections", "java.math.BigDecimal"));
+    Assert.assertTrue(var.getTypeImports().isEmpty());
+    Assert.assertThat(var.getInitImports(), Matchers.containsInAnyOrder("java.util.Collections", "java.math.BigDecimal"));
   }
 
 }

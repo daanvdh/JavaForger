@@ -19,6 +19,7 @@ package templateInput.definition;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,6 +38,8 @@ public class VariableDefinition extends TypeDefinition {
   private String noInit = "null";
   /** True if the variable is a collection, false otherwise */
   private boolean collection;
+  /** The imports required for initializing this variable. */
+  private LinkedHashSet<String> initImports = new LinkedHashSet<>();
 
   public VariableDefinition() {
     // explicitly make constructor visible
@@ -134,6 +137,22 @@ public class VariableDefinition extends TypeDefinition {
    */
   public static Builder builder() {
     return new Builder();
+  }
+
+  public LinkedHashSet<String> getInitImports() {
+    return initImports;
+  }
+
+  public void setInitImports(LinkedHashSet<String> imports) {
+    this.initImports = imports;
+  }
+
+  public void addInitImports(List<String> imports) {
+    this.initImports.addAll(imports);
+  }
+
+  public void addInitImports(LinkedHashSet<String> imports) {
+    this.initImports.addAll(imports);
   }
 
   /**
