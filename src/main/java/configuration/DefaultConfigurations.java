@@ -55,7 +55,7 @@ public class DefaultConfigurations {
   }
 
   public static JavaForgerConfiguration forToString() {
-    return defaultConfig("toString.javat");
+    return defaultConfig("toString/complete.javat");
   }
 
   protected static JavaForgerConfiguration defaultConfig(String template) {
