@@ -23,6 +23,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.javaparser.JavaParser;
+
 import configuration.DefaultAdjusters;
 import configuration.JavaForgerConfiguration;
 import configuration.MergeClassProvider;
@@ -67,11 +69,16 @@ public class Generator {
   }
 
   private CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
+    setupSymbolSolver(config);
     TemplateInputParameters inputParameters = getInputParameters(config, inputClass);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
     String mergedClass = merge(config, codeSnipit, inputClass, parentMergeClass);
     executeChildren(config, inputClass, codeSnipit, mergedClass);
     return codeSnipit;
+  }
+
+  private void setupSymbolSolver(JavaForgerConfiguration config) {
+    JavaParser.getStaticConfiguration().setSymbolResolver(config.getSymbolSolver());
   }
 
   private String merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String inputClass, String parentMergeClass) throws IOException {
@@ -133,7 +140,7 @@ public class Generator {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
-      ClassContainer claz = classReader.read(inputClass);
+      ClassContainer claz = classReader.read(inputClass, config);
       config.getAdjuster().accept(claz);
       if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
         inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());

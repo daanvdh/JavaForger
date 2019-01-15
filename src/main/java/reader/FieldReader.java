@@ -35,6 +35,7 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 
+import configuration.JavaForgerConfiguration;
 import templateInput.definition.VariableDefinition;
 
 /**
@@ -45,46 +46,59 @@ import templateInput.definition.VariableDefinition;
  */
 public class FieldReader {
 
-  public List<VariableDefinition> getFields(String className) throws IOException {
+  public List<VariableDefinition> getFields(String inputClass) throws IOException {
+    return getFields(inputClass, JavaForgerConfiguration.builder().build());
+  }
+
+  public List<VariableDefinition> getFields(String inputClass, JavaForgerConfiguration config) throws IOException {
     ArrayList<VariableDefinition> fields = new ArrayList<>();
-    try (FileInputStream in = new FileInputStream(className)) {
+    try (FileInputStream in = new FileInputStream(inputClass)) {
       CompilationUnit cu = JavaParser.parse(in);
       in.close();
-      getFields(fields, cu);
+      getFields(fields, cu, config);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
     return fields.stream().sorted().collect(Collectors.toList());
   }
 
-  private void getFields(ArrayList<VariableDefinition> fields, CompilationUnit cu) {
+  private void getFields(ArrayList<VariableDefinition> fields, CompilationUnit cu, JavaForgerConfiguration config) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       List<Node> childNodes = type.getChildNodes();
       for (Node node : childNodes) {
         if (node instanceof FieldDeclaration) {
-          FieldDeclaration fd = (FieldDeclaration) node;
-          Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
-          Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
-          VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
-              .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
-              .withAccessModifiers(accessModifiers).build();
-          fields.add(variable);
-
-          resolveAndSetImport(fd, variable);
+          fields.add(parseField(config, node));
         }
       }
     }
+
+    // TODO get super type
+
   }
 
-  private void resolveAndSetImport(FieldDeclaration fd, VariableDefinition variable) {
-    try {
-      ResolvedType resolve = fd.getElementType().resolve();
-      List<String> imports = getImports(resolve);
-      if (!imports.isEmpty()) {
-        variable.addTypeImports(imports);
+  private VariableDefinition parseField(JavaForgerConfiguration config, Node node) {
+    FieldDeclaration fd = (FieldDeclaration) node;
+    Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
+    Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
+    VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
+        .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
+        .withAccessModifiers(accessModifiers).build();
+
+    resolveAndSetImport(fd, variable, config);
+    return variable;
+  }
+
+  private void resolveAndSetImport(FieldDeclaration fd, VariableDefinition variable, JavaForgerConfiguration config) {
+    if (config.getSymbolSolver() != null) {
+      try {
+        ResolvedType resolve = fd.getElementType().resolve();
+        List<String> imports = getImports(resolve);
+        if (!imports.isEmpty()) {
+          variable.addTypeImports(imports);
+        }
+      } catch (@SuppressWarnings("unused") Exception e) {
+        System.err.println("FieldReader: Could not resolve import for " + fd.getElementType().asString());
       }
-    } catch (@SuppressWarnings("unused") Exception e) {
-      System.err.println("FieldReader: Could not resolve import for " + fd.getElementType().asString());
     }
   }
 

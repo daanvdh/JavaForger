@@ -116,6 +116,10 @@ public class VariableDefinition extends TypeDefinition {
     return prefix + getName_().getUpperFirst();
   }
 
+  public String getSetter() {
+    return "set" + getName_().getUpperFirst();
+  }
+
   public String getTypeWithoutParameters() {
     int indexOf = type.indexOf("<");
     indexOf = indexOf < 1 ? type.length() : indexOf;

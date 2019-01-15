@@ -32,6 +32,14 @@ public class StringConverter {
     this.string = string;
   }
 
+  public String getLower() {
+    return string.toLowerCase();
+  }
+
+  public String getUpper() {
+    return string.toUpperCase();
+  }
+
   public String getLowerFirst() {
     char[] c = string.toCharArray();
     c[0] = Character.toLowerCase(c[0]);
@@ -48,6 +56,12 @@ public class StringConverter {
     String regex = "([A-Z])";
     String replacement = "_$1";
     return string.replaceAll(regex, replacement).toUpperCase();
+  }
+
+  public String getLowerSpace() {
+    String regex = "([A-Z])";
+    String replacement = " $1";
+    return string.replaceAll(regex, replacement).toLowerCase();
   }
 
 }

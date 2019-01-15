@@ -22,14 +22,10 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import common.AbstractFileChangingTest;
+import common.SymbolSolverSetup;
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
 import freemarker.template.TemplateException;
@@ -88,16 +84,10 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
   }
 
   private void execute(JavaForgerConfiguration config) {
-    setupSymbolSolver();
+    JavaSymbolSolver symbolSolver = SymbolSolverSetup.getSymbolSolver();
+    config.setSymbolSolver(symbolSolver);
+    config.getChildConfigs().stream().forEach(conf -> conf.setSymbolSolver(symbolSolver));
     JavaForger.execute(config, INPUT_CLASS);
-  }
-
-  private void setupSymbolSolver() {
-    JavaParserTypeSolver typeSolver_directory = new JavaParserTypeSolver("src/test/java/");
-    ReflectionTypeSolver reflTypeSolver = new ReflectionTypeSolver();
-    TypeSolver typeSolver = new CombinedTypeSolver(typeSolver_directory, reflTypeSolver);
-    JavaSymbolSolver symbolSolver = new JavaSymbolSolver(typeSolver);
-    JavaParser.getStaticConfiguration().setSymbolResolver(symbolSolver);
   }
 
   /**

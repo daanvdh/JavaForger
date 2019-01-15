@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
@@ -61,6 +63,9 @@ public class JavaForgerConfiguration {
 
   private Configuration freeMarkerConfiguration;
 
+  /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
+  private JavaSymbolSolver symbolSolver;
+
   public JavaForgerConfiguration() {
     this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
   }
@@ -73,6 +78,7 @@ public class JavaForgerConfiguration {
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
+    this.symbolSolver = builder.symbolSolver;
   }
 
   public boolean isMerge() {
@@ -152,6 +158,14 @@ public class JavaForgerConfiguration {
     this.freeMarkerConfiguration.setTemplateLoader(mtl);
   }
 
+  public void setSymbolSolver(JavaSymbolSolver symbolSolver) {
+    this.symbolSolver = symbolSolver;
+  }
+
+  public JavaSymbolSolver getSymbolSolver() {
+    return symbolSolver;
+  }
+
   /**
    * Creates builder to build {@link JavaForgerConfiguration}.
    *
@@ -181,6 +195,7 @@ public class JavaForgerConfiguration {
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
+    private JavaSymbolSolver symbolSolver;
 
     private Builder() {
     }
@@ -232,6 +247,11 @@ public class JavaForgerConfiguration {
 
     public Builder withMergeClassProvider(MergeClassProvider mergeClassProvider) {
       this.mergeClassProvider = mergeClassProvider;
+      return this;
+    }
+
+    public Builder withSymbolSolver(JavaSymbolSolver symbolSolver) {
+      this.symbolSolver = symbolSolver;
       return this;
     }
 

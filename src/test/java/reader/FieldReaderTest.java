@@ -18,20 +18,15 @@
 package reader;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-
+import common.SymbolSolverSetup;
 import templateInput.definition.VariableDefinition;
 
 /**
@@ -42,12 +37,15 @@ import templateInput.definition.VariableDefinition;
 public class FieldReaderTest {
   private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/Product.java";
 
+  @Before
+  public void setup() {
+    SymbolSolverSetup.setup();
+  }
+
   @Test
   public void testGetFields() throws IOException {
-    setupSymbolSolver();
-
     FieldReader reader = new FieldReader();
-    List<VariableDefinition> variables = reader.getFields(INPUT_CLASS);
+    List<VariableDefinition> variables = reader.getFields(INPUT_CLASS, SymbolSolverSetup.getDefaultConfig());
 
     VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
         .withAccessModifiers(Collections.singleton("private")).build();
@@ -56,15 +54,7 @@ public class FieldReaderTest {
     VariableDefinition v3 = VariableDefinition.builder().withName("prod").withType("Product").withLineNumber(34).withColumn(3)
         .withAccessModifiers(Collections.singleton("public")).withTypeImport("inputClassesForTests.Product").build();
 
-    Assert.assertEquals(Arrays.asList(v1, v2, v3), variables);
-  }
-
-  private void setupSymbolSolver() {
-    JavaParserTypeSolver typeSolver_directory = new JavaParserTypeSolver("src/test/java/");
-    ReflectionTypeSolver reflTypeSolver = new ReflectionTypeSolver();
-    TypeSolver typeSolver = new CombinedTypeSolver(typeSolver_directory, reflTypeSolver);
-    JavaSymbolSolver symbolSolver = new JavaSymbolSolver(typeSolver);
-    JavaParser.getStaticConfiguration().setSymbolResolver(symbolSolver);
+    Assert.assertThat(variables, Matchers.contains(v1, v2, v3));
   }
 
 }

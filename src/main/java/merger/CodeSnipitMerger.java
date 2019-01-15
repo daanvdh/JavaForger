@@ -40,7 +40,9 @@ import com.github.javaparser.Providers;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -290,24 +292,34 @@ public class CodeSnipitMerger {
     int lineBegin = 0;
     int lineEnd = string.indexOf(";");
     lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-    String importDeclaration = string.substring(lineBegin, lineEnd);
-    ParseResult<ImportDeclaration> result = parseImport(importDeclaration);
+    String declaration = string.substring(lineBegin, lineEnd);
+    ParseResult<?> result = parsePackage(declaration);
+    if (!result.isSuccessful()) {
+      result = parseImport(declaration);
+    }
 
     while (result.isSuccessful()) {
       lineBegin = lineEnd + 1;
       lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
       lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-      importDeclaration = string.substring(lineBegin, lineEnd);
-      result = parseImport(importDeclaration);
+      declaration = string.substring(lineBegin, lineEnd);
+      result = parseImport(declaration);
     }
     return lineBegin;
   }
 
-  private ParseResult<ImportDeclaration> parseImport(String importDeclaration) {
+  private ParseResult<PackageDeclaration> parsePackage(String declaration) {
+    return parseDeclaration(declaration, ParseStart.PACKAGE_DECLARATION);
+  }
+
+  private ParseResult<ImportDeclaration> parseImport(String declaration) {
+    return parseDeclaration(declaration, ParseStart.IMPORT_DECLARATION);
+  }
+
+  private <N extends Node> ParseResult<N> parseDeclaration(String declaration, ParseStart<N> parseStart) {
     JavaParser parser = new JavaParser();
-    ParseStart<ImportDeclaration> parseStart = ParseStart.IMPORT_DECLARATION;
-    Provider provider = Providers.provider(importDeclaration);
-    ParseResult<ImportDeclaration> result = parser.parse(parseStart, provider);
+    Provider provider = Providers.provider(declaration);
+    ParseResult<N> result = parser.parse(parseStart, provider);
     return result;
   }
 

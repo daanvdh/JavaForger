@@ -20,6 +20,7 @@ package reader;
 import java.io.IOException;
 import java.util.List;
 
+import configuration.JavaForgerConfiguration;
 import initialization.VariableInitializer;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
@@ -38,9 +39,13 @@ public class ClassContainerReader {
   private VariableInitializer initializer = new VariableInitializer();
 
   public ClassContainer read(String inputClass) throws IOException {
+    return read(inputClass, JavaForgerConfiguration.builder().build());
+  }
+
+  public ClassContainer read(String inputClass, JavaForgerConfiguration config) throws IOException {
     ClassDefinition def = classReader.read(inputClass);
     ClassContainer claz = new ClassContainer(def);
-    List<VariableDefinition> fields = fieldReader.getFields(inputClass);
+    List<VariableDefinition> fields = fieldReader.getFields(inputClass, config);
     initializer.init(fields);
     claz.setFields(fields);
     claz.setMethods(methodReader.read(inputClass));
