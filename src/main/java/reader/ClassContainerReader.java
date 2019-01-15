@@ -107,7 +107,7 @@ public class ClassContainerReader {
 
     Optional<String> typeImport = cu.getPackageDeclaration().map(pd -> pd.getNameAsString());
     if (typeImport.isPresent()) {
-      claz.addTypeImport(typeImport.get());
+      claz.addTypeImport(typeImport.get() + "." + claz.getName());
     }
 
     initializer.init(fields);
