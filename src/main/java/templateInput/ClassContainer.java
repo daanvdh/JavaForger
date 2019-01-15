@@ -38,6 +38,10 @@ public class ClassContainer extends ClassDefinition {
     super(builder(def));
   }
 
+  public ClassContainer() {
+    // empty constructor so that everything can be filled in later.
+  }
+
   public List<? extends VariableDefinition> getFields() {
     return fields;
   }
