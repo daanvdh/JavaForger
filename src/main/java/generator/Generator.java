@@ -17,7 +17,9 @@
  */
 package generator;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -85,33 +87,56 @@ public class Generator {
     String mergeClassPath = null;
     MergeClassProvider mergeClassProvider = config.getMergeClassProvider();
     if (mergeClassProvider != null) {
-      switch (mergeClassProvider.provideFrom()) {
-      case SELF:
-        mergeClassPath = mergeClassProvider.provide("");
-        break;
-      case INPUT_CLASS:
-        mergeClassPath = mergeClassProvider.provide(inputClass);
-        break;
-      case PARENT_CONFIG_MERGE_CLASS:
-        mergeClassPath = mergeClassProvider.provide(parentMergeClass);
-        break;
-      default:
-      }
+      mergeClassPath = getMergeClass(inputClass, parentMergeClass, mergeClassProvider);
       if (config.isMerge()) {
-        // TODO check if file exists, create otherwise
-
-        boolean success = false;
-        try {
-          merger.merge(config, codeSnipit, mergeClassPath);
-          success = true;
-        } finally {
-          if (!success) {
-            codeSnipit.printWithLineNumbers();
-          }
+        if (config.isCreateFileIfNotExists()) {
+          createFileAndFillFile(mergeClassPath, codeSnipit);
+        } else {
+          executeMerge(config, codeSnipit, mergeClassPath);
         }
       }
     }
     return mergeClassPath;
+  }
+
+  private void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+    boolean success = false;
+    try {
+      merger.merge(config, codeSnipit, mergeClassPath);
+      success = true;
+    } finally {
+      if (!success) {
+        codeSnipit.printWithLineNumbers();
+      }
+    }
+  }
+
+  private String getMergeClass(String inputClass, String parentMergeClass, MergeClassProvider mergeClassProvider) {
+    String mergeClassPath;
+    switch (mergeClassProvider.provideFrom()) {
+    case SELF:
+      mergeClassPath = mergeClassProvider.provide("");
+      break;
+    case INPUT_CLASS:
+      mergeClassPath = mergeClassProvider.provide(inputClass);
+      break;
+    case PARENT_CONFIG_MERGE_CLASS:
+      mergeClassPath = mergeClassProvider.provide(parentMergeClass);
+      break;
+    default:
+      mergeClassPath = null;
+    }
+    return mergeClassPath;
+  }
+
+  private void createFileAndFillFile(String mergeClassPath, CodeSnipit codeSnipit) throws IOException {
+    File f = new File(mergeClassPath);
+    if (!f.exists()) {
+      f.getParentFile().mkdirs();
+    }
+    try (PrintWriter writer = new PrintWriter(mergeClassPath, "UTF-8")) {
+      writer.write(codeSnipit.toString());
+    }
   }
 
   private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit, String parentMergeClass)

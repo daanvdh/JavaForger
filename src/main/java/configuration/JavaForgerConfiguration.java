@@ -53,6 +53,7 @@ public class JavaForgerConfiguration {
   /** The {@link MergeClassProvider} to provide the class to merge the generated code with. */
   private MergeClassProvider mergeClassProvider;
 
+  /** Determines if the generated code should be merged with the class given by the mergeClassProvider. */
   private boolean merge = true;
 
   /** With this you can define a sequence of templates to be executed. */
@@ -65,6 +66,9 @@ public class JavaForgerConfiguration {
 
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
   private JavaSymbolSolver symbolSolver;
+
+  /** If true the merge class provided by the {@link MergeClassProvider} will be created if it does not exists. */
+  private boolean createFileIfNotExists;
 
   public JavaForgerConfiguration() {
     this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
@@ -79,6 +83,7 @@ public class JavaForgerConfiguration {
     this.adjusters.addAll(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
     this.symbolSolver = builder.symbolSolver;
+    this.createFileIfNotExists = builder.createFileIfNotExists;
   }
 
   public boolean isMerge() {
@@ -166,6 +171,14 @@ public class JavaForgerConfiguration {
     return symbolSolver;
   }
 
+  public boolean isCreateFileIfNotExists() {
+    return createFileIfNotExists;
+  }
+
+  public void setCreateFileIfNotExists(boolean createFileIfNotExists) {
+    this.createFileIfNotExists = createFileIfNotExists;
+  }
+
   /**
    * Creates builder to build {@link JavaForgerConfiguration}.
    *
@@ -196,6 +209,7 @@ public class JavaForgerConfiguration {
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
     private JavaSymbolSolver symbolSolver;
+    private boolean createFileIfNotExists;
 
     private Builder() {
     }
@@ -252,6 +266,11 @@ public class JavaForgerConfiguration {
 
     public Builder withSymbolSolver(JavaSymbolSolver symbolSolver) {
       this.symbolSolver = symbolSolver;
+      return this;
+    }
+
+    public Builder withCreateFileIfNotExists(boolean createFileIfNotExists) {
+      this.createFileIfNotExists = createFileIfNotExists;
       return this;
     }
 
