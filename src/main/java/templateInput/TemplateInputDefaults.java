@@ -26,9 +26,10 @@ import generator.Generator;
  * @author Daan
  */
 public enum TemplateInputDefaults {
-  FIELDS("fields"),
-  METHODS("methods"),
   CLASS("class"),
+  FIELDS("fields"),
+  CONSTRUCTORS("constructors"),
+  METHODS("methods"),
   PACKAGE("package"),
   MERGE_CLASS_NAME("mergeClassName");
 

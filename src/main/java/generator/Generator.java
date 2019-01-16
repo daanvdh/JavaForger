@@ -178,6 +178,9 @@ public class Generator {
         if (!inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
           inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
         }
+        if (!inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
+          inputParameters.put(TemplateInputDefaults.CONSTRUCTORS.getName(), claz.getConstructors());
+        }
       }
     }
     if (mergeClassPath != null) {
