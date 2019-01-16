@@ -35,4 +35,8 @@ public class JavaForgerException extends UncheckedExecutionException {
     super(string);
   }
 
+  public JavaForgerException(Exception e, String string) {
+    super(string, e);
+  }
+
 }

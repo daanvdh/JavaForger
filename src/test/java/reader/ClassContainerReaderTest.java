@@ -27,10 +27,12 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import common.SymbolSolverSetup;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
+import templateInput.definition.VariableDefinition;
 
 /**
  * Unit test for the {@link ClassContainerReader}.
@@ -54,7 +56,7 @@ public class ClassContainerReaderTest {
   }
 
   @Test
-  public void testRead() throws IOException {
+  public void testRead_Methods() throws IOException {
     String input = "src/test/java/inputClassesForTests/Product.java";
     List<? extends MethodDefinition> methods = sut.read(input).getMethods();
 
@@ -68,6 +70,21 @@ public class ClassContainerReaderTest {
         build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean").build();
 
     Assert.assertThat(methods, Matchers.contains(m1, m2, m3, m4, m5));
+  }
+
+  @Test
+  public void testRead_Fields() throws IOException {
+    String input = "src/test/java/inputClassesForTests/Product.java";
+    List<? extends VariableDefinition> variables = sut.read(input, SymbolSolverSetup.getDefaultConfig()).getFields();
+
+    VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
+        .withAccessModifiers(Collections.singleton("private")).build();
+    VariableDefinition v2 = VariableDefinition.builder().withName("name").withType("String").withLineNumber(33).withColumn(3)
+        .withAccessModifiers(Collections.singleton("private")).build();
+    VariableDefinition v3 = VariableDefinition.builder().withName("prod").withType("Product").withLineNumber(34).withColumn(3)
+        .withAccessModifiers(Collections.singleton("public")).withTypeImport("inputClassesForTests.Product").build();
+
+    Assert.assertThat(variables, Matchers.contains(v1, v2, v3));
   }
 
 }

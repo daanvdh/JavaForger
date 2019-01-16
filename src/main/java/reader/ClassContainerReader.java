@@ -40,6 +40,7 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 
 import configuration.JavaForgerConfiguration;
+import generator.JavaForgerException;
 import initialization.VariableInitializer;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
@@ -53,7 +54,6 @@ import templateInput.definition.VariableDefinition;
  */
 public class ClassContainerReader {
 
-  private FieldReader fieldReader = new FieldReader();
   private VariableInitializer initializer = new VariableInitializer();
 
   public ClassContainer read(String inputClass) throws IOException {
@@ -62,25 +62,19 @@ public class ClassContainerReader {
 
   public ClassContainer read(String inputClass, JavaForgerConfiguration config) throws IOException {
     setupSymbolSolver(config);
-
-    Optional<ClassContainer> c2 = readEverything(inputClass, config);
-
-    // ClassDefinition def = classReader.read(inputClass);
-    // ClassContainer claz = new ClassContainer(def);
-    // List<VariableDefinition> fields = fieldReader.getFields(inputClass, config);
-    // initializer.init(fields);
-    // claz.setFields(fields);
-    // claz.setMethods(methodReader.read(inputClass));
-    return c2.get();
+    CompilationUnit cu = getCompilationUnit(inputClass);
+    return readCompilationUnit(cu, config);
   }
 
-  private Optional<ClassContainer> readEverything(String inputClass, JavaForgerConfiguration config) throws IOException {
-    ClassContainer claz = new ClassContainer();
-    Optional<CompilationUnit> cu = getCompilationUnit(inputClass);
-    if (cu.isPresent()) {
-      claz = readCompilationUnit(cu.get(), config);
+  private CompilationUnit getCompilationUnit(String inputClass) throws IOException {
+    CompilationUnit cu = null;
+    try (FileInputStream in = new FileInputStream(inputClass)) {
+      cu = JavaParser.parse(in);
+      in.close();
+    } catch (FileNotFoundException e) {
+      throw new JavaForgerException(e, "Could not parse " + inputClass);
     }
-    return Optional.ofNullable(claz);
+    return cu;
   }
 
   private ClassContainer readCompilationUnit(CompilationUnit cu, JavaForgerConfiguration config) {
@@ -133,7 +127,6 @@ public class ClassContainerReader {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
-    // TODO should probably be something else then variableDefinition.
     List<VariableDefinition> parameters = md.getParameters().stream()
         .map(par -> VariableDefinition.builder().withName(par.getNameAsString()).withType(par.getTypeAsString()).build()).collect(Collectors.toList());
 
@@ -188,17 +181,6 @@ public class ClassContainerReader {
       imports.add(imp);
     }
     return imports;
-  }
-
-  private Optional<CompilationUnit> getCompilationUnit(String inputClass) throws IOException {
-    CompilationUnit cu = null;
-    try (FileInputStream in = new FileInputStream(inputClass)) {
-      cu = JavaParser.parse(in);
-      in.close();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-    return Optional.ofNullable(cu);
   }
 
   private void setupSymbolSolver(JavaForgerConfiguration config) {
