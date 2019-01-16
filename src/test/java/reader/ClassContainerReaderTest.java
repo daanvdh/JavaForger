@@ -21,11 +21,16 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
+import templateInput.definition.MethodDefinition;
+import templateInput.definition.MethodDefinition.Builder;
 
 /**
  * Unit test for the {@link ClassContainerReader}.
@@ -33,19 +38,36 @@ import templateInput.definition.ClassDefinition;
  * @author Daan
  */
 public class ClassContainerReaderTest {
-  private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/ExtendedProduct.java";
 
   private ClassContainerReader sut = new ClassContainerReader();
 
   @Test
   public void testRead_Class() throws IOException {
-    ClassContainer cc = sut.read(INPUT_CLASS);
+    String input = "src/test/java/inputClassesForTests/ExtendedProduct.java";
+    ClassContainer cc = sut.read(input);
     ClassDefinition result = ClassDefinition.builder(cc).build();
 
     ClassDefinition expected = ClassDefinition.builder().withName("ExtendedProduct").withType("ExtendedProduct").withLineNumber(25).withColumn(1)
         .withAccessModifiers(Collections.singleton("public")).withExtend("Product").withInterfaces(Collections.singletonList("TestInterface")).build();
 
     assertEquals(expected, result);
+  }
+
+  @Test
+  public void testRead() throws IOException {
+    String input = "src/test/java/inputClassesForTests/Product.java";
+    List<? extends MethodDefinition> methods = sut.read(input).getMethods();
+
+    Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("String");
+    MethodDefinition m1 = build.withName("getUrl").withLineNumber(46).withColumn(3).build();
+    MethodDefinition m2 = build.withName("getName").withLineNumber(50).withColumn(3).build();
+    MethodDefinition m3 = build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton("Override")).build();
+    MethodDefinition m4 =
+        build.withName("hashCode").withLineNumber(59).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("int").build();
+    MethodDefinition m5 =
+        build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean").build();
+
+    Assert.assertThat(methods, Matchers.contains(m1, m2, m3, m4, m5));
   }
 
 }

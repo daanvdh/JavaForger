@@ -54,7 +54,6 @@ import templateInput.definition.VariableDefinition;
 public class ClassContainerReader {
 
   private FieldReader fieldReader = new FieldReader();
-  private MethodReader methodReader = new MethodReader();
   private VariableInitializer initializer = new VariableInitializer();
 
   public ClassContainer read(String inputClass) throws IOException {
