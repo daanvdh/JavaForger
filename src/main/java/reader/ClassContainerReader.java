@@ -108,6 +108,8 @@ public class ClassContainerReader {
     }
 
     initializer.init(fields);
+    methods.forEach(m -> initializer.init(m.getParameters()));
+    constructors.forEach(c -> initializer.init(c.getParameters()));
     claz.setFields(fields);
     claz.setMethods(methods);
     claz.setConstructors(constructors);
