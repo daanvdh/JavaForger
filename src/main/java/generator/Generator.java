@@ -180,9 +180,16 @@ public class Generator {
         }
       }
     }
-    if (!inputParameters.containsKey(TemplateInputDefaults.PACKAGE.getName()) && mergeClassPath != null) {
-      String pack = convertMavenPathToPackage(mergeClassPath);
-      inputParameters.put(TemplateInputDefaults.PACKAGE.getName(), pack);
+    if (mergeClassPath != null) {
+      if (!inputParameters.containsKey(TemplateInputDefaults.PACKAGE.getName())) {
+        String pack = convertMavenPathToPackage(mergeClassPath);
+        inputParameters.put(TemplateInputDefaults.PACKAGE.getName(), pack);
+      }
+      if (!inputParameters.containsKey(TemplateInputDefaults.MERGE_CLASS_NAME.getName())) {
+        String a = mergeClassPath.replace("\\", "*").replace("/", "*");
+        String name = a.substring(a.lastIndexOf("*") + 1, a.lastIndexOf("."));
+        inputParameters.put(TemplateInputDefaults.MERGE_CLASS_NAME.getName(), name);
+      }
     }
 
     return inputParameters;

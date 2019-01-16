@@ -29,7 +29,8 @@ public enum TemplateInputDefaults {
   FIELDS("fields"),
   METHODS("methods"),
   CLASS("class"),
-  PACKAGE("package");
+  PACKAGE("package"),
+  MERGE_CLASS_NAME("mergeClassName");
 
   private final String name;
 

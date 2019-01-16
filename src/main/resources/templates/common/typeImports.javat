@@ -3,6 +3,3 @@
 import ${import};
 </#list>
 </#list>
-<#list class.typeImports as import>
-import ${import};
-</#list>

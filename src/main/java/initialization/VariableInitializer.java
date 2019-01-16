@@ -231,6 +231,10 @@ public class VariableInitializer {
     defaultValue2.put("LocalDateTime", new InitValue("LocalDateTime.of(2018, 4, 26, 1, 1)"));
     defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(5)", "java.math.BigDecimal"));
     defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(6)", "java.math.BigDecimal"));
+    defaultValue1.put("ZonedDateTime",
+        new InitValue("ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
+    defaultValue2.put("ZonedDateTime",
+        new InitValue("ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
     defaultValue1.put("Date", new InitValue("Date.from(ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())",
         "java.time.ZonedDateTime", "java.util.TimeZone"));
     defaultValue2.put("Date", new InitValue("Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())",
