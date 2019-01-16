@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 by Daan van den Heuvel.
+ * Copyright 2019 by Daan van den Heuvel.
  *
  * This file is part of JavaForger.
  *
@@ -21,33 +21,31 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.junit.Test;
 
+import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
 
 /**
- * Unit test for {@link ClassReader}.
+ * Unit test for the {@link ClassContainerReader}.
  *
  * @author Daan
  */
-public class ClassReaderTest {
+public class ClassContainerReaderTest {
   private static final String INPUT_CLASS = "src/test/java/inputClassesForTests/ExtendedProduct.java";
 
-  private ClassReader cr = new ClassReader();
+  private ClassContainerReader sut = new ClassContainerReader();
 
   @Test
-  public void testRead() throws IOException {
-    ClassDefinition c = cr.read(INPUT_CLASS);
+  public void testRead_Class() throws IOException {
+    ClassContainer cc = sut.read(INPUT_CLASS);
+    ClassDefinition result = ClassDefinition.builder(cc).build();
 
-    Set<String> mod = new HashSet<>();
-    mod.add("public");
     ClassDefinition expected = ClassDefinition.builder().withName("ExtendedProduct").withType("ExtendedProduct").withLineNumber(25).withColumn(1)
-        .withAccessModifiers(mod).withExtend("Product").withInterfaces(Collections.singletonList("TestInterface")).build();
+        .withAccessModifiers(Collections.singleton("public")).withExtend("Product").withInterfaces(Collections.singletonList("TestInterface")).build();
 
-    assertEquals(expected, c);
+    assertEquals(expected, result);
   }
 
 }
