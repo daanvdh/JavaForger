@@ -28,7 +28,8 @@ import generator.Generator;
 public enum TemplateInputDefaults {
   FIELDS("fields"),
   METHODS("methods"),
-  CLASS("class");
+  CLASS("class"),
+  PACKAGE("package");
 
   private final String name;
 

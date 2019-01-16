@@ -73,10 +73,13 @@ public class Generator {
   private CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
     // TODO should be removed
     setupSymbolSolver(config);
-    TemplateInputParameters inputParameters = getInputParameters(config, inputClass);
+
+    String mergeClassPath = getMergeClass(inputClass, parentMergeClass, config);
+
+    TemplateInputParameters inputParameters = getInputParameters(config, inputClass, mergeClassPath);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
-    String mergedClass = merge(config, codeSnipit, inputClass, parentMergeClass);
-    executeChildren(config, inputClass, codeSnipit, mergedClass);
+    merge(config, codeSnipit, mergeClassPath);
+    executeChildren(config, inputClass, codeSnipit, mergeClassPath);
     return codeSnipit;
   }
 
@@ -84,20 +87,14 @@ public class Generator {
     JavaParser.getStaticConfiguration().setSymbolResolver(config.getSymbolSolver());
   }
 
-  private String merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String inputClass, String parentMergeClass) throws IOException {
-    String mergeClassPath = null;
-    MergeClassProvider mergeClassProvider = config.getMergeClassProvider();
-    if (mergeClassProvider != null) {
-      mergeClassPath = getMergeClass(inputClass, parentMergeClass, mergeClassProvider);
-      if (config.isMerge()) {
-        if (config.isCreateFileIfNotExists()) {
-          createFileAndFillFile(mergeClassPath, codeSnipit);
-        } else {
-          executeMerge(config, codeSnipit, mergeClassPath);
-        }
+  private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+    if (mergeClassPath != null && config.isMerge()) {
+      if (config.isCreateFileIfNotExists()) {
+        createFileAndFillFile(mergeClassPath, codeSnipit);
+      } else {
+        executeMerge(config, codeSnipit, mergeClassPath);
       }
     }
-    return mergeClassPath;
   }
 
   private void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
@@ -112,20 +109,22 @@ public class Generator {
     }
   }
 
-  private String getMergeClass(String inputClass, String parentMergeClass, MergeClassProvider mergeClassProvider) {
-    String mergeClassPath;
-    switch (mergeClassProvider.provideFrom()) {
-    case SELF:
-      mergeClassPath = mergeClassProvider.provide("");
-      break;
-    case INPUT_CLASS:
-      mergeClassPath = mergeClassProvider.provide(inputClass);
-      break;
-    case PARENT_CONFIG_MERGE_CLASS:
-      mergeClassPath = mergeClassProvider.provide(parentMergeClass);
-      break;
-    default:
-      mergeClassPath = null;
+  private String getMergeClass(String inputClass, String parentMergeClass, JavaForgerConfiguration config) {
+    MergeClassProvider provider = config.getMergeClassProvider();
+    String mergeClassPath = null;
+    if (provider != null) {
+      switch (provider.provideFrom()) {
+      case SELF:
+        mergeClassPath = provider.provide("");
+        break;
+      case INPUT_CLASS:
+        mergeClassPath = provider.provide(inputClass);
+        break;
+      case PARENT_CONFIG_MERGE_CLASS:
+        mergeClassPath = provider.provide(parentMergeClass);
+        break;
+      default:
+      }
     }
     return mergeClassPath;
   }
@@ -162,7 +161,7 @@ public class Generator {
     return new CodeSnipit(writer.toString());
   }
 
-  private TemplateInputParameters getInputParameters(JavaForgerConfiguration config, String inputClass) throws IOException {
+  private TemplateInputParameters getInputParameters(JavaForgerConfiguration config, String inputClass, String mergeClassPath) throws IOException {
     TemplateInputParameters inputParameters = config.getInputParameters();
 
     if (inputClass != null && !inputClass.isEmpty()) {
@@ -181,7 +180,22 @@ public class Generator {
         }
       }
     }
+    if (!inputParameters.containsKey(TemplateInputDefaults.PACKAGE.getName()) && mergeClassPath != null) {
+      String pack = convertMavenPathToPackage(mergeClassPath);
+      inputParameters.put(TemplateInputDefaults.PACKAGE.getName(), pack);
+    }
+
     return inputParameters;
+  }
+
+  private String convertMavenPathToPackage(String mergeClassPath) {
+    String withPoints = mergeClassPath.replace("\\", ".").replace("/", ".");
+    String folder = ".src.main.java.";
+    int i = withPoints.indexOf(folder);
+    String packageWithClass = withPoints.substring(i + folder.length()).replace("\\", ".").replace(".java", "");
+    int classIndex = packageWithClass.lastIndexOf(".");
+    String pack = packageWithClass.substring(0, classIndex);
+    return pack;
   }
 
   public static void main(String[] args) throws IOException, TemplateException {
