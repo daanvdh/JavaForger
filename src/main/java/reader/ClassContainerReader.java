@@ -30,7 +30,9 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -79,8 +81,9 @@ public class ClassContainerReader {
 
   private ClassContainer readCompilationUnit(CompilationUnit cu, JavaForgerConfiguration config) {
     ClassContainer claz = new ClassContainer();
-    ArrayList<VariableDefinition> fields = new ArrayList<>();
-    ArrayList<MethodDefinition> methods = new ArrayList<>();
+    List<VariableDefinition> fields = new ArrayList<>();
+    List<MethodDefinition> methods = new ArrayList<>();
+    List<MethodDefinition> constructors = new ArrayList<>();
 
     for (TypeDeclaration<?> type : cu.getTypes()) {
       if (type instanceof ClassOrInterfaceDeclaration) {
@@ -93,6 +96,8 @@ public class ClassContainerReader {
           fields.add(parseField(config, node));
         } else if (node instanceof MethodDeclaration) {
           methods.add(parseMethod(config, node));
+        } else if (node instanceof ConstructorDeclaration) {
+          constructors.add(parseConstructor(config, node));
         }
       }
     }
@@ -105,6 +110,7 @@ public class ClassContainerReader {
     initializer.init(fields);
     claz.setFields(fields);
     claz.setMethods(methods);
+    claz.setConstructors(constructors);
     return claz;
   }
 
@@ -123,16 +129,27 @@ public class ClassContainerReader {
 
   private MethodDefinition parseMethod(JavaForgerConfiguration config, Node node) {
     MethodDeclaration md = (MethodDeclaration) node;
+    MethodDefinition method = parseCallable(md);
+    method.setType(md.getTypeAsString());
+    return method;
+  }
 
+  private MethodDefinition parseConstructor(JavaForgerConfiguration config, Node node) {
+    ConstructorDeclaration md = (ConstructorDeclaration) node;
+    MethodDefinition method = parseCallable(md);
+    method.setType(md.getNameAsString());
+    return method;
+  }
+
+  private MethodDefinition parseCallable(CallableDeclaration<?> md) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
     List<VariableDefinition> parameters = md.getParameters().stream()
         .map(par -> VariableDefinition.builder().withName(par.getNameAsString()).withType(par.getTypeAsString()).build()).collect(Collectors.toList());
 
-    MethodDefinition method = MethodDefinition.builder().withName(md.getNameAsString()).withType(md.getTypeAsString()).withAccessModifiers(accessModifiers)
-        .withAnnotations(annotations).withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1))
-        .withParameters(parameters).build();
+    MethodDefinition method = MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
+        .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).withParameters(parameters).build();
     return method;
   }
 

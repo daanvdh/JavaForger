@@ -66,10 +66,23 @@ public class ClassContainerReaderTest {
     MethodDefinition m3 = build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton("Override")).build();
     MethodDefinition m4 =
         build.withName("hashCode").withLineNumber(59).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("int").build();
-    MethodDefinition m5 =
-        build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean").build();
+    MethodDefinition m5 = build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean")
+        .withParameters(VariableDefinition.builder().withType("Object").withName("obj").build()).build();
 
     Assert.assertThat(methods, Matchers.contains(m1, m2, m3, m4, m5));
+  }
+
+  @Test
+  public void testRead_Constructors() throws IOException {
+    String input = "src/test/java/inputClassesForTests/Product.java";
+    List<? extends MethodDefinition> constructors = sut.read(input).getConstructors();
+
+    Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("Product").withName("Product").withColumn(3);
+    MethodDefinition m1 = build.withLineNumber(36).withParameters(VariableDefinition.builder().withType("String").withName("name2").build(),
+        VariableDefinition.builder().withType("String").withName("url").build()).build();
+    MethodDefinition m2 = build.withLineNumber(42).withParameters().build();
+
+    Assert.assertThat(constructors, Matchers.contains(m1, m2));
   }
 
   @Test

@@ -18,9 +18,15 @@
 package templateInput.definition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * Describes a method that is read from a java file by JavaParser.
@@ -48,6 +54,24 @@ public class MethodDefinition extends TypeDefinition {
 
   public void setParameters(List<VariableDefinition> parameters) {
     this.parameters = parameters;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString())
+        .append("parameters", "[" + parameters.stream().map(VariableDefinition::getName).collect(Collectors.joining(",")) + "]").build();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    boolean equals = false;
+    if (this == obj) {
+      equals = true;
+    } else if (obj != null && getClass() == obj.getClass()) {
+      MethodDefinition other = (MethodDefinition) obj;
+      equals = new EqualsBuilder().appendSuper(super.equals(other)).append(parameters, other.parameters).isEquals();
+    }
+    return equals;
   }
 
   /**
@@ -112,6 +136,12 @@ public class MethodDefinition extends TypeDefinition {
       this.parameters = parameters;
       return this;
     }
+
+    public Builder withParameters(VariableDefinition... parameters) {
+      this.parameters = Arrays.asList(parameters);
+      return this;
+    }
+
   }
 
 }

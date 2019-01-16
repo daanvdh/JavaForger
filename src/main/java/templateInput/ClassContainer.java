@@ -31,8 +31,9 @@ import templateInput.definition.VariableDefinition;
  */
 public class ClassContainer extends ClassDefinition {
 
-  List<? extends VariableDefinition> fields = new ArrayList<>();
-  List<? extends MethodDefinition> methods = new ArrayList<>();
+  private List<? extends VariableDefinition> fields = new ArrayList<>();
+  private List<? extends MethodDefinition> methods = new ArrayList<>();
+  private List<? extends MethodDefinition> constructors = new ArrayList<>();
 
   public ClassContainer(ClassDefinition def) {
     super(builder(def));
@@ -56,6 +57,14 @@ public class ClassContainer extends ClassDefinition {
 
   public void setMethods(List<? extends MethodDefinition> methods) {
     this.methods = methods;
+  }
+
+  public List<? extends MethodDefinition> getConstructors() {
+    return constructors;
+  }
+
+  public void setConstructors(List<MethodDefinition> constructors) {
+    this.constructors = constructors;
   }
 
 }
