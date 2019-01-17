@@ -191,8 +191,8 @@ public class Generator {
         inputParameters.put(TemplateInputDefaults.PACKAGE.getName(), pack);
       }
       if (!inputParameters.containsKey(TemplateInputDefaults.MERGE_CLASS_NAME.getName())) {
-        String a = mergeClassPath.replace("\\", "*").replace("/", "*");
-        String name = a.substring(a.lastIndexOf("*") + 1, a.lastIndexOf("."));
+        String a = mergeClassPath.replace("\\", "/");
+        String name = a.substring(a.lastIndexOf("/") + 1, a.lastIndexOf("."));
         inputParameters.put(TemplateInputDefaults.MERGE_CLASS_NAME.getName(), name);
       }
     }
