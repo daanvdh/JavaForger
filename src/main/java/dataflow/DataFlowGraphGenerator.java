@@ -17,9 +17,17 @@
  */
 package dataflow;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -39,38 +47,55 @@ public class DataFlowGraphGenerator {
 
   public ClassGraph createClassGraph(CompilationUnit cu) {
     ClassGraph g = new ClassGraph();
+    g.setFields(createFields(cu));
+
+    Map<Node, CallableGraph> existingCallables = new HashMap<>();
+    Map<Node, DataFlowNode> fields = g.getFields().stream().collect(Collectors.toMap(DataFlowNode::getAstNode, Function.identity()));
+
     for (TypeDeclaration<?> type : cu.getTypes()) {
       for (Node node : type.getChildNodes()) {
-        if (node instanceof FieldDeclaration) {
-          g.addField(createField(node));
-        } else if (node instanceof MethodDeclaration) {
-          g.addMethod(createMethod(node));
+        if (node instanceof MethodDeclaration) {
+          g.addMethod(createMethod(node, existingCallables, fields));
         } else if (node instanceof ConstructorDeclaration) {
-          g.addConstructor(createConstructor(node));
+          g.addConstructor(createConstructor(node, existingCallables, fields));
         }
       }
     }
     return g;
   }
 
-  private DataFlowNode createField(Node node) {
-    DataFlowNode n = new DataFlowNode();
-    n.setType(DataFlowNodeType.CLASS_FIELD);
-    n.setAstNode(node);
-
-    // TODO Auto-generated method stub
-    return n;
+  private List<DataFlowNode> createFields(CompilationUnit cu) {
+    List<DataFlowNode> nodes = new ArrayList<>();
+    for (TypeDeclaration<?> type : cu.getTypes()) {
+      for (Node node : type.getChildNodes()) {
+        if (node instanceof FieldDeclaration) {
+          nodes.add(createField(node));
+        }
+      }
+    }
+    return nodes;
   }
 
-  private CallableGraph createMethod(Node node) {
-    CallableGraph c = new CallableGraph();
-    // TODO Auto-generated method stub
+  private DataFlowNode createField(Node node) {
+    return DataFlowNode.builder().type(DataFlowNodeType.CLASS_FIELD).astNode(node).build();
+  }
+
+  private CallableGraph createMethod(Node node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
+    MethodDeclaration md = (MethodDeclaration) node;
+    CallableGraph c = createCallabel(md, existingCallables, fields);
     return c;
   }
 
-  private CallableGraph createConstructor(Node node) {
-    CallableGraph c = new CallableGraph();
-    // TODO Auto-generated method stub
+  private CallableGraph createConstructor(Node node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
+    ConstructorDeclaration cd = (ConstructorDeclaration) node;
+    CallableGraph c = createCallabel(cd, existingCallables, fields);
+    return c;
+  }
+
+  private CallableGraph createCallabel(CallableDeclaration<?> node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
+    CallableGraph c = existingCallables.containsKey(node) ? existingCallables.get(node) : new CallableGraph();
+    c.setAstCallable(node);
+
     return c;
   }
 

@@ -20,6 +20,8 @@ package dataflow.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.javaparser.ast.body.CallableDeclaration;
+
 /**
  * A graph representing a java callable such as a method or constructor.This class contains all nodes that are on the boundary of this method such as parameters
  * and return values. This class contains all edges that go over the boundary of this method such as method calls represented by an edge.
@@ -30,7 +32,18 @@ public class CallableGraph {
 
   private List<DataFlowNode> parameters = new ArrayList<>();
   private DataFlowNode returnValue;
-  private List<DataFlowEdge> calls = new ArrayList<>();
+
+  /** Contains all edges which start inside this callable and end outside this callable, examples: field-assignments, method-calls. */
+  private List<DataFlowEdge> methodExits = new ArrayList<>();
+  private CallableDeclaration<?> astCallable;
+
+  public CallableDeclaration<?> getAstCallable() {
+    return astCallable;
+  }
+
+  public void setAstCallable(CallableDeclaration<?> astCallable) {
+    this.astCallable = astCallable;
+  }
 
   public List<DataFlowNode> getParameters() {
     return parameters;
@@ -48,12 +61,12 @@ public class CallableGraph {
     this.returnValue = returnValue;
   }
 
-  public List<DataFlowEdge> getCalls() {
-    return calls;
+  public List<DataFlowEdge> getMethodExits() {
+    return methodExits;
   }
 
-  public void setCalls(List<DataFlowEdge> calls) {
-    this.calls = calls;
+  public void setMethodExits(List<DataFlowEdge> calls) {
+    this.methodExits = calls;
   }
 
 }
