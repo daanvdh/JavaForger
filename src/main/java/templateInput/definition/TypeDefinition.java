@@ -27,6 +27,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import initialization.VariableInitializer;
 import templateInput.StringConverter;
 
 /**
@@ -85,6 +86,10 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
 
   public String getType() {
     return type;
+  }
+
+  public String getNonPrimitiveType() {
+    return VariableInitializer.getObjectForPrimitive(type);
   }
 
   public StringConverter getType_() {

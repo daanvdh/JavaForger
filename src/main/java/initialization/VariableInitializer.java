@@ -43,7 +43,7 @@ public class VariableInitializer {
   private static Map<String, InitValue> emptyInit = new HashMap<>();
   private static Set<String> collections = new HashSet<>();
 
-  private static Map<String, String> primitiveToObject = new HashMap<>();
+  private static Map<String, String> primitiveToObject;
 
   public VariableInitializer() {
     initializeJavaDefaults();
@@ -58,7 +58,8 @@ public class VariableInitializer {
     fields.stream().forEach(f -> init(f));
   }
 
-  public String getObjectForPrimitive(String type) {
+  public static String getObjectForPrimitive(String type) {
+    initializePrimitiveToObject();
     return primitiveToObject.containsKey(type) ? primitiveToObject.get(type) : type;
   }
 
@@ -272,12 +273,15 @@ public class VariableInitializer {
     testNoInit.put("HashSet", new InitValue("Collections.emptySet()", "java.util.Collections"));
   }
 
-  private void initializePrimitiveToObject() {
-    primitiveToObject.put("int", "Integer");
-    primitiveToObject.put("boolean", "Boolean");
-    primitiveToObject.put("long", "Long");
-    primitiveToObject.put("double", "Double");
-    primitiveToObject.put("float", "Float");
+  private static void initializePrimitiveToObject() {
+    if (primitiveToObject == null) {
+      primitiveToObject = new HashMap<>();
+      primitiveToObject.put("int", "Integer");
+      primitiveToObject.put("boolean", "Boolean");
+      primitiveToObject.put("long", "Long");
+      primitiveToObject.put("double", "Double");
+      primitiveToObject.put("float", "Float");
+    }
   }
 
   private void initializeParameterizedJavaDefaults() {
