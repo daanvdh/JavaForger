@@ -166,7 +166,8 @@ public class Generator {
 
     if (inputClass != null && !inputClass.isEmpty()) {
       if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) && !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
-          && !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
+          && !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
+          && !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
         ClassContainer claz = classReader.read(inputClass, config);
         config.getAdjuster().accept(claz);
         if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
