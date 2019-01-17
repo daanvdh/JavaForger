@@ -29,6 +29,16 @@ import com.github.javaparser.ast.Node;
  */
 public class DataFlowNode extends EdgeReceiver {
 
+  public DataFlowNode() {
+    // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
+  }
+
+  private DataFlowNode(Builder builder) {
+    this.astNode = builder.astNode == null ? this.astNode : builder.astNode;
+    this.outgoing = builder.outgoing == null ? this.outgoing : builder.outgoing;
+    this.type = builder.type == null ? this.type : builder.type;
+  }
+
   private Node astNode;
   private List<DataFlowEdge> outgoing = new ArrayList<>();
   private DataFlowNodeType type;
@@ -55,6 +65,40 @@ public class DataFlowNode extends EdgeReceiver {
 
   public void setType(DataFlowNodeType type) {
     this.type = type;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder {
+    private Node astNode;
+    private List<DataFlowEdge> outgoing = new ArrayList<>();
+    private DataFlowNodeType type;
+
+    private Builder() {
+      // Builder should only be constructed via the parent class
+    }
+
+    public Builder astNode(Node astNode) {
+      this.astNode = astNode;
+      return this;
+    }
+
+    public Builder outgoing(List<DataFlowEdge> outgoing) {
+      this.outgoing.clear();
+      this.outgoing.addAll(outgoing);
+      return this;
+    }
+
+    public Builder type(DataFlowNodeType type) {
+      this.type = type;
+      return this;
+    }
+
+    public DataFlowNode build() {
+      return new DataFlowNode(this);
+    }
   }
 
 }
