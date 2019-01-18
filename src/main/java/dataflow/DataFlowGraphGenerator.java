@@ -80,19 +80,19 @@ public class DataFlowGraphGenerator {
     return DataFlowNode.builder().type(DataFlowNodeType.CLASS_FIELD).astNode(node).build();
   }
 
-  private CallableGraph createMethod(Node node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
+  public CallableGraph createMethod(Node node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
     MethodDeclaration md = (MethodDeclaration) node;
-    CallableGraph c = createCallabel(md, existingCallables, fields);
+    CallableGraph c = createCallable(md, existingCallables, fields);
     return c;
   }
 
-  private CallableGraph createConstructor(Node node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
+  public CallableGraph createConstructor(Node node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
     ConstructorDeclaration cd = (ConstructorDeclaration) node;
-    CallableGraph c = createCallabel(cd, existingCallables, fields);
+    CallableGraph c = createCallable(cd, existingCallables, fields);
     return c;
   }
 
-  private CallableGraph createCallabel(CallableDeclaration<?> node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
+  public CallableGraph createCallable(CallableDeclaration<?> node, Map<Node, CallableGraph> existingCallables, Map<Node, DataFlowNode> fields) {
     CallableGraph c = existingCallables.containsKey(node) ? existingCallables.get(node) : new CallableGraph();
     c.setAstCallable(node);
 

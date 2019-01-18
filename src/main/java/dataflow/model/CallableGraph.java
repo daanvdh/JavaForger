@@ -35,7 +35,19 @@ public class CallableGraph {
 
   /** Contains all edges which start inside this callable and end outside this callable, examples: field-assignments, method-calls. */
   private List<DataFlowEdge> methodExits = new ArrayList<>();
+
+  /** Contains all edges that start from a returnValue from another method, and end in a Node defined within this callable */
+  private List<DataFlowEdge> methodEntries = new ArrayList<>();
+
   private CallableDeclaration<?> astCallable;
+
+  public List<DataFlowEdge> getMethodEntries() {
+    return methodEntries;
+  }
+
+  public void setMethodEntries(List<DataFlowEdge> methodEntries) {
+    this.methodEntries = methodEntries;
+  }
 
   public CallableDeclaration<?> getAstCallable() {
     return astCallable;

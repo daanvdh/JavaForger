@@ -25,6 +25,12 @@ package dataflow.model;
  */
 public class DataFlowEdge extends EdgeReceiver {
 
+  /** The node an edge leaves from is always a node. */
+  private DataFlowNode from;
+
+  /** Where the edge points to can be a node or an edge. */
+  private EdgeReceiver to;
+
   public DataFlowEdge() {
     // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
   }
@@ -33,12 +39,6 @@ public class DataFlowEdge extends EdgeReceiver {
     this.from = builder.from == null ? this.from : builder.from;
     this.to = builder.to == null ? this.to : builder.to;
   }
-
-  /** The node an edge leaves from is always a node. */
-  private DataFlowNode from;
-
-  /** Where the edge points to can be a node or an edge. */
-  private EdgeReceiver to;
 
   public DataFlowNode getFrom() {
     return from;

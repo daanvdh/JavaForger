@@ -19,7 +19,6 @@ package dataflow;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.junit.Test;
 
@@ -30,7 +29,7 @@ import org.junit.Test;
  */
 public class DataFlowGraphGeneratorTest {
 
-  DataFlowGraphGenerator sut = new DataFlowGraphGenerator();
+  private DataFlowGraphGenerator sut = new DataFlowGraphGenerator();
 
   @Test
   public void testCreateClassGraph_fields() {
@@ -45,7 +44,7 @@ public class DataFlowGraphGeneratorTest {
   public void testCreateClassGraph_getter() {
     String code = "int a=3; getA() { return a; }";
 
-    Callable c = Callable.builder().withParameter("b").withReturn("b", "a").build();
+    TestCallableGraph c = TestCallableGraph.builder().withParameter("b").withReturn("b").build();
 
     // executeAndVerify(code);
   }
@@ -54,9 +53,16 @@ public class DataFlowGraphGeneratorTest {
   public void testCreateClassGraph_setter() {
     String code = "int a=3; setA(int b) {a = b; }";
 
-    Callable c = Callable.builder().withParameter("b").withExitingEdge("b", "a").build();
+    TestCallableGraph c = TestCallableGraph.builder().withParameter("b").withExitingEdge("b", "a").build();
 
     executeAndVerify(code, c);
+  }
+
+  private void executeAndVerify(String code, TestCallableGraph c) {
+    // TODO Auto-generated method stub
+
+    sut.createMethod(node, existingCallables, fields)Callable();
+
   }
 
   private void executeAndVerify(String code, List<String> fields) {
