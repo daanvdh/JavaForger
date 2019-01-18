@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,8 +36,10 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -47,6 +50,7 @@ import initialization.VariableInitializer;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;
+import templateInput.definition.TypeDefinition;
 import templateInput.definition.VariableDefinition;
 
 /**
@@ -105,6 +109,7 @@ public class ClassContainerReader {
     Optional<String> typeImport = cu.getPackageDeclaration().map(pd -> pd.getNameAsString());
     if (typeImport.isPresent()) {
       claz.addTypeImport(typeImport.get() + "." + claz.getName());
+      constructors.forEach(c -> c.addTypeImport(typeImport.get()));
     }
 
     initializer.init(fields);
@@ -131,28 +136,26 @@ public class ClassContainerReader {
 
   private MethodDefinition parseMethod(JavaForgerConfiguration config, Node node) {
     MethodDeclaration md = (MethodDeclaration) node;
-    MethodDefinition method = parseCallable(md);
+    MethodDefinition method = parseCallable(md, config);
     method.setType(md.getTypeAsString());
+    resolveAndSetImport(md.getType(), method, config);
     return method;
   }
 
   private MethodDefinition parseConstructor(JavaForgerConfiguration config, Node node) {
     ConstructorDeclaration md = (ConstructorDeclaration) node;
-    MethodDefinition method = parseCallable(md);
+    MethodDefinition method = parseCallable(md, config);
     method.setType(md.getNameAsString());
     return method;
   }
 
-  private MethodDefinition parseCallable(CallableDeclaration<?> md) {
+  private MethodDefinition parseCallable(CallableDeclaration<?> md, JavaForgerConfiguration config) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
-    List<VariableDefinition> parameters = md.getParameters().stream()
-        .map(par -> VariableDefinition.builder().withName(par.getNameAsString()).withType(par.getTypeAsString()).build()).collect(Collectors.toList());
-
-    MethodDefinition method = MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
-        .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).withParameters(parameters).build();
-    return method;
+    return MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
+        .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1))
+        .withParameters(getParameters(md, config)).build();
   }
 
   private VariableDefinition parseField(JavaForgerConfiguration config, Node node) {
@@ -163,25 +166,39 @@ public class ClassContainerReader {
         .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
         .withAccessModifiers(accessModifiers).build();
 
-    resolveAndSetImport(fd, variable, config);
+    resolveAndSetImport(fd.getElementType(), variable, config);
     return variable;
   }
 
-  private void resolveAndSetImport(FieldDeclaration fd, VariableDefinition variable, JavaForgerConfiguration config) {
-    if (config.getSymbolSolver() != null) {
-      try {
-        ResolvedType resolve = fd.getElementType().resolve();
-        List<String> imports = getImports(resolve);
-        if (!imports.isEmpty()) {
-          variable.addTypeImports(imports);
-        }
-      } catch (@SuppressWarnings("unused") Exception e) {
-        System.err.println("FieldReader: Could not resolve import for " + fd.getElementType().asString());
-      }
+  private List<VariableDefinition> getParameters(CallableDeclaration<?> md, JavaForgerConfiguration config) {
+    LinkedHashMap<Parameter, VariableDefinition> params = new LinkedHashMap<>();
+    md.getParameters().stream().forEach(p -> params.put(p, VariableDefinition.builder().withName(p.getNameAsString()).withType(p.getTypeAsString()).build()));
+    params.entrySet().forEach(p -> resolveAndSetImport(p.getKey().getType(), p.getValue(), config));
+    List<VariableDefinition> parameters = params.values().stream().collect(Collectors.toList());
+    return parameters;
+  }
+
+  private void resolveAndSetImport(Type type, TypeDefinition variable, JavaForgerConfiguration config) {
+    List<String> imports = resolve(type, config);
+    if (!imports.isEmpty()) {
+      variable.addTypeImports(imports);
     }
   }
 
-  private List<String> getImports(ResolvedType resolve) {
+  private List<String> resolve(Type type, JavaForgerConfiguration config) {
+    List<String> imports = new ArrayList<>();
+    if (config.getSymbolSolver() != null) {
+      try {
+        ResolvedType resolve = type.resolve();
+        imports.addAll(getImportsFromResolvedType(resolve));
+      } catch (@SuppressWarnings("unused") Exception e) {
+        System.err.println("FieldReader: Could not resolve import for " + type.asString());
+      }
+    }
+    return imports;
+  }
+
+  private List<String> getImportsFromResolvedType(ResolvedType resolve) {
     List<String> imports = new ArrayList<>();
     String imp;
     if (resolve.isReferenceType()) {
@@ -191,7 +208,7 @@ public class ClassContainerReader {
       List<ResolvedType> innerResolvedTypes =
           type.getTypeParameters().stream().map(tp -> refType.typeParametersMap().getValue(tp)).collect(Collectors.toList());
       // This is a recursive call to resolve all imports of parameterized types
-      List<String> collect = innerResolvedTypes.stream().flatMap(t -> getImports(t).stream()).collect(Collectors.toList());
+      List<String> collect = innerResolvedTypes.stream().flatMap(t -> getImportsFromResolvedType(t).stream()).collect(Collectors.toList());
       imports.addAll(collect);
     } else {
       imp = resolve.describe();
