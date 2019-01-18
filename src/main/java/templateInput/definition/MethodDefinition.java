@@ -46,6 +46,7 @@ public class MethodDefinition extends TypeDefinition {
     this.annotations = builder.annotations;
     this.accessModifiers = builder.accessModifiers;
     this.parameters = builder.parameters;
+    this.typeImports.addAll(builder.typeImports);
   }
 
   public List<VariableDefinition> getParameters() {
@@ -94,6 +95,7 @@ public class MethodDefinition extends TypeDefinition {
     private Set<String> annotations = new HashSet<>();
     private Set<String> accessModifiers = new HashSet<>();
     private List<VariableDefinition> parameters = new ArrayList<>();
+    private List<String> typeImports = new ArrayList<>();
 
     private Builder() {
     }
@@ -139,6 +141,11 @@ public class MethodDefinition extends TypeDefinition {
 
     public Builder withParameters(VariableDefinition... parameters) {
       this.parameters = Arrays.asList(parameters);
+      return this;
+    }
+
+    public Builder withTypeImports(String... imports) {
+      this.typeImports.addAll(Arrays.asList(imports));
       return this;
     }
 

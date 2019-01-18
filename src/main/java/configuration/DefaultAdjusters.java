@@ -43,8 +43,7 @@ public class DefaultAdjusters {
   }
 
   public static ClassContainerAdjuster replaceFieldPrimitivesWithObjects() {
-    VariableInitializer init = new VariableInitializer();
-    return p -> changeVariable(p, var -> var.setType(init.getObjectForPrimitive(var.getType())));
+    return p -> changeVariable(p, var -> var.setType(VariableInitializer.getObjectForPrimitive(var.getType())));
   }
 
   public static ClassContainerAdjuster removeVoidMethods() {

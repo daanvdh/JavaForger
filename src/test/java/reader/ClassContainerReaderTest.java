@@ -77,7 +77,8 @@ public class ClassContainerReaderTest {
     String input = "src/test/java/inputClassesForTests/Product.java";
     List<? extends MethodDefinition> constructors = sut.read(input).getConstructors();
 
-    Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("Product").withName("Product").withColumn(3);
+    Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("Product").withName("Product").withColumn(3)
+        .withTypeImports("inputClassesForTests");
     MethodDefinition m1 = build.withLineNumber(36).withParameters(VariableDefinition.builder().withType("String").withName("name2").build(),
         VariableDefinition.builder().withType("String").withName("url").build()).build();
     MethodDefinition m2 = build.withLineNumber(42).withParameters().build();

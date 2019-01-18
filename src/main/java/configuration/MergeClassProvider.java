@@ -83,7 +83,7 @@ public class MergeClassProvider {
    * @return The path to the maven unit test.
    */
   public static MergeClassProvider forMavenUnitTestFromInput() {
-    return new MergeClassProvider(ProvideFrom.INPUT_CLASS, convertToMavenUnitTestPath());
+    return new MergeClassProvider(ProvideFrom.INPUT_CLASS, s -> PathConverter.toMavenUnitTestPath(s));
   }
 
   /**
@@ -92,7 +92,7 @@ public class MergeClassProvider {
    * @return The path to the maven unit test.
    */
   public static MergeClassProvider forMavenUnitTestFromParent() {
-    return new MergeClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, convertToMavenUnitTestPath());
+    return new MergeClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, s -> PathConverter.toMavenUnitTestPath(s));
   }
 
   /**
@@ -121,16 +121,6 @@ public class MergeClassProvider {
     if (claz.isEmpty()) {
       throw new JavaForgerException("input class path may not be empty");
     }
-  }
-
-  private static Function<String, String> convertToMavenUnitTestPath() {
-    Function<String, String> function = (s) -> {
-      String testPath = s.replace("\\main\\", "\\test\\");
-      s.replace("/main/", "/test/");
-      testPath = testPath.replace(".java", "Test.java");
-      return testPath;
-    };
-    return function;
   }
 
 }

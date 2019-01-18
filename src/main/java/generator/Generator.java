@@ -30,6 +30,7 @@ import com.github.javaparser.JavaParser;
 import configuration.DefaultAdjusters;
 import configuration.JavaForgerConfiguration;
 import configuration.MergeClassProvider;
+import configuration.PathConverter;
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
@@ -186,27 +187,17 @@ public class Generator {
     }
     if (mergeClassPath != null) {
       if (!inputParameters.containsKey(TemplateInputDefaults.PACKAGE.getName())) {
-        String pack = convertMavenPathToPackage(mergeClassPath);
+        String pack = PathConverter.toPackage(mergeClassPath);
         inputParameters.put(TemplateInputDefaults.PACKAGE.getName(), pack);
       }
       if (!inputParameters.containsKey(TemplateInputDefaults.MERGE_CLASS_NAME.getName())) {
-        String a = mergeClassPath.replace("\\", "*").replace("/", "*");
-        String name = a.substring(a.lastIndexOf("*") + 1, a.lastIndexOf("."));
+        String a = mergeClassPath.replace("\\", "/");
+        String name = a.substring(a.lastIndexOf("/") + 1, a.lastIndexOf("."));
         inputParameters.put(TemplateInputDefaults.MERGE_CLASS_NAME.getName(), name);
       }
     }
 
     return inputParameters;
-  }
-
-  private String convertMavenPathToPackage(String mergeClassPath) {
-    String withPoints = mergeClassPath.replace("\\", ".").replace("/", ".");
-    String folder = ".src.main.java.";
-    int i = withPoints.indexOf(folder);
-    String packageWithClass = withPoints.substring(i + folder.length()).replace("\\", ".").replace(".java", "");
-    int classIndex = packageWithClass.lastIndexOf(".");
-    String pack = packageWithClass.substring(0, classIndex);
-    return pack;
   }
 
   public static void main(String[] args) throws IOException, TemplateException {
