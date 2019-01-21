@@ -59,8 +59,12 @@ public class VariableInitializer {
   }
 
   public static String getObjectForPrimitive(String type) {
+    return isPrimitive(type) ? primitiveToObject.get(type) : type;
+  }
+
+  public static boolean isPrimitive(String type) {
     initializePrimitiveToObject();
-    return primitiveToObject.containsKey(type) ? primitiveToObject.get(type) : type;
+    return primitiveToObject.containsKey(type);
   }
 
   public void init(VariableDefinition var) {

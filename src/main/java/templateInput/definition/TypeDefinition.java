@@ -92,6 +92,10 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     return VariableInitializer.getObjectForPrimitive(type);
   }
 
+  public boolean isPrimitive() {
+    return VariableInitializer.isPrimitive(type);
+  }
+
   public StringConverter getType_() {
     return new StringConverter(type);
   }
