@@ -57,11 +57,19 @@ private <T> void verifyHashCode_Different(BiFunction<CLassWithEverything.Builder
 
 private CLassWithEverything.Builder createAndFillBuilder() {
     return CLassWithEverything.builder()
-      .prod(Collections.singleton(Product.builder().build()))
-      .i(1)
-      .c(CLassWithEverything.builder().build())
-      .s("a")
-      ;
+    .prod(PROD)
+    .i(I)
+    .c(C)
+    .s(S)
+    ;
   }
+
+private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
+
+private static final int I = 1;
+
+private static final CLassWithEverything C = CLassWithEverything.builder().build();
+
+private static final String S = "a";
 
 }
