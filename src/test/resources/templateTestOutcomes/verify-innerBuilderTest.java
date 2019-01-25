@@ -32,29 +32,33 @@ import inputClassesForTests.CLassWithEverything;
 public class CLassWithEverythingTest {
 
 @Test 
-public void testCLassWithEverything_minimum() {
-CLassWithEverything cLassWithEverything= CLassWithEverything.builder().build();
+  public void testCLassWithEverything_minimum() {
+    CLassWithEverything cLassWithEverything= CLassWithEverything.builder().build();
 
-Assert.assertTrue("Unexpected prod", cLassWithEverything.getProd().isEmpty());
-Assert.assertEquals("Unexpected i", 0, cLassWithEverything.getI());
-Assert.assertNull("Unexpected c", cLassWithEverything.getC());
-Assert.assertNull("Unexpected s", cLassWithEverything.getS());
-}
+    Assert.assertTrue("Unexpected prod", cLassWithEverything.getProd().isEmpty());
+    Assert.assertEquals("Unexpected i", 0, cLassWithEverything.getI());
+    Assert.assertNull("Unexpected c", cLassWithEverything.getC());
+    Assert.assertNull("Unexpected s", cLassWithEverything.getS());
+  }
 
 @Test 
-public void testCLassWithEverything_maximum() {
-CLassWithEverything cLassWithEverything= CLassWithEverything.builder()
-.prod(PROD)
-.i(I)
-.c(C)
-.s(S)
-.build();
+  public void testCLassWithEverything_maximum() {
+    CLassWithEverything cLassWithEverything= createAndFillBuilder().build(); 
 
-Assert.assertEquals("Unexpected prod", PROD, cLassWithEverything.getProd());
-Assert.assertEquals("Unexpected i", I, cLassWithEverything.getI());
-Assert.assertEquals("Unexpected c", C, cLassWithEverything.getC());
-Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
+    Assert.assertEquals("Unexpected prod", PROD, cLassWithEverything.getProd());
+    Assert.assertEquals("Unexpected i", I, cLassWithEverything.getI());
+    Assert.assertEquals("Unexpected c", C, cLassWithEverything.getC());
+    Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
 }
+
+private CLassWithEverything.Builder createAndFillBuilder() {
+    return CLassWithEverything.builder()
+    .prod(PROD)
+    .i(I)
+    .c(C)
+    .s(S)
+    ;
+  }
 
 private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
 

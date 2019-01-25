@@ -4,6 +4,8 @@ import org.junit.Test;
 
 <#include "/test/common/imports.javat">
 
+<#include "/test/common/staticFieldInit.javat">
+
   @Test
   public void testHashCode_Same() {
     ${class.name}.Builder builder = createAndFillBuilder();
@@ -26,10 +28,4 @@ import org.junit.Test;
     Assert.assertNotEquals("Expected hash code to be different", a.hashCode(), b.hashCode());
   }
 
-  private ${class.name}.Builder createAndFillBuilder() {
-    return ${class.name}.builder()
-<#list fields as field>
-      .${field.name}(${field.init1})
-</#list>
-      ;
-  }
+<#include "/test/common/createAndFillBuilderWithStaticFields.javat">

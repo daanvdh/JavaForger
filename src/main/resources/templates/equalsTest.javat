@@ -4,6 +4,8 @@ import org.junit.Test;
 
 <#include "/test/common/imports.javat">
 
+<#include "/test/common/staticFieldInit.javat">
+
   @Test
   public void testEquals_Same() {
     ${class.name}.Builder builder = createAndFillBuilder();
@@ -15,7 +17,7 @@ import org.junit.Test;
   @Test
   public void testEquals_Different() {
 <#list fields as field>
-    verifyEqualsDifferent(${class.name}.Builder::${field.name}, ${field.init1});
+    verifyEqualsDifferent(${class.name}.Builder::${field.name}, ${field.init2});
 </#list>
   }
 
@@ -26,9 +28,4 @@ import org.junit.Test;
     Assert.assertFalse("Expected a and b not to be equal", a.equals(b));
   }
 
-  private ${class.name}.Builder createAndFillBuilder() {
-    return ${class.name}.builder()
-<#list fields as field>
-      .${field.name}(${field.init1})
-</#list>;
-  }
+<#include "/test/common/createAndFillBuilderWithStaticFields.javat">

@@ -43,9 +43,9 @@ public class CLassWithEverythingTest {
 @Test
   public void testEquals_Different() {
     verifyEqualsDifferent(CLassWithEverything.Builder::prod, Collections.singleton(Product.builder().build()));
-    verifyEqualsDifferent(CLassWithEverything.Builder::i, 1);
+    verifyEqualsDifferent(CLassWithEverything.Builder::i, 2);
     verifyEqualsDifferent(CLassWithEverything.Builder::c, CLassWithEverything.builder().build());
-    verifyEqualsDifferent(CLassWithEverything.Builder::s, "a");
+    verifyEqualsDifferent(CLassWithEverything.Builder::s, "b");
   }
 
 private <T> void verifyEqualsDifferent(BiFunction<CLassWithEverything.Builder, T, CLassWithEverything.Builder> withMapper, T argument) {
@@ -57,11 +57,19 @@ private <T> void verifyEqualsDifferent(BiFunction<CLassWithEverything.Builder, T
 
 private CLassWithEverything.Builder createAndFillBuilder() {
     return CLassWithEverything.builder()
-      .prod(Collections.singleton(Product.builder().build()))
-      .i(1)
-      .c(CLassWithEverything.builder().build())
-      .s("a")
-;
+    .prod(PROD)
+    .i(I)
+    .c(C)
+    .s(S)
+    ;
   }
+
+private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
+
+private static final int I = 1;
+
+private static final CLassWithEverything C = CLassWithEverything.builder().build();
+
+private static final String S = "a";
 
 }

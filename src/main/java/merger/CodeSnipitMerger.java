@@ -17,6 +17,7 @@
  */
 package merger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -94,6 +95,9 @@ public class CodeSnipitMerger {
     }
     if (mergeClassPath.isEmpty()) {
       throw new JavaForgerException("merge class path may not be empty");
+    }
+    if (!new File(mergeClassPath).exists()) {
+      throw new JavaForgerException("merge class path does not point to existing file: " + mergeClassPath);
     }
   }
 
