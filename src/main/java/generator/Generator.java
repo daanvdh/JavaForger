@@ -31,6 +31,7 @@ import configuration.DefaultAdjusters;
 import configuration.JavaForgerConfiguration;
 import configuration.MergeClassProvider;
 import configuration.PathConverter;
+import configuration.StaticJavaForgerConfiguration;
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
@@ -48,8 +49,8 @@ import templateInput.TemplateInputParameters;
  */
 public class Generator {
 
-  private ClassContainerReader classReader = new ClassContainerReader();
-  private CodeSnipitMerger merger = new CodeSnipitMerger();
+  private ClassContainerReader reader = StaticJavaForgerConfiguration.getReader();
+  private CodeSnipitMerger merger = StaticJavaForgerConfiguration.getMerger();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
@@ -181,7 +182,7 @@ public class Generator {
       if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) || !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
-        ClassContainer claz = classReader.read(inputClass, config);
+        ClassContainer claz = reader.read(inputClass, config);
         config.getAdjuster().accept(claz);
         if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
           inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
