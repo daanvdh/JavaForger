@@ -70,6 +70,13 @@ public class JavaForgerConfiguration {
   /** If true the merge class provided by the {@link MergeClassProvider} will be created if it does not exists. */
   private boolean createFileIfNotExists;
 
+  /**
+   * If the merge class provided by the {@link MergeClassProvider} does not exist and createFileIfNotExists is true, the new file will be filled with the
+   * processed template from the configIfFileDoesNotExist {@link JavaForgerConfiguration}. If this is null, the new class will be filled with the processed
+   * template only.
+   */
+  private JavaForgerConfiguration configIfFileDoesNotExist;
+
   public JavaForgerConfiguration() {
     this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
   }
@@ -115,8 +122,16 @@ public class JavaForgerConfiguration {
     this.childConfigs.addAll(configs);
   }
 
+  public void addChildConfig(JavaForgerConfiguration config) {
+    this.childConfigs.add(config);
+  }
+
   public Template getTemplate() throws TemplateNotFoundException, MalformedTemplateNameException, ParseException, IOException {
     return freeMarkerConfiguration.getTemplate(template);
+  }
+
+  public String getTemplateName() {
+    return template;
   }
 
   public void setTemplate(String template) {
@@ -177,6 +192,15 @@ public class JavaForgerConfiguration {
 
   public void setCreateFileIfNotExists(boolean createFileIfNotExists) {
     this.createFileIfNotExists = createFileIfNotExists;
+  }
+
+  public JavaForgerConfiguration getConfigIfFileDoesNotExist() {
+    return configIfFileDoesNotExist;
+  }
+
+  public void setConfigIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
+    setCreateFileIfNotExists(true);
+    this.configIfFileDoesNotExist = configIfFileDoesNotExist;
   }
 
   /**

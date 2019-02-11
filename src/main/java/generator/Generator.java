@@ -79,7 +79,7 @@ public class Generator {
 
     TemplateInputParameters inputParameters = getInputParameters(config, inputClass, mergeClassPath);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
-    merge(config, codeSnipit, mergeClassPath);
+    merge(config, codeSnipit, mergeClassPath, inputParameters);
     executeChildren(config, inputClass, codeSnipit, mergeClassPath);
     return codeSnipit;
   }
@@ -88,10 +88,22 @@ public class Generator {
     JavaParser.getStaticConfiguration().setSymbolResolver(config.getSymbolSolver());
   }
 
-  private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+  private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, TemplateInputParameters inputParameters)
+      throws IOException, TemplateException {
     if (mergeClassPath != null && config.isMerge()) {
-      if (config.isCreateFileIfNotExists()) {
-        createFileAndFillFile(mergeClassPath, codeSnipit);
+      boolean exists = new File(mergeClassPath).exists();
+      if (!exists) {
+        if (!config.isCreateFileIfNotExists()) {
+          throw new JavaForgerException("Merge file '" + mergeClassPath + "' does not exist and JavaForgerConfiguration for template "
+              + config.getTemplateName() + " is not setup to create it. ");
+        }
+        if (config.getConfigIfFileDoesNotExist() == null) {
+          createAndFillFile(mergeClassPath, codeSnipit);
+        } else {
+          CodeSnipit codeSnipitInit = processTemplate(config.getConfigIfFileDoesNotExist(), inputParameters);
+          createAndFillFile(mergeClassPath, codeSnipitInit);
+          executeMerge(config, codeSnipit, mergeClassPath);
+        }
       } else {
         executeMerge(config, codeSnipit, mergeClassPath);
       }
@@ -130,7 +142,7 @@ public class Generator {
     return mergeClassPath;
   }
 
-  private void createFileAndFillFile(String mergeClassPath, CodeSnipit codeSnipit) throws IOException {
+  private void createAndFillFile(String mergeClassPath, CodeSnipit codeSnipit) throws IOException {
     File f = new File(mergeClassPath);
     if (!f.exists()) {
       f.getParentFile().mkdirs();
