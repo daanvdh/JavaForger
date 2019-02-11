@@ -50,8 +50,11 @@ public class JavaForgerConfiguration {
   /** The input parameters to be used for the template. This is aditional to the parameters that will be added from the input class. */
   private TemplateInputParameters inputParameters;
 
-  /** The {@link MergeClassProvider} to provide the class to merge the generated code with. */
-  private MergeClassProvider mergeClassProvider;
+  /** The {@link ClassProvider} to provide the input class for the template. */
+  private ClassProvider inputClassProvider = new ClassProvider();
+
+  /** The {@link ClassProvider} to provide the class to merge the generated code with. */
+  private ClassProvider mergeClassProvider;
 
   /** Determines if the generated code should be merged with the class given by the mergeClassProvider. */
   private boolean merge = true;
@@ -67,13 +70,12 @@ public class JavaForgerConfiguration {
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
   private JavaSymbolSolver symbolSolver;
 
-  /** If true the merge class provided by the {@link MergeClassProvider} will be created if it does not exists. */
+  /** If true the merge class provided by the {@link ClassProvider} will be created if it does not exists. */
   private boolean createFileIfNotExists;
 
   /**
-   * If the merge class provided by the {@link MergeClassProvider} does not exist and createFileIfNotExists is true, the new file will be filled with the
-   * processed template from the configIfFileDoesNotExist {@link JavaForgerConfiguration}. If this is null, the new class will be filled with the processed
-   * template only.
+   * If the merge class provided by the {@link ClassProvider} does not exist and createFileIfNotExists is true, the new file will be filled with the processed
+   * template from the configIfFileDoesNotExist {@link JavaForgerConfiguration}. If this is null, the new class will be filled with the processed template only.
    */
   private JavaForgerConfiguration configIfFileDoesNotExist;
 
@@ -97,20 +99,28 @@ public class JavaForgerConfiguration {
     return merge;
   }
 
+  public ClassProvider getInputClassProvider() {
+    return inputClassProvider;
+  }
+
+  public void setInputClassProvider(ClassProvider inputClassProvider) {
+    this.inputClassProvider = inputClassProvider;
+  }
+
   public void setMerge(boolean merge) {
     this.merge = merge;
   }
 
-  public MergeClassProvider getMergeClassProvider() {
+  public ClassProvider getMergeClassProvider() {
     return mergeClassProvider;
   }
 
-  public void setMergeClassProvider(MergeClassProvider mergeClassProvider) {
+  public void setMergeClassProvider(ClassProvider mergeClassProvider) {
     this.mergeClassProvider = mergeClassProvider;
   }
 
   public void setMergeClass(String mergeClass) {
-    this.mergeClassProvider = mergeClass == null ? null : new MergeClassProvider(mergeClass);
+    this.mergeClassProvider = mergeClass == null ? null : new ClassProvider(mergeClass);
   }
 
   public List<JavaForgerConfiguration> getChildConfigs() {
@@ -228,7 +238,7 @@ public class JavaForgerConfiguration {
   public static final class Builder {
     private String template;
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
-    private MergeClassProvider mergeClassProvider;
+    private ClassProvider mergeClassProvider;
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
@@ -258,7 +268,7 @@ public class JavaForgerConfiguration {
     }
 
     public Builder withMergeClass(String mergeClass) {
-      this.mergeClassProvider = new MergeClassProvider(mergeClass);
+      this.mergeClassProvider = new ClassProvider(mergeClass);
       return this;
     }
 
@@ -283,7 +293,7 @@ public class JavaForgerConfiguration {
       return this;
     }
 
-    public Builder withMergeClassProvider(MergeClassProvider mergeClassProvider) {
+    public Builder withMergeClassProvider(ClassProvider mergeClassProvider) {
       this.mergeClassProvider = mergeClassProvider;
       return this;
     }

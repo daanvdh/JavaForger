@@ -27,9 +27,9 @@ import java.util.List;
 
 import com.github.javaparser.JavaParser;
 
+import configuration.ClassProvider;
 import configuration.DefaultAdjusters;
 import configuration.JavaForgerConfiguration;
-import configuration.MergeClassProvider;
 import configuration.PathConverter;
 import configuration.StaticJavaForgerConfiguration;
 import freemarker.core.ParseException;
@@ -124,7 +124,7 @@ public class Generator {
   }
 
   private String getMergeClass(String inputClass, String parentMergeClass, JavaForgerConfiguration config) {
-    MergeClassProvider provider = config.getMergeClassProvider();
+    ClassProvider provider = config.getMergeClassProvider();
     String mergeClassPath = null;
     if (provider != null) {
       switch (provider.provideFrom()) {
@@ -182,7 +182,10 @@ public class Generator {
       if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) || !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
-        ClassContainer claz = reader.read(inputClass, config);
+
+        String newInputClass = getInputClass(config, inputClass, mergeClassPath);
+
+        ClassContainer claz = reader.read(newInputClass, config);
         config.getAdjuster().accept(claz);
         if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
           inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
@@ -211,6 +214,22 @@ public class Generator {
     }
 
     return inputParameters;
+  }
+
+  private String getInputClass(JavaForgerConfiguration config, String inputClass, String mergeClassPath) {
+    String input = null;
+    ClassProvider provider = config.getInputClassProvider();
+    switch (provider.provideFrom()) {
+    case PARENT_CONFIG_MERGE_CLASS:
+      input = provider.provide(mergeClassPath);
+      break;
+    case INPUT_CLASS:
+    case SELF:
+    default:
+      input = provider.provide(inputClass);
+      break;
+    }
+    return input;
   }
 
   public static void main(String[] args) throws IOException, TemplateException {

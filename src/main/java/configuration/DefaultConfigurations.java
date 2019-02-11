@@ -63,12 +63,12 @@ public class DefaultConfigurations {
   }
 
   protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
-    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(MergeClassProvider.forMavenUnitTestFromInput()).build())
+    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build())
         .build();
   }
 
   protected static Builder defaultBuilder(String template) {
-    return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new MergeClassProvider())
+    return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new ClassProvider())
         .withParameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
   }
 

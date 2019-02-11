@@ -21,20 +21,20 @@ import java.util.function.Function;
 
 import generator.Generator;
 import generator.JavaForgerException;
-import merger.CodeSnipitMerger;
 
 /**
- * This class provides a class name to merge with for the {@link CodeSnipitMerger}.
+ * A functional interface to provide a path to a class given an input string. The origin of the input string can be defined by the {@link ProvideFrom} enum. The
+ * {@link Generator} uses this to determine merge classes and input classes.
  *
  * @author Daan
  */
-public class MergeClassProvider {
+public class ClassProvider {
 
   /**
-   * Determines what the {@link Generator} should provide as input to the {@link MergeClassProvider} to determine the path to the merge class.
+   * Determines what the {@link Generator} should provide as input to the {@link ClassProvider} to determine the path to the merge class.
    */
   public enum ProvideFrom {
-    /** Indicates the provider does not require any input because the merge class is already defined. */
+    /** Indicates the provider does not require any input because the class is already defined. */
     SELF,
     /** The merge class of the parent configuration is required as input. */
     PARENT_CONFIG_MERGE_CLASS,
@@ -46,9 +46,9 @@ public class MergeClassProvider {
   private final Function<String, String> provide;
 
   /**
-   * Provider to merge with the same class as the input class.
+   * Provider to return the same class as the input class.
    */
-  public MergeClassProvider() {
+  public ClassProvider() {
     this.provideFrom = ProvideFrom.INPUT_CLASS;
     this.provide = s -> {
       validate(s);
@@ -57,22 +57,22 @@ public class MergeClassProvider {
   }
 
   /**
-   * Provider to merge with the class defined by the input path.
+   * Provider to return the class defined by the input path.
    *
    * @param path The path to the class to merge with.
    */
-  public MergeClassProvider(String path) {
+  public ClassProvider(String path) {
     this.provideFrom = ProvideFrom.SELF;
     this.provide = s -> path;
   }
 
   /**
-   * Provider to create a custom merge class after receiving a path from the given {@link ProvideFrom}.
+   * Provider to create a custom path to a class after receiving a path from the given {@link ProvideFrom}.
    *
    * @param provideFrom The {@link ProvideFrom} defining where the input path should be taken from.
-   * @param provide The provider for determining the merge path after receiving the input path.
+   * @param provide The provider for determining the output path after receiving the input path.
    */
-  public MergeClassProvider(ProvideFrom provideFrom, Function<String, String> provide) {
+  public ClassProvider(ProvideFrom provideFrom, Function<String, String> provide) {
     this.provideFrom = provideFrom;
     this.provide = provide;
   }
@@ -82,8 +82,8 @@ public class MergeClassProvider {
    *
    * @return The path to the maven unit test.
    */
-  public static MergeClassProvider forMavenUnitTestFromInput() {
-    return new MergeClassProvider(ProvideFrom.INPUT_CLASS, s -> PathConverter.toMavenUnitTestPath(s));
+  public static ClassProvider forMavenUnitTestFromInput() {
+    return new ClassProvider(ProvideFrom.INPUT_CLASS, s -> PathConverter.toMavenUnitTestPath(s));
   }
 
   /**
@@ -91,22 +91,22 @@ public class MergeClassProvider {
    *
    * @return The path to the maven unit test.
    */
-  public static MergeClassProvider forMavenUnitTestFromParent() {
-    return new MergeClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, s -> PathConverter.toMavenUnitTestPath(s));
+  public static ClassProvider forMavenUnitTestFromParent() {
+    return new ClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, s -> PathConverter.toMavenUnitTestPath(s));
   }
 
   /**
-   * Calculates the path to the class to merge with given the input path.
+   * Calculates the path to the class given the input path.
    *
    * @param path The input path.
-   * @return Path to the class to merge with.
+   * @return Path to the class defined by this provider.
    */
   public String provide(String path) {
     return provide.apply(path);
   }
 
   /**
-   * Defines what the provider requires as input to provide the class to merge with.
+   * Defines what the provider requires as input to provide the output class.
    *
    * @return {@link ProvideFrom}
    */
