@@ -96,6 +96,15 @@ public class ClassProvider {
   }
 
   /**
+   * Provider to provide the class to which the parent {@link JavaForgerConfiguration} was merged.
+   *
+   * @return the parent config merge class
+   */
+  public static ClassProvider sameAsParentMergeClass() {
+    return new ClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, s -> s);
+  }
+
+  /**
    * Calculates the path to the class given the input path.
    *
    * @param path The input path.

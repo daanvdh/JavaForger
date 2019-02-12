@@ -88,11 +88,13 @@ public class JavaForgerConfiguration {
     this.template = builder.template;
     this.inputParameters = new TemplateInputParameters(builder.inputParameters);
     this.mergeClassProvider = builder.mergeClassProvider;
+    this.inputClassProvider = (builder.inputClassProvider == null) ? this.inputClassProvider : builder.inputClassProvider;
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
     this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
     this.symbolSolver = builder.symbolSolver;
     this.createFileIfNotExists = builder.createFileIfNotExists;
+    this.configIfFileDoesNotExist = builder.configIfFileDoesNotExist;
   }
 
   public boolean isMerge() {
@@ -239,11 +241,13 @@ public class JavaForgerConfiguration {
     private String template;
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
     private ClassProvider mergeClassProvider;
+    private ClassProvider inputClassProvider;
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
     private Configuration freeMarkerConfiguration = null;
     private JavaSymbolSolver symbolSolver;
     private boolean createFileIfNotExists;
+    private JavaForgerConfiguration configIfFileDoesNotExist;
 
     private Builder() {
     }
@@ -305,6 +309,17 @@ public class JavaForgerConfiguration {
 
     public Builder withCreateFileIfNotExists(boolean createFileIfNotExists) {
       this.createFileIfNotExists = createFileIfNotExists;
+      return this;
+    }
+
+    public Builder withInputClassProvider(ClassProvider classProvider) {
+      this.inputClassProvider = classProvider;
+      return this;
+    }
+
+    public Builder withConfigIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
+      this.createFileIfNotExists = true;
+      this.configIfFileDoesNotExist = configIfFileDoesNotExist;
       return this;
     }
 

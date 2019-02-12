@@ -181,7 +181,7 @@ public class ClassContainerReader {
   private void resolveAndSetImport(Type type, TypeDefinition variable, JavaForgerConfiguration config) {
     List<String> imports = resolve(type, config);
     if (!imports.isEmpty()) {
-      variable.addTypeImports(imports);
+      imports.stream().filter(s -> !s.contains("?")).forEach(s -> variable.addTypeImport(s));
     }
   }
 
