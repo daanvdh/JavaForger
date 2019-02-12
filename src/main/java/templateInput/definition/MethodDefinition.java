@@ -19,9 +19,7 @@ package templateInput.definition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -33,20 +31,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * @author Daan
  */
-public class MethodDefinition extends TypeDefinition {
+public class MethodDefinition extends InitializedTypeDefinition {
 
   // TODO should probably be something else then variableDefinition.
   private List<VariableDefinition> parameters;
 
   private MethodDefinition(Builder builder) {
-    this.name = builder.name;
-    this.type = builder.type;
-    this.lineNumber = builder.lineNumber;
-    this.column = builder.column;
-    this.annotations = builder.annotations;
-    this.accessModifiers = builder.accessModifiers;
+    super(builder);
     this.parameters = builder.parameters;
-    this.typeImports.addAll(builder.typeImports);
   }
 
   public List<VariableDefinition> getParameters() {
@@ -87,47 +79,10 @@ public class MethodDefinition extends TypeDefinition {
   /**
    * Builder to build {@link VariableDefinition}.
    */
-  public static final class Builder {
-    private String name;
-    private String type;
-    private int lineNumber;
-    private int column;
-    private Set<String> annotations = new HashSet<>();
-    private Set<String> accessModifiers = new HashSet<>();
+  public static final class Builder extends InitializedTypeDefinition.Builder<MethodDefinition.Builder> {
     private List<VariableDefinition> parameters = new ArrayList<>();
-    private List<String> typeImports = new ArrayList<>();
 
     private Builder() {
-    }
-
-    public Builder withName(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder withType(String type) {
-      this.type = type;
-      return this;
-    }
-
-    public Builder withLineNumber(int lineNumber) {
-      this.lineNumber = lineNumber;
-      return this;
-    }
-
-    public Builder withColumn(int column) {
-      this.column = column;
-      return this;
-    }
-
-    public Builder withAnnotations(Set<String> annotations) {
-      this.annotations = annotations;
-      return this;
-    }
-
-    public Builder withAccessModifiers(Set<String> accessModifiers) {
-      this.accessModifiers = accessModifiers;
-      return this;
     }
 
     public MethodDefinition build() {
@@ -141,11 +96,6 @@ public class MethodDefinition extends TypeDefinition {
 
     public Builder withParameters(VariableDefinition... parameters) {
       this.parameters = Arrays.asList(parameters);
-      return this;
-    }
-
-    public Builder withTypeImports(String... imports) {
-      this.typeImports.addAll(Arrays.asList(imports));
       return this;
     }
 

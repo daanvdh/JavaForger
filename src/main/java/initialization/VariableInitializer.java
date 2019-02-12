@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import templateInput.definition.InitializedTypeDefinition;
 import templateInput.definition.VariableDefinition;
 
 /**
@@ -54,10 +55,6 @@ public class VariableInitializer {
     initializePrimitiveToObject();
   }
 
-  public void init(List<VariableDefinition> fields) {
-    fields.stream().forEach(f -> init(f));
-  }
-
   public static String getObjectForPrimitive(String type) {
     return isPrimitive(type) ? primitiveToObject.get(type) : type;
   }
@@ -67,7 +64,7 @@ public class VariableInitializer {
     return primitiveToObject.containsKey(type);
   }
 
-  public void init(VariableDefinition var) {
+  public void init(InitializedTypeDefinition var) {
     if (this.defaultValue1.containsKey(var.getType())) {
       setDefaultInit1(var);
       setDefaultInit2(var);
@@ -85,7 +82,7 @@ public class VariableInitializer {
     var.setCollection(collections.contains(var.getTypeWithoutParameters()));
   }
 
-  private void setNoInit(VariableDefinition var) {
+  private void setNoInit(InitializedTypeDefinition var) {
     if (this.testNoInit.containsKey(var.getType())) {
       InitValue value = this.testNoInit.get(var.getType());
       var.setNoInit(value.getValue());
@@ -95,7 +92,7 @@ public class VariableInitializer {
     }
   }
 
-  private void setDefaultInit1(VariableDefinition var) {
+  private void setDefaultInit1(InitializedTypeDefinition var) {
     if (defaultValue1.containsKey(var.getType())) {
       InitValue value = defaultValue1.get(var.getType());
       var.setInit1(value.getValue());
@@ -103,7 +100,7 @@ public class VariableInitializer {
     }
   }
 
-  private void setDefaultInit2(VariableDefinition var) {
+  private void setDefaultInit2(InitializedTypeDefinition var) {
     if (defaultValue2.containsKey(var.getType())) {
       InitValue value = defaultValue2.get(var.getType());
       var.setInit2(value.getValue());
@@ -111,7 +108,7 @@ public class VariableInitializer {
     }
   }
 
-  private void initParameterized(VariableDefinition var) {
+  private void initParameterized(InitializedTypeDefinition var) {
     String mainType = var.getTypeWithoutParameters();
     StringBuilder sb1 = new StringBuilder();
     StringBuilder sb2 = new StringBuilder();
@@ -139,7 +136,7 @@ public class VariableInitializer {
     var.setNoInit(getNoInitFor(mainType));
   }
 
-  private List<VariableDefinition> getSubTypes(VariableDefinition var) {
+  private List<VariableDefinition> getSubTypes(InitializedTypeDefinition var) {
     int indexOf = var.getType().indexOf("<");
     String subString = var.getType().substring(indexOf + 1, var.getType().length() - 1);
     List<String> subVariableTypes = splitSubTypes(subString);

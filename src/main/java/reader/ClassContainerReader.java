@@ -112,13 +112,23 @@ public class ClassContainerReader {
       constructors.forEach(c -> c.addTypeImport(typeImport.get()));
     }
 
-    initializer.init(fields);
-    methods.forEach(m -> initializer.init(m.getParameters()));
-    constructors.forEach(c -> initializer.init(c.getParameters()));
+    initVariables(fields);
+    initMethods(methods);
+    initMethods(constructors);
+
     claz.setFields(fields);
     claz.setMethods(methods);
     claz.setConstructors(constructors);
     return claz;
+  }
+
+  private void initMethods(List<MethodDefinition> methods) {
+    methods.stream().forEach(initializer::init);
+    methods.forEach(m -> initVariables(m.getParameters()));
+  }
+
+  private void initVariables(List<VariableDefinition> fields) {
+    fields.stream().forEach(initializer::init);
   }
 
   private ClassContainer parseClass(JavaForgerConfiguration config, TypeDeclaration<?> type) {
