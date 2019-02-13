@@ -25,6 +25,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import templateInput.StringConverter;
+
 /**
  * Describes a class. This includes attributes defined ON the class (className, implemented interfaces, annotations ...). It excludes attributes defined INSIDE
  * the class (fields, methods ...).
@@ -108,7 +110,7 @@ public class ClassDefinition extends TypeDefinition {
    * Builder to build {@link VariableDefinition}.
    */
   public static final class Builder {
-    private String name;
+    private StringConverter name;
     private String type;
     private int lineNumber;
     private int column;
@@ -132,7 +134,7 @@ public class ClassDefinition extends TypeDefinition {
     }
 
     public Builder withName(String name) {
-      this.name = name;
+      this.name = new StringConverter(name);
       return this;
     }
 

@@ -52,7 +52,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString())
-        .append("parameters", "[" + parameters.stream().map(VariableDefinition::getName).collect(Collectors.joining(",")) + "]").build();
+        .append("parameters", "[" + parameters.stream().map(VariableDefinition::getNameAsString).collect(Collectors.joining(",")) + "]").build();
   }
 
   @Override

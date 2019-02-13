@@ -1,7 +1,7 @@
   private ${class.name}.Builder createAndFillBuilder() {
     return ${class.name}.builder()
 <#list fields as field>
-    .${field.name}(${field.name_.snakeCase})
+    .${field.name}(${field.name.snakeCase})
 </#list>
     ;
   }

@@ -1,6 +1,6 @@
 <#list fields as field>
   /**
-   * Gets the ${field.name_.lowerSpace} of the {@link ${class.name}}.
+   * Gets the ${field.name.lowerSpace} of the {@link ${class.name}}.
    *
    * @return {@link ${field.type}} 
    */
@@ -9,7 +9,7 @@
   }
 
   /**
-   * Sets the ${field.name_.lowerSpace} of the {@link ${class.name}}.
+   * Sets the ${field.name.lowerSpace} of the {@link ${class.name}}.
    *
    * @param ${field.name} The input {@link ${field.type}}. 
    */

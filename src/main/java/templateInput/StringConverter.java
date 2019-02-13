@@ -18,9 +18,11 @@
 package templateInput;
 
 import templateInput.definition.TypeDefinition;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
- * Class for frequently used string conversions of the name of {@link TypeDefinition}, like uppercasing the first char, or creating a getter.
+ * Class for template input, contains frequently used string conversions of the name of {@link TypeDefinition}, like uppercasing the first char, or snake casing
+ * the whole string.
  *
  * @author Daan
  */
@@ -63,5 +65,24 @@ public class StringConverter {
     String replacement = " $1";
     return string.replaceAll(regex, replacement).toLowerCase();
   }
+
+  @Override
+  public String toString() {
+    return string;
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    boolean equals = false;
+    if (this == obj) {
+      equals = true;
+    } else if (obj != null && getClass() == obj.getClass()) {
+      StringConverter other = (StringConverter) obj;
+      equals = new EqualsBuilder()
+        .append(string, other.string)
+        .isEquals();
+      }
+      return equals;
+    }
 
 }

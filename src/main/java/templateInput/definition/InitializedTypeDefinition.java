@@ -23,6 +23,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import templateInput.StringConverter;
+
 /**
  * Contains fields required to initialize a type inside a template.
  *
@@ -116,11 +118,11 @@ public class InitializedTypeDefinition extends TypeDefinition {
 
   public String getGetter() {
     String prefix = this.type.equals("boolean") ? "is" : "get";
-    return prefix + getName_().getUpperFirst();
+    return prefix + getName().getUpperFirst();
   }
 
   public String getSetter() {
-    return "set" + getName_().getUpperFirst();
+    return "set" + getName().getUpperFirst();
   }
 
   public String getTypeWithoutParameters() {
@@ -153,7 +155,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
    */
   @SuppressWarnings("unchecked")
   public static class Builder<T extends Builder<?>> {
-    private String name;
+    private StringConverter name;
     private String type;
     private int lineNumber;
     private int column;
@@ -168,7 +170,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
     }
 
     public T withName(String name) {
-      this.name = name;
+      this.name = new StringConverter(name);
       return (T) this;
     }
 

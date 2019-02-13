@@ -7,30 +7,30 @@ import org.junit.Test;
 
   @Test 
   public void test${class.name}_minimum() {
-    ${class.name} ${class.name_.lowerFirst}= ${class.name}.builder().build();
+    ${class.name} ${class.name.lowerFirst}= ${class.name}.builder().build();
 
 <#list fields as field>
 <#if field.noInit == "null">
-    Assert.assertNull("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}());
+    Assert.assertNull("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());
 <#elseif field.type == "boolean">
-    Assert.assertFalse("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}());
+    Assert.assertFalse("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());
 <#elseif field.collection>
-    Assert.assertTrue("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}().isEmpty());
+    Assert.assertTrue("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}().isEmpty());
 <#else>
-    Assert.assertEquals("Unexpected ${field.name}", ${field.noInit}, ${class.name_.lowerFirst}.${field.getter}());
+    Assert.assertEquals("Unexpected ${field.name}", ${field.noInit}, ${class.name.lowerFirst}.${field.getter}());
 </#if>
 </#list>
   }
 
   @Test 
   public void test${class.name}_maximum() {
-    ${class.name} ${class.name_.lowerFirst}= createAndFillBuilder().build(); 
+    ${class.name} ${class.name.lowerFirst}= createAndFillBuilder().build(); 
 
 <#list fields as field>
 <#if field.type == "boolean">
-    Assert.assertTrue("Unexpected ${field.name}", ${class.name_.lowerFirst}.${field.getter}());
+    Assert.assertTrue("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());
 <#else>
-    Assert.assertEquals("Unexpected ${field.name}", ${field.name_.snakeCase}, ${class.name_.lowerFirst}.${field.getter}());
+    Assert.assertEquals("Unexpected ${field.name}", ${field.name.snakeCase}, ${class.name.lowerFirst}.${field.getter}());
 </#if>
 </#list>
 }
