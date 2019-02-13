@@ -81,15 +81,17 @@ public class CodeSnipitMerger {
    * @throws IOException
    */
   public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
-    validate(mergeClassPath);
-    CompilationUnit existingCode = read(mergeClassPath);
-    CompilationUnit newCode = read(codeSnipit);
-    merge(existingCode, newCode);
-    write(mergeClassPath, existingCode);
-    format(config, mergeClassPath);
+    if (validate(codeSnipit, mergeClassPath)) {
+      CompilationUnit existingCode = read(mergeClassPath);
+      CompilationUnit newCode = read(codeSnipit);
+      merge(existingCode, newCode);
+      write(mergeClassPath, existingCode);
+      format(config, mergeClassPath);
+    }
   }
 
-  private void validate(String mergeClassPath) {
+  private boolean validate(CodeSnipit codeSnipit, String mergeClassPath) {
+    boolean success = true;
     if (mergeClassPath == null) {
       throw new JavaForgerException("merge class path may not be null");
     }
@@ -99,6 +101,11 @@ public class CodeSnipitMerger {
     if (!new File(mergeClassPath).exists()) {
       throw new JavaForgerException("merge class path does not point to existing file: " + mergeClassPath);
     }
+    if (codeSnipit.getCode().isEmpty()) {
+      System.err.println("CodeSnipit is empty and cannot be merged to: " + mergeClassPath);
+      success = false;
+    }
+    return success;
   }
 
   private void format(JavaForgerConfiguration config, String mergeClassPath) {
