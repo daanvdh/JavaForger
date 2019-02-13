@@ -25,21 +25,14 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.javaparser.JavaParser;
-
 import configuration.ClassProvider;
-import configuration.DefaultAdjusters;
 import configuration.JavaForgerConfiguration;
-import configuration.PathConverter;
 import configuration.StaticJavaForgerConfiguration;
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
 import merger.CodeSnipitMerger;
-import reader.ClassContainerReader;
-import templateInput.ClassContainer;
-import templateInput.TemplateInputDefaults;
 import templateInput.TemplateInputParameters;
 
 /**
@@ -49,8 +42,8 @@ import templateInput.TemplateInputParameters;
  */
 public class Generator {
 
-  private ClassContainerReader reader = StaticJavaForgerConfiguration.getReader();
   private CodeSnipitMerger merger = StaticJavaForgerConfiguration.getMerger();
+  private TemplateInputParametersService inputService = new TemplateInputParametersService();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
@@ -73,20 +66,13 @@ public class Generator {
   }
 
   private CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
-    // TODO should be removed
-    setupSymbolSolver(config);
-
     String mergeClassPath = getMergeClass(inputClass, parentMergeClass, config);
 
-    TemplateInputParameters inputParameters = getInputParameters(config, inputClass, mergeClassPath);
+    TemplateInputParameters inputParameters = inputService.getInputParameters(config, inputClass, mergeClassPath);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
     merge(config, codeSnipit, mergeClassPath, inputParameters);
     executeChildren(config, inputClass, codeSnipit, mergeClassPath);
     return codeSnipit;
-  }
-
-  private void setupSymbolSolver(JavaForgerConfiguration config) {
-    JavaParser.getStaticConfiguration().setSymbolResolver(config.getSymbolSolver());
   }
 
   private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, TemplateInputParameters inputParameters)
@@ -173,78 +159,6 @@ public class Generator {
     Writer writer = new StringWriter();
     config.getTemplate().process(inputParameters, writer);
     return new CodeSnipit(writer.toString());
-  }
-
-  private TemplateInputParameters getInputParameters(JavaForgerConfiguration config, String inputClass, String mergeClassPath) throws IOException {
-    TemplateInputParameters inputParameters = config.getInputParameters();
-
-    if (inputClass != null && !inputClass.isEmpty()) {
-      if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) || !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
-          || !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
-          || !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
-
-        String newInputClass = getInputClass(config, inputClass, mergeClassPath);
-
-        ClassContainer claz = reader.read(newInputClass, config);
-        config.getAdjuster().accept(claz);
-        if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
-          inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
-        }
-        if (!inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())) {
-          inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
-        }
-        if (!inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
-          inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
-        }
-        if (!inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
-          inputParameters.put(TemplateInputDefaults.CONSTRUCTORS.getName(), claz.getConstructors());
-        }
-      }
-    }
-    if (mergeClassPath != null) {
-      if (!inputParameters.containsKey(TemplateInputDefaults.PACKAGE.getName())) {
-        String pack = PathConverter.toPackage(mergeClassPath);
-        inputParameters.put(TemplateInputDefaults.PACKAGE.getName(), pack);
-      }
-      if (!inputParameters.containsKey(TemplateInputDefaults.MERGE_CLASS_NAME.getName())) {
-        String a = mergeClassPath.replace("\\", "/");
-        String name = a.substring(a.lastIndexOf("/") + 1, a.lastIndexOf("."));
-        inputParameters.put(TemplateInputDefaults.MERGE_CLASS_NAME.getName(), name);
-      }
-    }
-
-    return inputParameters;
-  }
-
-  private String getInputClass(JavaForgerConfiguration config, String inputClass, String mergeClassPath) {
-    String input = null;
-    ClassProvider provider = config.getInputClassProvider();
-    switch (provider.provideFrom()) {
-    case PARENT_CONFIG_MERGE_CLASS:
-      input = provider.provide(mergeClassPath);
-      break;
-    case INPUT_CLASS:
-    case SELF:
-    default:
-      input = provider.provide(inputClass);
-      break;
-    }
-    return input;
-  }
-
-  public static void main(String[] args) throws IOException, TemplateException {
-    String inputClass = "src/test/java/inputClassesForTests/Product.java";
-    String template = "innerBuilder.javat";
-    String testMergeClass = "src/test/java/inputClassesForTests/Product.java";
-    String testTemplate = "innerBuilderUnitTest.javat";
-
-    JavaForgerConfiguration.Builder builder =
-        JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(template); // .withMergeClass(inputClass);
-    builder.withChildConfig(JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(testTemplate) // .withMergeClass(testMergeClass)
-        .build());
-
-    String code = new Generator().execute(builder.build(), inputClass).toString();
-    System.out.println(code);
   }
 
 }
