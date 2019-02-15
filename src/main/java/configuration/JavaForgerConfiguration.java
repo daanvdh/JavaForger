@@ -17,23 +17,13 @@
  */
 package configuration;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.cache.TemplateLoader;
-import freemarker.core.ParseException;
-import freemarker.template.Configuration;
-import freemarker.template.MalformedTemplateNameException;
-import freemarker.template.Template;
-import freemarker.template.TemplateNotFoundException;
 import generator.Generator;
 import templateInput.TemplateInputParameters;
 
@@ -50,8 +40,11 @@ public class JavaForgerConfiguration {
   /** The input parameters to be used for the template. This is aditional to the parameters that will be added from the input class. */
   private TemplateInputParameters inputParameters;
 
-  /** The {@link MergeClassProvider} to provide the class to merge the generated code with. */
-  private MergeClassProvider mergeClassProvider;
+  /** The {@link ClassProvider} to provide the input class for the template. */
+  private ClassProvider inputClassProvider = new ClassProvider();
+
+  /** The {@link ClassProvider} to provide the class to merge the generated code with. */
+  private ClassProvider mergeClassProvider;
 
   /** Determines if the generated code should be merged with the class given by the mergeClassProvider. */
   private boolean merge = true;
@@ -62,16 +55,17 @@ public class JavaForgerConfiguration {
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
   private final List<ClassContainerAdjuster> adjusters = new ArrayList<>();
 
-  private Configuration freeMarkerConfiguration;
-
-  /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
-  private JavaSymbolSolver symbolSolver;
-
-  /** If true the merge class provided by the {@link MergeClassProvider} will be created if it does not exists. */
+  /** If true the merge class provided by the {@link ClassProvider} will be created if it does not exists. */
   private boolean createFileIfNotExists;
 
+  /**
+   * If the merge class provided by the {@link ClassProvider} does not exist and createFileIfNotExists is true, the new file will be filled with the processed
+   * template from the configIfFileDoesNotExist {@link JavaForgerConfiguration}. If this is null, the new class will be filled with the processed template only.
+   */
+  private JavaForgerConfiguration configIfFileDoesNotExist;
+
   public JavaForgerConfiguration() {
-    this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
+    // Make Constructor visible
   }
 
   private JavaForgerConfiguration(Builder builder) {
@@ -79,31 +73,39 @@ public class JavaForgerConfiguration {
     this.template = builder.template;
     this.inputParameters = new TemplateInputParameters(builder.inputParameters);
     this.mergeClassProvider = builder.mergeClassProvider;
+    this.inputClassProvider = (builder.inputClassProvider == null) ? this.inputClassProvider : builder.inputClassProvider;
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
-    this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
-    this.symbolSolver = builder.symbolSolver;
     this.createFileIfNotExists = builder.createFileIfNotExists;
+    this.configIfFileDoesNotExist = builder.configIfFileDoesNotExist;
   }
 
   public boolean isMerge() {
     return merge;
   }
 
+  public ClassProvider getInputClassProvider() {
+    return inputClassProvider;
+  }
+
+  public void setInputClassProvider(ClassProvider inputClassProvider) {
+    this.inputClassProvider = inputClassProvider;
+  }
+
   public void setMerge(boolean merge) {
     this.merge = merge;
   }
 
-  public MergeClassProvider getMergeClassProvider() {
+  public ClassProvider getMergeClassProvider() {
     return mergeClassProvider;
   }
 
-  public void setMergeClassProvider(MergeClassProvider mergeClassProvider) {
+  public void setMergeClassProvider(ClassProvider mergeClassProvider) {
     this.mergeClassProvider = mergeClassProvider;
   }
 
   public void setMergeClass(String mergeClass) {
-    this.mergeClassProvider = mergeClass == null ? null : new MergeClassProvider(mergeClass);
+    this.mergeClassProvider = mergeClass == null ? null : new ClassProvider(mergeClass);
   }
 
   public List<JavaForgerConfiguration> getChildConfigs() {
@@ -115,8 +117,20 @@ public class JavaForgerConfiguration {
     this.childConfigs.addAll(configs);
   }
 
-  public Template getTemplate() throws TemplateNotFoundException, MalformedTemplateNameException, ParseException, IOException {
-    return freeMarkerConfiguration.getTemplate(template);
+  public void addChildConfig(JavaForgerConfiguration config) {
+    this.childConfigs.add(config);
+  }
+
+  public void addChildConfigs(JavaForgerConfiguration... children) {
+    this.childConfigs.addAll(Arrays.asList(children));
+  }
+
+  public String getTemplate() {
+    return template;
+  }
+
+  public String getTemplateName() {
+    return template;
   }
 
   public void setTemplate(String template) {
@@ -148,35 +162,47 @@ public class JavaForgerConfiguration {
     this.adjusters.addAll(Arrays.asList(adjusters));
   }
 
-  public Configuration getFreeMarkerConfiguration() {
-    return freeMarkerConfiguration;
-  }
-
-  public void setFreeMarkerConfiguration(Configuration freeMarkerConfig) {
-    this.freeMarkerConfiguration = freeMarkerConfig;
-  }
-
-  public void addTemplateLocation(String templateLocation) throws IOException {
-    FileTemplateLoader loader = new FileTemplateLoader(new File(templateLocation));
-    TemplateLoader original = this.getFreeMarkerConfiguration().getTemplateLoader();
-    MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] {original, loader});
-    this.freeMarkerConfiguration.setTemplateLoader(mtl);
-  }
-
-  public void setSymbolSolver(JavaSymbolSolver symbolSolver) {
-    this.symbolSolver = symbolSolver;
-  }
-
-  public JavaSymbolSolver getSymbolSolver() {
-    return symbolSolver;
-  }
-
   public boolean isCreateFileIfNotExists() {
     return createFileIfNotExists;
   }
 
   public void setCreateFileIfNotExists(boolean createFileIfNotExists) {
     this.createFileIfNotExists = createFileIfNotExists;
+  }
+
+  public JavaForgerConfiguration getConfigIfFileDoesNotExist() {
+    return configIfFileDoesNotExist;
+  }
+
+  public void setConfigIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
+    setCreateFileIfNotExists(true);
+    this.configIfFileDoesNotExist = configIfFileDoesNotExist;
+  }
+
+  /**
+   * Execute the given consumer on this {@link JavaForgerConfiguration} and all child configurations.
+   *
+   * @param consumer The consumer to be executed.
+   */
+  public void setRecursive(Consumer<JavaForgerConfiguration> consumer) {
+    consumer.accept(this);
+    this.childConfigs.stream().forEach(config -> config.setRecursive(consumer::accept));
+  }
+
+  /**
+   * Insert a setter to be executed on this {@link JavaForgerConfiguration} and all child configurations.
+   *
+   * @param setter The setter to be executed.
+   * @param value The value to put as parameter in the setter
+   */
+  public <T> void setRecursive(BiConsumer<JavaForgerConfiguration, T> setter, T value) {
+    setter.accept(this, value);
+    this.childConfigs.stream().forEach(config -> config.setRecursive(setter, value));
+  }
+
+  @Override
+  public String toString() {
+    return "config: " + template;
   }
 
   /**
@@ -204,14 +230,15 @@ public class JavaForgerConfiguration {
   public static final class Builder {
     private String template;
     private TemplateInputParameters inputParameters = new TemplateInputParameters();
-    private MergeClassProvider mergeClassProvider;
+    private ClassProvider mergeClassProvider;
+    private ClassProvider inputClassProvider;
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
-    private Configuration freeMarkerConfiguration = null;
-    private JavaSymbolSolver symbolSolver;
     private boolean createFileIfNotExists;
+    private JavaForgerConfiguration configIfFileDoesNotExist;
 
     private Builder() {
+      // Make constructor visible
     }
 
     private Builder(JavaForgerConfiguration config) {
@@ -220,7 +247,6 @@ public class JavaForgerConfiguration {
       this.mergeClassProvider = config.mergeClassProvider;
       this.childConfigs = config.childConfigs.stream().map(JavaForgerConfiguration::builder).map(Builder::build).collect(Collectors.toList());
       this.adjusters = new ArrayList<>(config.adjusters);
-      this.freeMarkerConfiguration = config.freeMarkerConfiguration;
     }
 
     public Builder withTemplate(String template) {
@@ -234,18 +260,13 @@ public class JavaForgerConfiguration {
     }
 
     public Builder withMergeClass(String mergeClass) {
-      this.mergeClassProvider = new MergeClassProvider(mergeClass);
+      this.mergeClassProvider = new ClassProvider(mergeClass);
       return this;
     }
 
     public Builder withChildConfig(JavaForgerConfiguration... configs) {
       this.childConfigs.clear();
       this.childConfigs.addAll(Arrays.asList(configs));
-      return this;
-    }
-
-    public Builder withFreeMarkerConfiguration(Configuration config) {
-      this.freeMarkerConfiguration = config;
       return this;
     }
 
@@ -259,13 +280,8 @@ public class JavaForgerConfiguration {
       return this;
     }
 
-    public Builder withMergeClassProvider(MergeClassProvider mergeClassProvider) {
+    public Builder withMergeClassProvider(ClassProvider mergeClassProvider) {
       this.mergeClassProvider = mergeClassProvider;
-      return this;
-    }
-
-    public Builder withSymbolSolver(JavaSymbolSolver symbolSolver) {
-      this.symbolSolver = symbolSolver;
       return this;
     }
 
@@ -274,6 +290,16 @@ public class JavaForgerConfiguration {
       return this;
     }
 
-  }
+    public Builder withInputClassProvider(ClassProvider classProvider) {
+      this.inputClassProvider = classProvider;
+      return this;
+    }
 
+    public Builder withConfigIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
+      this.createFileIfNotExists = true;
+      this.configIfFileDoesNotExist = configIfFileDoesNotExist;
+      return this;
+    }
+
+  }
 }

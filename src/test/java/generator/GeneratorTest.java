@@ -24,12 +24,14 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import configuration.FreeMarkerConfiguration;
 import configuration.JavaForgerConfiguration;
+import configuration.StaticJavaForgerConfiguration;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import inputClassesForTests.Product;
@@ -43,13 +45,20 @@ import templateInput.TemplateInputParameters;
 public class GeneratorTest {
 
   private Generator gen = new Generator();
-  private JavaForgerConfiguration genConfig;
+  private JavaForgerConfiguration genConfig = JavaForgerConfiguration.builder().build();
 
   @Before
   public void setup() throws IOException {
+    StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
+    staticConfig.reset();
     Configuration freeMarkerConfig = FreeMarkerConfiguration.getDefaultConfig();
     freeMarkerConfig.setDirectoryForTemplateLoading(new File("src/test/resources/templates"));
-    genConfig = JavaForgerConfiguration.builder().withFreeMarkerConfiguration(freeMarkerConfig).build();
+    staticConfig.setFreeMarkerConfiguration(freeMarkerConfig);
+  }
+
+  @After
+  public void tearDown() {
+    StaticJavaForgerConfiguration.reset();
   }
 
   @Test

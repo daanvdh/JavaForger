@@ -17,14 +17,13 @@
  */
 package common;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
-import configuration.JavaForgerConfiguration;
+import configuration.StaticJavaForgerConfiguration;
 
 /**
  * Class with common test methods for seting up the symbol solver.
@@ -33,7 +32,7 @@ import configuration.JavaForgerConfiguration;
  */
 public class SymbolSolverSetup {
 
-  public static JavaSymbolSolver getSymbolSolver() {
+  private static JavaSymbolSolver getSymbolSolver() {
     JavaParserTypeSolver typeSolver_directory = new JavaParserTypeSolver("src/test/java/");
     ReflectionTypeSolver reflTypeSolver = new ReflectionTypeSolver();
     TypeSolver typeSolver = new CombinedTypeSolver(typeSolver_directory, reflTypeSolver);
@@ -42,11 +41,7 @@ public class SymbolSolverSetup {
   }
 
   public static void setup() {
-    JavaParser.getStaticConfiguration().setSymbolResolver(getSymbolSolver());
-  }
-
-  public static JavaForgerConfiguration getDefaultConfig() {
-    return JavaForgerConfiguration.builder().withSymbolSolver(getSymbolSolver()).build();
+    StaticJavaForgerConfiguration.getConfig().setSymbolSolver(getSymbolSolver());
   }
 
 }

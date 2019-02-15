@@ -38,7 +38,7 @@ import templateInput.StringConverter;
  */
 public class TypeDefinition implements Comparable<TypeDefinition> {
 
-  protected String name;
+  protected StringConverter name;
   protected String type;
   /** The imports required for this type. This list is sorted on insertion order so that template generation is consistent. */
   protected LinkedHashSet<String> typeImports = new LinkedHashSet<>();
@@ -72,16 +72,16 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     return line != 0 ? line : column;
   }
 
-  public String getName() {
+  public StringConverter getName() {
     return name;
   }
 
-  public StringConverter getName_() {
-    return new StringConverter(name);
+  public String getNameAsString() {
+    return name.toString();
   }
 
   public void setName(String name) {
-    this.name = name;
+    this.name = new StringConverter(name);
   }
 
   public String getType() {

@@ -53,7 +53,7 @@ public class CLassWithEverything {
     if (this == obj) {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
-      CLassWithEverything other = (CLassWithEverything) obj;
+      InputClass other = (InputClass) obj;
       equals = new EqualsBuilder()
         .append(prod, other.prod)
         .append(i, other.i)

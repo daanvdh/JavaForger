@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
     if (this == obj) {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
-      ${class.name} other = (${class.name}) obj;
+      ${mergeClassName} other = (${mergeClassName}) obj;
       equals = new EqualsBuilder()
 <#if class.extend??>      
         .appendSuper(super.equals(obj))

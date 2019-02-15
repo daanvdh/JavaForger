@@ -33,6 +33,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import configuration.StaticJavaForgerConfiguration;
+
 /**
  * This abstract class creates a new file before each test which the extending test class can change within the test, so that the original file is not changed.
  * The newly created file is removed after the test is run.
@@ -48,6 +50,8 @@ public abstract class AbstractFileChangingTest {
 
   @Before
   public void setup() throws IOException {
+    StaticJavaForgerConfiguration.reset();
+    SymbolSolverSetup.setup();
     tearDown();
     copyClass(getOriginalClass(), INPUT_CLASS);
     copyClass(getOriginalTestClass(), INPUT_TEST_CLASS);

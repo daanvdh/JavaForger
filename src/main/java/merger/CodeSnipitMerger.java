@@ -81,15 +81,17 @@ public class CodeSnipitMerger {
    * @throws IOException
    */
   public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
-    validate(mergeClassPath);
-    CompilationUnit existingCode = read(mergeClassPath);
-    CompilationUnit newCode = read(codeSnipit);
-    merge(existingCode, newCode);
-    write(mergeClassPath, existingCode);
-    format(config, mergeClassPath);
+    if (validate(codeSnipit, mergeClassPath)) {
+      CompilationUnit existingCode = read(mergeClassPath);
+      CompilationUnit newCode = read(codeSnipit);
+      merge(existingCode, newCode);
+      write(mergeClassPath, existingCode);
+      format(config, mergeClassPath);
+    }
   }
 
-  private void validate(String mergeClassPath) {
+  private boolean validate(CodeSnipit codeSnipit, String mergeClassPath) {
+    boolean success = true;
     if (mergeClassPath == null) {
       throw new JavaForgerException("merge class path may not be null");
     }
@@ -99,6 +101,11 @@ public class CodeSnipitMerger {
     if (!new File(mergeClassPath).exists()) {
       throw new JavaForgerException("merge class path does not point to existing file: " + mergeClassPath);
     }
+    if (codeSnipit.getCode().isEmpty()) {
+      System.err.println("CodeSnipit is empty and cannot be merged to: " + mergeClassPath);
+      success = false;
+    }
+    return success;
   }
 
   private void format(JavaForgerConfiguration config, String mergeClassPath) {
@@ -285,18 +292,30 @@ public class CodeSnipitMerger {
     // TODO make this flexible so that we only add the class if needed
     String string = codeSnipit.toString();
     int index = firstIndexAfterImports(string);
-    String code = string.substring(0, index) + "public class ClassToMerge {\n" + string.substring(index) + "\n}";
-    CompilationUnit cu = Parser.parse(code);
+
+    StringBuilder code = new StringBuilder();
+    code.append(string.substring(0, index));
+    boolean hasClassDefined = hasClassDefined(string.substring(index));
+    if (!hasClassDefined) {
+      code.append("public class ClassToMerge {\n");
+    }
+    code.append(string.substring(index));
+    if (!hasClassDefined) {
+      code.append("\n}");
+    }
+
+    CompilationUnit cu = Parser.parse(code.toString());
     // Needed to preserve the original formatting
     LexicalPreservingPrinter.setup(cu);
     return cu;
   }
 
   private int firstIndexAfterImports(String string) {
-    int lineBegin = 0;
-    int lineEnd = string.indexOf(";");
+    int lineBegin = getFirstIndexAfterComment(string);
+    int lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
     lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
     String declaration = string.substring(lineBegin, lineEnd);
+
     ParseResult<?> result = parsePackage(declaration);
     if (!result.isSuccessful()) {
       result = parseImport(declaration);
@@ -310,6 +329,18 @@ public class CodeSnipitMerger {
       result = parseImport(declaration);
     }
     return lineBegin;
+  }
+
+  private int getFirstIndexAfterComment(String string) {
+    int index = 0;
+    if (string.startsWith("/*")) {
+      index = string.indexOf("*/") + 3;
+    }
+    return index;
+  }
+
+  private boolean hasClassDefined(String string) {
+    return parseDeclaration(string, ParseStart.CLASS_OR_INTERFACE_TYPE).isSuccessful();
   }
 
   private ParseResult<PackageDeclaration> parsePackage(String declaration) {
