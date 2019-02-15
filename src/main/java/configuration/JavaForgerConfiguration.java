@@ -17,23 +17,15 @@
  */
 package configuration;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.cache.TemplateLoader;
-import freemarker.core.ParseException;
-import freemarker.template.Configuration;
-import freemarker.template.MalformedTemplateNameException;
-import freemarker.template.Template;
-import freemarker.template.TemplateNotFoundException;
 import generator.Generator;
 import templateInput.TemplateInputParameters;
 
@@ -65,8 +57,6 @@ public class JavaForgerConfiguration {
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
   private final List<ClassContainerAdjuster> adjusters = new ArrayList<>();
 
-  private Configuration freeMarkerConfiguration;
-
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
   private JavaSymbolSolver symbolSolver;
 
@@ -80,7 +70,7 @@ public class JavaForgerConfiguration {
   private JavaForgerConfiguration configIfFileDoesNotExist;
 
   public JavaForgerConfiguration() {
-    this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
+    // Make Constructor visible
   }
 
   private JavaForgerConfiguration(Builder builder) {
@@ -91,7 +81,6 @@ public class JavaForgerConfiguration {
     this.inputClassProvider = (builder.inputClassProvider == null) ? this.inputClassProvider : builder.inputClassProvider;
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
-    this.freeMarkerConfiguration = (builder.freeMarkerConfiguration == null) ? this.freeMarkerConfiguration : builder.freeMarkerConfiguration;
     this.symbolSolver = builder.symbolSolver;
     this.createFileIfNotExists = builder.createFileIfNotExists;
     this.configIfFileDoesNotExist = builder.configIfFileDoesNotExist;
@@ -138,8 +127,12 @@ public class JavaForgerConfiguration {
     this.childConfigs.add(config);
   }
 
-  public Template getTemplate() throws TemplateNotFoundException, MalformedTemplateNameException, ParseException, IOException {
-    return freeMarkerConfiguration.getTemplate(template);
+  public void addChildConfigs(JavaForgerConfiguration... children) {
+    this.childConfigs.addAll(Arrays.asList(children));
+  }
+
+  public String getTemplate() {
+    return template;
   }
 
   public String getTemplateName() {
@@ -175,21 +168,6 @@ public class JavaForgerConfiguration {
     this.adjusters.addAll(Arrays.asList(adjusters));
   }
 
-  public Configuration getFreeMarkerConfiguration() {
-    return freeMarkerConfiguration;
-  }
-
-  public void setFreeMarkerConfiguration(Configuration freeMarkerConfig) {
-    this.freeMarkerConfiguration = freeMarkerConfig;
-  }
-
-  public void addTemplateLocation(String templateLocation) throws IOException {
-    FileTemplateLoader loader = new FileTemplateLoader(new File(templateLocation));
-    TemplateLoader original = this.getFreeMarkerConfiguration().getTemplateLoader();
-    MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] {original, loader});
-    this.freeMarkerConfiguration.setTemplateLoader(mtl);
-  }
-
   public void setSymbolSolver(JavaSymbolSolver symbolSolver) {
     this.symbolSolver = symbolSolver;
   }
@@ -213,6 +191,32 @@ public class JavaForgerConfiguration {
   public void setConfigIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
     setCreateFileIfNotExists(true);
     this.configIfFileDoesNotExist = configIfFileDoesNotExist;
+  }
+
+  /**
+   * Execute the given consumer on this {@link JavaForgerConfiguration} and all child configurations.
+   *
+   * @param consumer The consumer to be executed.
+   */
+  public void setRecursive(Consumer<JavaForgerConfiguration> consumer) {
+    consumer.accept(this);
+    this.childConfigs.stream().forEach(config -> config.setRecursive(consumer::accept));
+  }
+
+  /**
+   * Insert a setter to be executed on this {@link JavaForgerConfiguration} and all child configurations.
+   *
+   * @param setter The setter to be executed.
+   * @param value The value to put as parameter in the setter
+   */
+  public <T> void setRecursive(BiConsumer<JavaForgerConfiguration, T> setter, T value) {
+    setter.accept(this, value);
+    this.childConfigs.stream().forEach(config -> config.setRecursive(setter, value));
+  }
+
+  @Override
+  public String toString() {
+    return "config: " + template;
   }
 
   /**
@@ -244,12 +248,12 @@ public class JavaForgerConfiguration {
     private ClassProvider inputClassProvider;
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
-    private Configuration freeMarkerConfiguration = null;
     private JavaSymbolSolver symbolSolver;
     private boolean createFileIfNotExists;
     private JavaForgerConfiguration configIfFileDoesNotExist;
 
     private Builder() {
+      // Make constructor visible
     }
 
     private Builder(JavaForgerConfiguration config) {
@@ -258,7 +262,6 @@ public class JavaForgerConfiguration {
       this.mergeClassProvider = config.mergeClassProvider;
       this.childConfigs = config.childConfigs.stream().map(JavaForgerConfiguration::builder).map(Builder::build).collect(Collectors.toList());
       this.adjusters = new ArrayList<>(config.adjusters);
-      this.freeMarkerConfiguration = config.freeMarkerConfiguration;
     }
 
     public Builder withTemplate(String template) {
@@ -279,11 +282,6 @@ public class JavaForgerConfiguration {
     public Builder withChildConfig(JavaForgerConfiguration... configs) {
       this.childConfigs.clear();
       this.childConfigs.addAll(Arrays.asList(configs));
-      return this;
-    }
-
-    public Builder withFreeMarkerConfiguration(Configuration config) {
-      this.freeMarkerConfiguration = config;
       return this;
     }
 
@@ -324,5 +322,4 @@ public class JavaForgerConfiguration {
     }
 
   }
-
 }

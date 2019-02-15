@@ -44,6 +44,7 @@ public class Generator {
 
   private CodeSnipitMerger merger = StaticJavaForgerConfiguration.getMerger();
   private TemplateInputParametersService inputService = new TemplateInputParametersService();
+  private static StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
@@ -111,22 +112,7 @@ public class Generator {
 
   private String getMergeClass(String inputClass, String parentMergeClass, JavaForgerConfiguration config) {
     ClassProvider provider = config.getMergeClassProvider();
-    String mergeClassPath = null;
-    if (provider != null) {
-      switch (provider.provideFrom()) {
-      case SELF:
-        mergeClassPath = provider.provide("");
-        break;
-      case INPUT_CLASS:
-        mergeClassPath = provider.provide(inputClass);
-        break;
-      case PARENT_CONFIG_MERGE_CLASS:
-        mergeClassPath = provider.provide(parentMergeClass);
-        break;
-      default:
-      }
-    }
-    return mergeClassPath;
+    return (provider == null) ? null : provider.provide(inputClass, parentMergeClass);
   }
 
   private void createAndFillFile(String mergeClassPath, CodeSnipit codeSnipit) throws IOException {
@@ -139,13 +125,14 @@ public class Generator {
     }
   }
 
-  private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit, String parentMergeClass)
+  private void executeChildren(JavaForgerConfiguration config, String parentInputClass, CodeSnipit codeSnipit, String parentMergeClass)
       throws IOException, TemplateException {
     // forloop needed because we cannot throw exceptions from within a stream
     // TODO let execute only throw our own unchecked exception and replace the forloop with stream below.
     // config.getChildConfigs().stream().map(conf -> execute(conf, inputClass, parentMergeClass)).collect(Collectors.toList());
     List<CodeSnipit> codeSnipits = new ArrayList<>();
     for (JavaForgerConfiguration conf : config.getChildConfigs()) {
+      String inputClass = conf.getInputClassProvider().provide(parentInputClass, parentMergeClass);
       codeSnipits.add(execute(conf, inputClass, parentMergeClass));
     }
     codeSnipits.forEach(s -> {
@@ -157,7 +144,8 @@ public class Generator {
   private CodeSnipit processTemplate(JavaForgerConfiguration config, TemplateInputParameters inputParameters)
       throws IOException, TemplateNotFoundException, MalformedTemplateNameException, ParseException, TemplateException {
     Writer writer = new StringWriter();
-    config.getTemplate().process(inputParameters, writer);
+
+    staticConfig.getFreeMarkerConfiguration().getTemplate(config.getTemplate()).process(inputParameters, writer);
     return new CodeSnipit(writer.toString());
   }
 

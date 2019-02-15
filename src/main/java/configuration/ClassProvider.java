@@ -78,6 +78,33 @@ public class ClassProvider {
   }
 
   /**
+   * Provider to create a custom path to a class after receiving the path to the input class.
+   *
+   * @param provider The provider for determining the output path after receiving the input path.
+   * @return new {@link ClassProvider}
+   */
+  public static ClassProvider fromInputClass(Function<String, String> provider) {
+    return new ClassProvider(ProvideFrom.INPUT_CLASS, provider);
+  }
+
+  /**
+   * @return The same class as the class to which the parent {@link JavaForgerConfiguration} was merged.
+   */
+  public static ClassProvider fromParentMergeClass() {
+    return fromParentMergeClass(s -> s);
+  }
+
+  /**
+   * Provider to create a custom path to a class after receiving the path to the merge class from the parent {@link JavaForgerConfiguration}.
+   *
+   * @param provider The provider for determining the output path after receiving the input path.
+   * @return new {@link ClassProvider}
+   */
+  public static ClassProvider fromParentMergeClass(Function<String, String> provider) {
+    return new ClassProvider(ProvideFrom.PARENT_CONFIG_MERGE_CLASS, provider);
+  }
+
+  /**
    * Calculates the path of the maven unit test by replacing 'main' with 'test' and replacing '.java' with 'Test.java'.
    *
    * @return The path to the maven unit test.
@@ -112,6 +139,29 @@ public class ClassProvider {
    */
   public String provide(String path) {
     return provide.apply(path);
+  }
+
+  /**
+   * Selects one of the 2 input values depending on the {@link ProvideFrom} that was set. Then uses that input to calculate the new path.
+   *
+   * @param parentInputClass The input path.
+   * @param parentMergeClass Path to the merge class to which the parent {@link JavaForgerConfiguration} was merged.
+   * @return Path to the class defined by this provider.
+   */
+  public String provide(String parentInputClass, String parentMergeClass) {
+    String path;
+    switch (provideFrom) {
+    case INPUT_CLASS:
+      path = parentInputClass;
+      break;
+    case PARENT_CONFIG_MERGE_CLASS:
+      path = parentMergeClass;
+      break;
+    case SELF:
+    default:
+      path = "";
+    }
+    return provide(path);
   }
 
   /**
