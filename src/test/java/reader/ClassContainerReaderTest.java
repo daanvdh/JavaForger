@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import common.SymbolSolverSetup;
@@ -42,6 +43,11 @@ import templateInput.definition.VariableDefinition;
 public class ClassContainerReaderTest {
 
   private ClassContainerReader sut = new ClassContainerReader();
+
+  @Before
+  public void setup() {
+    SymbolSolverSetup.setup();
+  }
 
   @Test
   public void testRead_Class() throws IOException {
@@ -89,7 +95,7 @@ public class ClassContainerReaderTest {
   @Test
   public void testRead_Fields() throws IOException {
     String input = "src/test/java/inputClassesForTests/Product.java";
-    List<? extends VariableDefinition> variables = sut.read(input, SymbolSolverSetup.getDefaultConfig()).getFields();
+    List<? extends VariableDefinition> variables = sut.read(input).getFields();
 
     VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
         .withAccessModifiers(Collections.singleton("private")).build();

@@ -44,7 +44,7 @@ import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclar
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 
-import configuration.JavaForgerConfiguration;
+import configuration.StaticJavaForgerConfiguration;
 import generator.JavaForgerException;
 import initialization.VariableInitializer;
 import templateInput.ClassContainer;
@@ -61,15 +61,11 @@ import templateInput.definition.VariableDefinition;
 public class ClassContainerReader {
 
   private VariableInitializer initializer = new VariableInitializer();
+  private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
   public ClassContainer read(String inputClass) throws IOException {
-    return read(inputClass, JavaForgerConfiguration.builder().build());
-  }
-
-  public ClassContainer read(String inputClass, JavaForgerConfiguration config) throws IOException {
-    setupSymbolSolver(config);
     CompilationUnit cu = getCompilationUnit(inputClass);
-    return readCompilationUnit(cu, config);
+    return readCompilationUnit(cu);
   }
 
   private CompilationUnit getCompilationUnit(String inputClass) throws IOException {
@@ -83,7 +79,7 @@ public class ClassContainerReader {
     return cu;
   }
 
-  private ClassContainer readCompilationUnit(CompilationUnit cu, JavaForgerConfiguration config) {
+  private ClassContainer readCompilationUnit(CompilationUnit cu) {
     ClassContainer claz = new ClassContainer();
     List<VariableDefinition> fields = new ArrayList<>();
     List<MethodDefinition> methods = new ArrayList<>();
@@ -91,17 +87,17 @@ public class ClassContainerReader {
 
     for (TypeDeclaration<?> type : cu.getTypes()) {
       if (type instanceof ClassOrInterfaceDeclaration) {
-        claz = parseClass(config, type);
+        claz = parseClass(type);
       }
 
       List<Node> childNodes = type.getChildNodes();
       for (Node node : childNodes) {
         if (node instanceof FieldDeclaration) {
-          fields.add(parseField(config, node));
+          fields.add(parseField(node));
         } else if (node instanceof MethodDeclaration) {
-          methods.add(parseMethod(config, node));
+          methods.add(parseMethod(node));
         } else if (node instanceof ConstructorDeclaration) {
-          constructors.add(parseConstructor(config, node));
+          constructors.add(parseConstructor(node));
         }
       }
     }
@@ -131,7 +127,7 @@ public class ClassContainerReader {
     fields.stream().forEach(initializer::init);
   }
 
-  private ClassContainer parseClass(JavaForgerConfiguration config, TypeDeclaration<?> type) {
+  private ClassContainer parseClass(TypeDeclaration<?> type) {
     ClassOrInterfaceDeclaration cd = (ClassOrInterfaceDeclaration) type;
     Set<String> annotations = cd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
     Set<String> accessModifiers = cd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
@@ -144,31 +140,31 @@ public class ClassContainerReader {
     return new ClassContainer(def);
   }
 
-  private MethodDefinition parseMethod(JavaForgerConfiguration config, Node node) {
+  private MethodDefinition parseMethod(Node node) {
     MethodDeclaration md = (MethodDeclaration) node;
-    MethodDefinition method = parseCallable(md, config);
+    MethodDefinition method = parseCallable(md);
     method.setType(md.getTypeAsString());
-    resolveAndSetImport(md.getType(), method, config);
+    resolveAndSetImport(md.getType(), method);
     return method;
   }
 
-  private MethodDefinition parseConstructor(JavaForgerConfiguration config, Node node) {
+  private MethodDefinition parseConstructor(Node node) {
     ConstructorDeclaration md = (ConstructorDeclaration) node;
-    MethodDefinition method = parseCallable(md, config);
+    MethodDefinition method = parseCallable(md);
     method.setType(md.getNameAsString());
     return method;
   }
 
-  private MethodDefinition parseCallable(CallableDeclaration<?> md, JavaForgerConfiguration config) {
+  private MethodDefinition parseCallable(CallableDeclaration<?> md) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
     return MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
-        .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1))
-        .withParameters(getParameters(md, config)).build();
+        .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).withParameters(getParameters(md))
+        .build();
   }
 
-  private VariableDefinition parseField(JavaForgerConfiguration config, Node node) {
+  private VariableDefinition parseField(Node node) {
     FieldDeclaration fd = (FieldDeclaration) node;
     Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
@@ -176,28 +172,28 @@ public class ClassContainerReader {
         .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
         .withAccessModifiers(accessModifiers).build();
 
-    resolveAndSetImport(fd.getElementType(), variable, config);
+    resolveAndSetImport(fd.getElementType(), variable);
     return variable;
   }
 
-  private List<VariableDefinition> getParameters(CallableDeclaration<?> md, JavaForgerConfiguration config) {
+  private List<VariableDefinition> getParameters(CallableDeclaration<?> md) {
     LinkedHashMap<Parameter, VariableDefinition> params = new LinkedHashMap<>();
     md.getParameters().stream().forEach(p -> params.put(p, VariableDefinition.builder().withName(p.getNameAsString()).withType(p.getTypeAsString()).build()));
-    params.entrySet().forEach(p -> resolveAndSetImport(p.getKey().getType(), p.getValue(), config));
+    params.entrySet().forEach(p -> resolveAndSetImport(p.getKey().getType(), p.getValue()));
     List<VariableDefinition> parameters = params.values().stream().collect(Collectors.toList());
     return parameters;
   }
 
-  private void resolveAndSetImport(Type type, TypeDefinition variable, JavaForgerConfiguration config) {
-    List<String> imports = resolve(type, config);
+  private void resolveAndSetImport(Type type, TypeDefinition variable) {
+    List<String> imports = resolve(type);
     if (!imports.isEmpty()) {
       imports.stream().filter(s -> !s.contains("?")).forEach(s -> variable.addTypeImport(s));
     }
   }
 
-  private List<String> resolve(Type type, JavaForgerConfiguration config) {
+  private List<String> resolve(Type type) {
     List<String> imports = new ArrayList<>();
-    if (config.getSymbolSolver() != null) {
+    if (staticConfig.getSymbolSolver() != null) {
       try {
         ResolvedType resolve = type.resolve();
         imports.addAll(getImportsFromResolvedType(resolve));
@@ -227,10 +223,6 @@ public class ClassContainerReader {
       imports.add(imp);
     }
     return imports;
-  }
-
-  private void setupSymbolSolver(JavaForgerConfiguration config) {
-    JavaParser.getStaticConfiguration().setSymbolResolver(config.getSymbolSolver());
   }
 
 }

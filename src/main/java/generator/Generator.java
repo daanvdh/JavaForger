@@ -44,7 +44,7 @@ public class Generator {
 
   private CodeSnipitMerger merger = StaticJavaForgerConfiguration.getMerger();
   private TemplateInputParametersService inputService = new TemplateInputParametersService();
-  private static StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
+  private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);

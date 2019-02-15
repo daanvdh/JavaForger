@@ -57,7 +57,7 @@ public class TemplateInputParametersService {
 
         String newInputClass = getInputClass(config, inputClass, mergeClassPath);
 
-        ClassContainer claz = reader.read(newInputClass, config);
+        ClassContainer claz = reader.read(newInputClass);
         config.getAdjuster().accept(claz);
         if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
           inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());

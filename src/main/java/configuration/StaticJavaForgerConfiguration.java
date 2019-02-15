@@ -20,6 +20,9 @@ package configuration;
 import java.io.File;
 import java.io.IOException;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
@@ -39,7 +42,10 @@ public class StaticJavaForgerConfiguration {
   private CodeSnipitMerger merger = new CodeSnipitMerger();
   private Configuration freeMarkerConfiguration;
 
-  private static StaticJavaForgerConfiguration config;
+  /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
+  private JavaSymbolSolver symbolSolver;
+
+  private static final StaticJavaForgerConfiguration config = new StaticJavaForgerConfiguration();
 
   private StaticJavaForgerConfiguration() {
     // don't create it via any constructor
@@ -47,9 +53,6 @@ public class StaticJavaForgerConfiguration {
   }
 
   public static StaticJavaForgerConfiguration getConfig() {
-    if (config == null) {
-      setupConfig();
-    }
     return config;
   }
 
@@ -94,8 +97,13 @@ public class StaticJavaForgerConfiguration {
     this.freeMarkerConfiguration.setTemplateLoader(mtl);
   }
 
-  private static synchronized void setupConfig() {
-    config = new StaticJavaForgerConfiguration();
+  public void setSymbolSolver(JavaSymbolSolver symbolSolver) {
+    this.symbolSolver = symbolSolver;
+    JavaParser.getStaticConfiguration().setSymbolResolver(symbolSolver);
+  }
+
+  public JavaSymbolSolver getSymbolSolver() {
+    return symbolSolver;
   }
 
 }

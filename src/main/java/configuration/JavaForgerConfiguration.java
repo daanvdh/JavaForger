@@ -24,8 +24,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-
 import generator.Generator;
 import templateInput.TemplateInputParameters;
 
@@ -57,9 +55,6 @@ public class JavaForgerConfiguration {
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
   private final List<ClassContainerAdjuster> adjusters = new ArrayList<>();
 
-  /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
-  private JavaSymbolSolver symbolSolver;
-
   /** If true the merge class provided by the {@link ClassProvider} will be created if it does not exists. */
   private boolean createFileIfNotExists;
 
@@ -81,7 +76,6 @@ public class JavaForgerConfiguration {
     this.inputClassProvider = (builder.inputClassProvider == null) ? this.inputClassProvider : builder.inputClassProvider;
     this.childConfigs.addAll(builder.childConfigs);
     this.adjusters.addAll(builder.adjusters);
-    this.symbolSolver = builder.symbolSolver;
     this.createFileIfNotExists = builder.createFileIfNotExists;
     this.configIfFileDoesNotExist = builder.configIfFileDoesNotExist;
   }
@@ -168,14 +162,6 @@ public class JavaForgerConfiguration {
     this.adjusters.addAll(Arrays.asList(adjusters));
   }
 
-  public void setSymbolSolver(JavaSymbolSolver symbolSolver) {
-    this.symbolSolver = symbolSolver;
-  }
-
-  public JavaSymbolSolver getSymbolSolver() {
-    return symbolSolver;
-  }
-
   public boolean isCreateFileIfNotExists() {
     return createFileIfNotExists;
   }
@@ -248,7 +234,6 @@ public class JavaForgerConfiguration {
     private ClassProvider inputClassProvider;
     private List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
-    private JavaSymbolSolver symbolSolver;
     private boolean createFileIfNotExists;
     private JavaForgerConfiguration configIfFileDoesNotExist;
 
@@ -297,11 +282,6 @@ public class JavaForgerConfiguration {
 
     public Builder withMergeClassProvider(ClassProvider mergeClassProvider) {
       this.mergeClassProvider = mergeClassProvider;
-      return this;
-    }
-
-    public Builder withSymbolSolver(JavaSymbolSolver symbolSolver) {
-      this.symbolSolver = symbolSolver;
       return this;
     }
 

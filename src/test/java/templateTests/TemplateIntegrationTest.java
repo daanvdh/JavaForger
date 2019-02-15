@@ -22,10 +22,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-
 import common.AbstractFileChangingTest;
-import common.SymbolSolverSetup;
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
 import freemarker.template.TemplateException;
@@ -84,9 +81,6 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
   }
 
   private void execute(JavaForgerConfiguration config) {
-    JavaSymbolSolver symbolSolver = SymbolSolverSetup.getSymbolSolver();
-    config.setSymbolSolver(symbolSolver);
-    config.getChildConfigs().stream().forEach(conf -> conf.setSymbolSolver(symbolSolver));
     JavaForger.execute(config, INPUT_CLASS);
   }
 

@@ -51,6 +51,7 @@ public abstract class AbstractFileChangingTest {
   @Before
   public void setup() throws IOException {
     StaticJavaForgerConfiguration.reset();
+    SymbolSolverSetup.setup();
     tearDown();
     copyClass(getOriginalClass(), INPUT_CLASS);
     copyClass(getOriginalTestClass(), INPUT_TEST_CLASS);
