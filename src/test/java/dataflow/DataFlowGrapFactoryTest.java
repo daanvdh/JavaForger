@@ -44,7 +44,7 @@ public class DataFlowGrapFactoryTest {
     CompilationUnit cu = JavaParser.parse(setter);
 
     TestDataFlowGraph expected = TestDataFlowGraph.builder().withField("n")
-        .withMethod(TestDataFlowMethod.builder().withParameter("n").withInputField("n").withChangedFieldEdge("n", "this.n").build()).build();
+        .withMethod(TestDataFlowMethod.builder().withParameter("n").withInputField("n").withChangedFieldEdge("n", "n").build()).build();
 
     DataFlowGraph graph = factory.createGraph(cu);
 
