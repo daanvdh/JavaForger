@@ -60,6 +60,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
     this.init2 = var.init2;
     this.noInit = var.noInit;
     this.collection = var.collection;
+    this.initImports = var.initImports;
     this.typeImports = var.typeImports;
   }
 

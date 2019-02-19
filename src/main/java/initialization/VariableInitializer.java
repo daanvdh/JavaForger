@@ -247,6 +247,9 @@ public class VariableInitializer {
     defaultValue2.put("Volume", new InitValue("SI.CUBIC_METRE", "javax.measure.unit.SI")); // no alternative
     defaultValue1.put("Mass", new InitValue("SI.KILOGRAM", "javax.measure.unit.SI"));
     defaultValue2.put("Mass", new InitValue("SI.KILOGRAM", "javax.measure.unit.SI"));
+    defaultValue1.put("Duration", new InitValue("Duration.ofDays(1);", " java.time.Duration"));
+    defaultValue2.put("Duration", new InitValue("Duration.ofDays(2);", " java.time.Duration"));
+
   }
 
   private void initializeJavaEmptyInit() {
