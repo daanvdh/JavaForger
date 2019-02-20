@@ -37,7 +37,13 @@ public class CodeSnipitInserter {
       throws IOException {
     List<String> existingLines = Files.readAllLines(Paths.get(mergeClassPath), StandardCharsets.UTF_8);
     List<String> newlines = Arrays.asList(newClass.split("\\r?\\n"));
+    List<String> result = insert(existingLines, newlines, newCodeInsertionLocations);
+    Files.write(Paths.get(mergeClassPath), result, StandardCharsets.UTF_8);
+  }
 
+  private List<String> insert(List<String> existingLines, List<String> newlines,
+      LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) {
+    // Because newCodeInsertionLocations is ordered, we keep track of the already added lines to determine the new insertion location
     int addedLines = 0;
 
     for (Map.Entry<CodeSnipitLocation, CodeSnipitLocation> locations : newCodeInsertionLocations.entrySet()) {
@@ -54,8 +60,7 @@ public class CodeSnipitInserter {
 
       addedLines += codeLocation.size() - insertLocation.size();
     }
-
-    Files.write(Paths.get(mergeClassPath), existingLines, StandardCharsets.UTF_8);
+    return existingLines;
   }
 
 }
