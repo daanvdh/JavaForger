@@ -82,15 +82,17 @@ public class CodeSnipitMerger {
    * @param config The {@link JavaForgerConfiguration} containing merge settings and the path of the class to merge with.
    * @param codeSnipit The {@link CodeSnipit} which will be merged into the input class.
    * @param mergeClassPath The path to the class to merge with
-   * @throws IOException
+   * @throws IOException If the mergeClassPath does not exist
    */
   public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
     if (validate(codeSnipit, mergeClassPath)) {
       CompilationUnit existingCode = read(mergeClassPath);
-      CompilationUnit newCode = read(codeSnipit);
+
+      String completeClass = toCompleteClass(codeSnipit);
+      CompilationUnit newCode = readClass(completeClass);
 
       LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
-      inserter.insert(mergeClassPath, newCodeInsertionLocations);
+      inserter.insert(mergeClassPath, completeClass, newCodeInsertionLocations);
 
       merge(existingCode, newCode);
       write(mergeClassPath, existingCode);
@@ -295,8 +297,16 @@ public class CodeSnipitMerger {
     return new String(encoded, encoding);
   }
 
-  private CompilationUnit read(CodeSnipit codeSnipit) {
+  private CompilationUnit readClass(String completeClass) {
     // TODO make this flexible so that we only add the class if needed
+
+    CompilationUnit cu = Parser.parse(completeClass);
+    // Needed to preserve the original formatting
+    LexicalPreservingPrinter.setup(cu);
+    return cu;
+  }
+
+  private String toCompleteClass(CodeSnipit codeSnipit) {
     String string = codeSnipit.toString();
     int index = firstIndexAfterImports(string);
 
@@ -310,11 +320,7 @@ public class CodeSnipitMerger {
     if (!hasClassDefined) {
       code.append("\n}");
     }
-
-    CompilationUnit cu = Parser.parse(code.toString());
-    // Needed to preserve the original formatting
-    LexicalPreservingPrinter.setup(cu);
-    return cu;
+    return code.toString();
   }
 
   private int firstIndexAfterImports(String string) {

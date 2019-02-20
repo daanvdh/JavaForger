@@ -44,6 +44,10 @@ public class CodeSnipitLocation {
     return end;
   }
 
+  public int size() {
+    return end - start;
+  }
+
   public static CodeSnipitLocation of(int start, int end) {
     return new CodeSnipitLocation(start, end);
   }

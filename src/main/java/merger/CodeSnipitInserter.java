@@ -17,18 +17,45 @@
  */
 package merger;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * TODO javadoc
+ * Class for insterting code into an existing class based on earlier determined insertion locations.
  *
  * @author Daan
  */
 public class CodeSnipitInserter {
 
-  public void insert(String mergeClassPath, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) {
-    // TODO Auto-generated method stub
+  public void insert(String mergeClassPath, String newClass, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations)
+      throws IOException {
+    List<String> existingLines = Files.readAllLines(Paths.get(mergeClassPath), StandardCharsets.UTF_8);
+    List<String> newlines = Arrays.asList(newClass.split("\\r?\\n"));
 
+    int addedLines = 0;
+
+    for (Map.Entry<CodeSnipitLocation, CodeSnipitLocation> locations : newCodeInsertionLocations.entrySet()) {
+      CodeSnipitLocation codeLocation = locations.getKey();
+      CodeSnipitLocation insertLocation = locations.getKey();
+
+      for (int i = 0; i < insertLocation.size(); i++) {
+        existingLines.remove(addedLines + insertLocation.getStart());
+      }
+
+      for (int i = codeLocation.getStart(); i < codeLocation.getEnd(); i++) {
+        existingLines.add(addedLines + i, newlines.get(i));
+      }
+
+      addedLines += codeLocation.size() - insertLocation.size();
+    }
+
+    Files.write(Paths.get(mergeClassPath), existingLines, StandardCharsets.UTF_8);
   }
 
 }
