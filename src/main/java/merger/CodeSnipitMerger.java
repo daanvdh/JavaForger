@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -69,6 +70,9 @@ import reader.Parser;
  */
 public class CodeSnipitMerger {
 
+  private CodeSnipitLocater locater = new CodeSnipitLocater();
+  private CodeSnipitInserter inserter = new CodeSnipitInserter();
+
   /**
    * Merges the input {@link CodeSnipit} with the mergeClass given by the {@link JavaForgerConfiguration}. Currently only codeSnipits are supported that are not
    * a complete class. Imports are also not supported. Inside this method we wrap the code within the codeSnipit in a class and let {@link JavaParser} read it.
@@ -84,8 +88,13 @@ public class CodeSnipitMerger {
     if (validate(codeSnipit, mergeClassPath)) {
       CompilationUnit existingCode = read(mergeClassPath);
       CompilationUnit newCode = read(codeSnipit);
+
+      LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
+      inserter.insert(mergeClassPath, newCodeInsertionLocations);
+
       merge(existingCode, newCode);
       write(mergeClassPath, existingCode);
+
       format(config, mergeClassPath);
     }
   }
@@ -230,9 +239,7 @@ public class CodeSnipitMerger {
       isReplacement = f1.getVariable(0).getName().asString().equals(f2.getVariable(0).getName().asString());
     } else if (ClassOrInterfaceDeclaration.class.isAssignableFrom(member.getClass())) {
       // TODO Some recursive action should be done in this case, to replace fields and methods instead of overwriting the whole class.
-      ClassOrInterfaceDeclaration f1 = (ClassOrInterfaceDeclaration) exists;
-      ClassOrInterfaceDeclaration f2 = (ClassOrInterfaceDeclaration) member;
-      isReplacement = f1.getName().equals(f2.getName());
+      isReplacement = ((ClassOrInterfaceDeclaration) exists).getName().equals(((ClassOrInterfaceDeclaration) member).getName());
     } else if (ConstructorDeclaration.class.isAssignableFrom(member.getClass())) {
       ConstructorDeclaration m1 = (ConstructorDeclaration) exists;
       ConstructorDeclaration m2 = (ConstructorDeclaration) member;
