@@ -48,14 +48,14 @@ public class CodeSnipitInserter {
 
     for (Map.Entry<CodeSnipitLocation, CodeSnipitLocation> locations : newCodeInsertionLocations.entrySet()) {
       CodeSnipitLocation codeLocation = locations.getKey();
-      CodeSnipitLocation insertLocation = locations.getKey();
+      CodeSnipitLocation insertLocation = locations.getValue();
 
-      for (int i = 0; i < insertLocation.size(); i++) {
-        existingLines.remove(addedLines + insertLocation.getStart());
+      for (int i = insertLocation.getFirstIndex(); i < insertLocation.getLastIndex(); i++) {
+        existingLines.remove(addedLines + insertLocation.getFirstIndex());
       }
 
-      for (int i = codeLocation.getStart(); i < codeLocation.getEnd(); i++) {
-        existingLines.add(addedLines + i, newlines.get(i));
+      for (int i = 0; i < codeLocation.size(); i++) {
+        existingLines.add(addedLines + insertLocation.getFirstIndex() + i, newlines.get(codeLocation.getFirstIndex() + i));
       }
 
       addedLines += codeLocation.size() - insertLocation.size();

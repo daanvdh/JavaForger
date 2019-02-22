@@ -74,7 +74,7 @@ public class NodeComparator implements Comparator<Node> {
     // TODO find equal imports
     Integer compare;
     if (a instanceof ImportDeclaration) {
-      compare = b instanceof ImportDeclaration ? 1 : -1;
+      compare = -1;
     } else if (b instanceof ImportDeclaration) {
       compare = 1;
     } else {

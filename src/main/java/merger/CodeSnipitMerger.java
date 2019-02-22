@@ -34,6 +34,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 
 import configuration.JavaForgerConfiguration;
+import configuration.PathConverter;
 import generator.CodeSnipit;
 import generator.JavaForgerException;
 import reader.Parser;
@@ -94,7 +95,7 @@ public abstract class CodeSnipitMerger {
     return cu;
   }
 
-  protected String toCompleteClass(CodeSnipit codeSnipit) {
+  protected String toCompleteClass(CodeSnipit codeSnipit, String mergeClassPath) {
     String string = codeSnipit.toString();
     int index = firstIndexAfterImports(string);
 
@@ -102,7 +103,7 @@ public abstract class CodeSnipitMerger {
     code.append(string.substring(0, index));
     boolean hasClassDefined = hasClassDefined(string.substring(index));
     if (!hasClassDefined) {
-      code.append("public class ClassToMerge {\n");
+      code.append("\n\npublic class " + PathConverter.toClassName(mergeClassPath) + " {\n");
     }
     code.append(string.substring(index));
     if (!hasClassDefined) {
@@ -123,11 +124,16 @@ public abstract class CodeSnipitMerger {
     }
 
     while (result.isSuccessful()) {
+      if (lineEnd == string.length()) {
+        lineBegin = lineEnd;
+        break;
+      }
       lineBegin = lineEnd + 1;
       lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
       lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
       declaration = string.substring(lineBegin, lineEnd);
       result = parseImport(declaration);
+
     }
     return lineBegin;
   }

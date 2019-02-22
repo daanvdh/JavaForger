@@ -17,32 +17,38 @@
  */
 package merger;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.github.javaparser.ast.CompilationUnit;
 
-import configuration.JavaForgerConfiguration;
-import generator.CodeSnipit;
+import reader.Parser;
 
 /**
- * Class to merge new code into an existing class, on line per line basis.
+ * Unit test for {@link CodeSnipitLocater}
  *
  * @author Daan
  */
-public class LineMerger extends CodeSnipitMerger {
+public class CodeSnipitLocaterTest {
+
+  private Parser parser = new Parser();
 
   private CodeSnipitLocater locater = new CodeSnipitLocater();
-  private CodeSnipitInserter inserter = new CodeSnipitInserter();
 
-  @Override
-  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
-    CompilationUnit existingCode = read(mergeClassPath);
-    String completeClass = toCompleteClass(codeSnipit, mergeClassPath);
-    CompilationUnit newCode = readClass(completeClass);
+  @Test
+  public void testLocate() {
+    String code = "import my.impord;\n\npublic class ClassToMerge {\n\n}";
+    CompilationUnit cu = parser.parse(code);
 
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
-    inserter.insert(mergeClassPath, completeClass, newCodeInsertionLocations);
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected = new LinkedHashMap<>();
+    expected.put(CodeSnipitLocation.of(1, 2), CodeSnipitLocation.of(2, 2));
+    expected.put(CodeSnipitLocation.of(3, 6), CodeSnipitLocation.of(3, 6));
+
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = locater.locate(cu, cu);
+
+    Assert.assertEquals(expected, locations);
   }
 
 }

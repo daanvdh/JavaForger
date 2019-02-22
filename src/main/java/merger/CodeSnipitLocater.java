@@ -51,8 +51,7 @@ public class CodeSnipitLocater {
     return locations;
   }
 
-  private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, CompilationUnit existingCode,
-      CompilationUnit newCode) {
+  private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode, Node newCode) {
 
     Iterator<Node> existingNodes = existingCode.getChildNodes().iterator();
     Iterator<Node> newNodes = newCode.getChildNodes().iterator();
@@ -64,20 +63,24 @@ public class CodeSnipitLocater {
       Node insertNode = newNodes.next();
       int compare = comparator.compare(existingNode, insertNode);
 
+      Node previousExistingNode = compare < 0 ? existingNode : null;
+
       // while the existingNode is before the insertNode search for the next Node
-      while (compare < 0) {
+      while (compare < 0 && existingNodes.hasNext()) {
+        previousExistingNode = existingNode;
+        existingNode = existingNodes.next();
         lastNodeLocation = existingNode.getEnd().get().line + 1;
-        existingNode = existingNodes.hasNext() ? existingNodes.next() : null;
         compare = comparator.compare(existingNode, insertNode);
       }
 
-      if (existingNode != null) {
-        if (compare == 0) {
-          // TODO handle this recursively
-          newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
-        } else {
-          // The insertion Node must be added before existingNode
+      if (compare == 0) {
+        // TODO handle this recursively
+        newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+      } else {
+        if (previousExistingNode == null) {
           newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNode));
+        } else {
+          newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.after(previousExistingNode));
         }
       }
     }

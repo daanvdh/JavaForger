@@ -69,7 +69,7 @@ public class JavaParserMerger extends CodeSnipitMerger {
   @Override
   protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
     CompilationUnit existingCode = read(mergeClassPath);
-    String completeClass = toCompleteClass(codeSnipit);
+    String completeClass = toCompleteClass(codeSnipit, mergeClassPath);
     CompilationUnit newCode = readClass(completeClass);
     merge(existingCode, newCode);
     write(mergeClassPath, existingCode);
