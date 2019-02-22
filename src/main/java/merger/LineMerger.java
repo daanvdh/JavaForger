@@ -42,13 +42,9 @@ public class LineMerger extends CodeSnipitMerger {
   @Override
   protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
     CompilationUnit existingCode = read(mergeClassPath);
-    String completeClass = toCompleteClass(codeSnipit, mergeClassPath);
-    CompilationUnit newCode = readClass(completeClass);
-
-    Node newCode2 = toNode(codeSnipit, mergeClassPath);
-
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode2);
-    inserter.insert(mergeClassPath, completeClass, newCodeInsertionLocations);
+    Node newCode = toNode(codeSnipit, mergeClassPath);
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
+    inserter.insert(mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
   }
 
   private Node toNode(CodeSnipit codeSnipit, String mergeClassPath) {
@@ -110,8 +106,10 @@ public class LineMerger extends CodeSnipitMerger {
    * @return True if it has a class defined or fields, constructors or methods that should have been in the class.
    */
   private boolean hasClassCodeDefined(CodeSnipit codeSnipit) {
-    // TODO Auto-generated method stub
-    return false;
+    String string = codeSnipit.toString();
+    int index = firstIndexAfterImports(string);
+    String codeAfterImports = string.substring(index);
+    return hasClassDefined(codeAfterImports) || codeAfterImports.contains(";");
   }
 
 }

@@ -52,9 +52,10 @@ public class LineMergerTest extends AbstractFileChangingTest {
   }
 
   @Test
-  public void testField() {
-    // TODO Auto-generated method stub
-
+  public void testField() throws IOException {
+    String code = "protected String prettyString = \"very pretty\";";
+    String expectedClass = "verify-field.java";
+    executeAndVerify(expectedClass, code);
   }
 
   @Test

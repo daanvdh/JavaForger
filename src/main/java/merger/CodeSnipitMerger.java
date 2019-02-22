@@ -154,16 +154,16 @@ public abstract class CodeSnipitMerger {
     return index;
   }
 
-  private boolean hasClassDefined(String string) {
-    return parseDeclaration(string, ParseStart.CLASS_OR_INTERFACE_TYPE).isSuccessful();
-  }
-
   protected ParseResult<PackageDeclaration> parsePackage(String declaration) {
     return parseDeclaration(declaration, ParseStart.PACKAGE_DECLARATION);
   }
 
   protected ParseResult<ImportDeclaration> parseImport(String declaration) {
     return parseDeclaration(declaration, ParseStart.IMPORT_DECLARATION);
+  }
+
+  protected boolean hasClassDefined(String string) {
+    return parseDeclaration(string, ParseStart.CLASS_OR_INTERFACE_TYPE).isSuccessful();
   }
 
   private <N extends Node> ParseResult<N> parseDeclaration(String declaration, ParseStart<N> parseStart) {

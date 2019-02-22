@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 /**
  * Determines the location of code to be added, within existing code. Receives code that is already parsed. Ordering is based on the order defined within the
@@ -52,10 +53,26 @@ public class CodeSnipitLocater {
   }
 
   private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode, Node newCode) {
-
     Iterator<Node> existingNodes = existingCode.getChildNodes().iterator();
     Iterator<Node> newNodes = newCode.getChildNodes().iterator();
 
+    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes);
+  }
+
+  private void recursiveLocatorForClassBody(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
+      ClassOrInterfaceDeclaration existingClass, ClassOrInterfaceDeclaration insertClass) {
+    Iterator<Node> existingNodes = existingClass.getChildNodes().iterator();
+    Iterator<Node> newNodes = insertClass.getChildNodes().iterator();
+
+    // Throw away the first nodes because those are the class types which we do not want to merge recursively
+    existingNodes.next();
+    newNodes.next();
+
+    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes);
+  }
+
+  private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
+      Iterator<Node> existingNodes, Iterator<Node> newNodes) {
     Node existingNode = existingNodes.hasNext() ? existingNodes.next() : null;
     int lastNodeLocation = existingCode.getBegin().get().line + 1;
 
@@ -74,8 +91,13 @@ public class CodeSnipitLocater {
       }
 
       if (compare == 0) {
-        // TODO handle this recursively
-        newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+        if (ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass())) {
+          // Recursively handle classes
+          recursiveLocatorForClassBody(newCodeInsertionlocations, existingCode, (ClassOrInterfaceDeclaration) existingNode,
+              (ClassOrInterfaceDeclaration) insertNode);
+        } else {
+          newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+        }
       } else {
         if (previousExistingNode == null) {
           newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNode));
@@ -90,7 +112,6 @@ public class CodeSnipitLocater {
       Node insertNode = newNodes.next();
       newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(lastNodeLocation));
     }
-
   }
 
 }
