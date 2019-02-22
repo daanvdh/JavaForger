@@ -112,6 +112,14 @@ public abstract class CodeSnipitMerger {
     return code.toString();
   }
 
+  // TODO probably remove this thing
+  protected boolean hasClassDefined(CodeSnipit codeSnipit) {
+    String string = codeSnipit.toString();
+    int index = firstIndexAfterImports(string);
+    boolean hasClassDefined = hasClassDefined(string.substring(index));
+    return hasClassDefined;
+  }
+
   protected int firstIndexAfterImports(String string) {
     int lineBegin = getFirstIndexAfterComment(string);
     int lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
@@ -150,11 +158,11 @@ public abstract class CodeSnipitMerger {
     return parseDeclaration(string, ParseStart.CLASS_OR_INTERFACE_TYPE).isSuccessful();
   }
 
-  private ParseResult<PackageDeclaration> parsePackage(String declaration) {
+  protected ParseResult<PackageDeclaration> parsePackage(String declaration) {
     return parseDeclaration(declaration, ParseStart.PACKAGE_DECLARATION);
   }
 
-  private ParseResult<ImportDeclaration> parseImport(String declaration) {
+  protected ParseResult<ImportDeclaration> parseImport(String declaration) {
     return parseDeclaration(declaration, ParseStart.IMPORT_DECLARATION);
   }
 

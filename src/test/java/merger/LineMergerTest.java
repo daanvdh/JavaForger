@@ -64,6 +64,13 @@ public class LineMergerTest extends AbstractFileChangingTest {
     executeAndVerify(expectedClass, code);
   }
 
+  @Test
+  public void testPackage() throws IOException {
+    String code = "package my.packingedinges;";
+    String expectedClass = "verify-package.java";
+    executeAndVerify(expectedClass, code);
+  }
+
   private void executeAndVerify(String expectedClass, String code) throws IOException {
     merger.merge(JavaForgerConfiguration.builder().build(), new CodeSnipit(code), INPUT_CLASS);
     verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_CLASS);
@@ -91,6 +98,8 @@ public class LineMergerTest extends AbstractFileChangingTest {
       }
     };
 
+    test.setup();
+    test.testPackage();
     test.setup();
     test.testImport();
     test.setup();

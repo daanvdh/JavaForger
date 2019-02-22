@@ -50,10 +50,12 @@ public class CodeSnipitInserter {
       CodeSnipitLocation codeLocation = locations.getKey();
       CodeSnipitLocation insertLocation = locations.getValue();
 
+      // Remove old lines
       for (int i = insertLocation.getFirstIndex(); i < insertLocation.getLastIndex(); i++) {
         existingLines.remove(addedLines + insertLocation.getFirstIndex());
       }
 
+      // write new lines
       for (int i = 0; i < codeLocation.size(); i++) {
         existingLines.add(addedLines + insertLocation.getFirstIndex() + i, newlines.get(codeLocation.getFirstIndex() + i));
       }

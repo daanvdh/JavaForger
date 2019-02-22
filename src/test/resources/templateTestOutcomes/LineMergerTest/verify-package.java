@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package inputClassesForTests;
+package my.packingedinges;
 
 import java.util.Set;
-import my.impord;
 
 /**
  * Input class for unit tests.

@@ -43,7 +43,7 @@ public class CodeSnipitLocater {
    * @return An {@link LinkedHashMap} with as keys a {@link CodeSnipitLocation} of code to be added and as value a {@link CodeSnipitLocation} where in the
    *         existing class the code should be added. The map is ordered on lines where the code should be added.
    */
-  public LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locate(CompilationUnit existingCode, CompilationUnit newCode) {
+  public LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locate(CompilationUnit existingCode, Node newCode) {
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = new LinkedHashMap<>();
 
     recursiveLocator(locations, existingCode, newCode);
