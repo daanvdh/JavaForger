@@ -44,6 +44,8 @@ public class LineMergerTest extends AbstractFileChangingTest {
     String code = "public class ClassWithEverything {\n class AddedInnerClass {\n protected newMethod() { \n // Do Nothing \n }\n }\n }\n";
     String expectedClass = "verify-addInnerClass.java";
     executeAndVerify(expectedClass, code);
+
+    Assert.fail("The addedInnerClass should be behind the existing InnerClass");
   }
 
   @Test
@@ -51,6 +53,8 @@ public class LineMergerTest extends AbstractFileChangingTest {
     String code = "public class ClassWithEverything {\n class InnerClass {\n protected methodBetween3and4() { \n // Do Nothing \n }\n }\n }\n";
     String expectedClass = "verify-mergeInnerClass.java";
     executeAndVerify(expectedClass, code);
+
+    Assert.fail("The methodBetween3and4 should be behind between method 3 ad 4");
   }
 
   @Test

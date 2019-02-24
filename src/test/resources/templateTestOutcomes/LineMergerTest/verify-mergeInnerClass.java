@@ -50,15 +50,13 @@ public class ClassWithEverything {
     s = t;
     return j + 1;
   }
- class AddedInnerClass {
- protected newMethod() { 
- // Do Nothing 
- }
- }
 
   public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
+ protected methodBetween3and4() { 
+ // Do Nothing 
+ }
 
     public void method3() {
       method4(d, f);
