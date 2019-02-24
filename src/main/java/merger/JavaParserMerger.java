@@ -55,6 +55,8 @@ import generator.CodeSnipit;
  */
 public class JavaParserMerger extends CodeSnipitMerger {
 
+  private CodeSnipitReader reader = new CodeSnipitReader();
+
   /**
    * Merges the input {@link CodeSnipit} with the mergeClass given by the {@link JavaForgerConfiguration}. Currently only codeSnipits are supported that are not
    * a complete class. Imports are also not supported. Inside this method we wrap the code within the codeSnipit in a class and let {@link JavaParser} read it.
@@ -68,9 +70,9 @@ public class JavaParserMerger extends CodeSnipitMerger {
    */
   @Override
   protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
-    CompilationUnit existingCode = read(mergeClassPath);
-    String completeClass = toCompleteClass(codeSnipit, mergeClassPath);
-    CompilationUnit newCode = readClass(completeClass);
+    CompilationUnit existingCode = reader.read(mergeClassPath);
+    String completeClass = reader.toCompleteClass(codeSnipit, mergeClassPath);
+    CompilationUnit newCode = reader.readClass(completeClass);
     merge(existingCode, newCode);
     write(mergeClassPath, existingCode);
   }

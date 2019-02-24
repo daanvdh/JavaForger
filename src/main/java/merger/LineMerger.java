@@ -20,11 +20,7 @@ package merger;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.PackageDeclaration;
 
 import configuration.JavaForgerConfiguration;
 import generator.CodeSnipit;
@@ -38,78 +34,14 @@ public class LineMerger extends CodeSnipitMerger {
 
   private CodeSnipitLocater locater = new CodeSnipitLocater();
   private CodeSnipitInserter inserter = new CodeSnipitInserter();
+  private CodeSnipitReader reader = new CodeSnipitReader();
 
   @Override
   protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
-    CompilationUnit existingCode = read(mergeClassPath);
-    Node newCode = toNode(codeSnipit, mergeClassPath);
+    CompilationUnit existingCode = reader.read(mergeClassPath);
+    CompilationUnit newCode = reader.read(codeSnipit, mergeClassPath);
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
     inserter.insert(mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
-  }
-
-  private Node toNode(CodeSnipit codeSnipit, String mergeClassPath) {
-    Node n;
-    if (hasClassCodeDefined(codeSnipit)) {
-      String completeClass = toCompleteClass(codeSnipit, mergeClassPath);
-      n = readClass(completeClass);
-    } else {
-      // TODO handle it if there is javadoc defined above the package
-      CompilationUnit cu = new CompilationUnit();
-
-      String string = codeSnipit.toString();
-
-      int lineBegin = getFirstIndexAfterComment(string);
-      int lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
-      lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-      String declaration = string.substring(lineBegin, lineEnd);
-
-      boolean endOfFile = false;
-
-      // Add package if present
-      ParseResult<PackageDeclaration> pack = parsePackage(declaration);
-      if (pack.isSuccessful()) {
-        cu.setPackageDeclaration(pack.getResult().get());
-
-        endOfFile = lineEnd == string.length();
-
-        if (!endOfFile) {
-          lineBegin = lineEnd + 1;
-          lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
-          lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-          declaration = string.substring(lineBegin, lineEnd);
-        }
-      }
-
-      // Add imports
-      declaration = string.substring(lineBegin, lineEnd);
-      ParseResult<ImportDeclaration> result = parseImport(declaration);
-      while (result.isSuccessful() && !endOfFile) {
-        cu.addImport(result.getResult().get());
-
-        endOfFile = lineEnd == string.length();
-        if (!endOfFile) {
-          lineBegin = lineEnd + 1;
-          lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
-          lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-          declaration = string.substring(lineBegin, lineEnd);
-          result = parseImport(declaration);
-        }
-      }
-
-      n = cu;
-    }
-    return n;
-  }
-
-  /**
-   * @param codeSnipit The code to analyze
-   * @return True if it has a class defined or fields, constructors or methods that should have been in the class.
-   */
-  private boolean hasClassCodeDefined(CodeSnipit codeSnipit) {
-    String string = codeSnipit.toString();
-    int index = firstIndexAfterImports(string);
-    String codeAfterImports = string.substring(index);
-    return hasClassDefined(codeAfterImports) || codeAfterImports.contains(";");
   }
 
 }

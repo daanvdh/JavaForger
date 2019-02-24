@@ -18,26 +18,11 @@
 package merger;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParseStart;
-import com.github.javaparser.Provider;
-import com.github.javaparser.Providers;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.PackageDeclaration;
-import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
-
 import configuration.JavaForgerConfiguration;
-import configuration.PathConverter;
 import generator.CodeSnipit;
 import generator.JavaForgerException;
-import reader.Parser;
 
 /**
  * TODO javadoc
@@ -71,106 +56,6 @@ public abstract class CodeSnipitMerger {
       success = false;
     }
     return success;
-  }
-
-  protected CompilationUnit readClass(String completeClass) {
-    // TODO make this flexible so that we only add the class if needed
-
-    CompilationUnit cu = Parser.parse(completeClass);
-    // Needed to preserve the original formatting
-    LexicalPreservingPrinter.setup(cu);
-    return cu;
-  }
-
-  protected CompilationUnit read(String className) throws IOException {
-    CompilationUnit cu = null;
-    try (FileInputStream in = new FileInputStream(className)) {
-      cu = JavaParser.parse(in);
-      in.close();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-    // Needed to preserve the original formatting
-    LexicalPreservingPrinter.setup(cu);
-    return cu;
-  }
-
-  protected String toCompleteClass(CodeSnipit codeSnipit, String mergeClassPath) {
-    String string = codeSnipit.toString();
-    int index = firstIndexAfterImports(string);
-
-    StringBuilder code = new StringBuilder();
-    code.append(string.substring(0, index));
-    boolean hasClassDefined = hasClassDefined(string.substring(index));
-    if (!hasClassDefined) {
-      code.append("\n\npublic class " + PathConverter.toClassName(mergeClassPath) + " {\n");
-    }
-    code.append(string.substring(index));
-    if (!hasClassDefined) {
-      code.append("\n}");
-    }
-    return code.toString();
-  }
-
-  // TODO probably remove this thing
-  protected boolean hasClassDefined(CodeSnipit codeSnipit) {
-    String string = codeSnipit.toString();
-    int index = firstIndexAfterImports(string);
-    boolean hasClassDefined = hasClassDefined(string.substring(index));
-    return hasClassDefined;
-  }
-
-  protected int firstIndexAfterImports(String string) {
-    int lineBegin = getFirstIndexAfterComment(string);
-    int lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
-    lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-    String declaration = string.substring(lineBegin, lineEnd);
-
-    ParseResult<?> result = parsePackage(declaration);
-    if (!result.isSuccessful()) {
-      result = parseImport(declaration);
-    }
-
-    while (result.isSuccessful()) {
-      if (lineEnd == string.length()) {
-        lineBegin = lineEnd;
-        break;
-      }
-      lineBegin = lineEnd + 1;
-      lineEnd = lineBegin + string.substring(lineBegin).indexOf(";");
-      lineEnd = lineEnd < 0 ? string.length() : (lineEnd + 1);
-      declaration = string.substring(lineBegin, lineEnd);
-      result = parseImport(declaration);
-
-    }
-    return lineBegin;
-  }
-
-  protected int getFirstIndexAfterComment(String string) {
-    int index = 0;
-    if (string.startsWith("/*")) {
-      index = string.indexOf("*/") + 3;
-    }
-    return index;
-  }
-
-  protected ParseResult<PackageDeclaration> parsePackage(String declaration) {
-    return parseDeclaration(declaration, ParseStart.PACKAGE_DECLARATION);
-  }
-
-  protected ParseResult<ImportDeclaration> parseImport(String declaration) {
-    return parseDeclaration(declaration, ParseStart.IMPORT_DECLARATION);
-  }
-
-  protected boolean hasClassDefined(String string) {
-    return parseDeclaration(string, ParseStart.CLASS_OR_INTERFACE_TYPE).isSuccessful();
-  }
-
-  private <N extends Node> ParseResult<N> parseDeclaration(String declaration, ParseStart<N> parseStart) {
-    JavaParser parser = new JavaParser();
-    Provider provider = Providers.provider(declaration);
-    ParseResult<N> result = parser.parse(parseStart, provider);
-    return result;
   }
 
   protected void format(JavaForgerConfiguration config, String mergeClassPath) {

@@ -98,7 +98,8 @@ public class NodeComparator implements Comparator<Node> {
   }
 
   private Integer compareClass(Node a, Node b) {
-    BiFunction<Node, Node, Boolean> equals = (x, y) -> ((ClassOrInterfaceDeclaration) x).getName().equals(((ClassOrInterfaceDeclaration) y).getName());
+    BiFunction<Node, Node, Boolean> equals =
+        (x, y) -> ((ClassOrInterfaceDeclaration) x).getNameAsString().equals(((ClassOrInterfaceDeclaration) y).getNameAsString());
     return compareNode(a, b, ClassOrInterfaceDeclaration.class, equals);
   }
 

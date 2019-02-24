@@ -17,54 +17,11 @@
  */
 package inputClassesForTests;
 
-import java.util.Set;
-import my.impord;
-
 /**
  * Input class for unit tests.
  *
  * @author Daan
  */
-public class ClassWithEverything {
-
-  public static final Boolean PUB_STAT_FIN = false;
-
-  public Set<Product> prod;
-  public int i = 0;
-  protected ClassWithEverything c;
-  private String s;
-
-  public ClassWithEverything(int j) {
-    this();
-    i = j;
-  }
-
-  private ClassWithEverything() {
-    // Do nothing
-  }
-
-  public void method1() {
-    method2(i, s);
-  }
-
-  private int method2(int j, String t) {
-    s = t;
-    return j + 1;
-  }
-
-  public class InnerClass {
-    public double d = 0.3;
-    private float f = 4.8F;
-
-    public void method3() {
-      method4(d, f);
-    }
-
-    private int method4(double e, float g) {
-      d = e;
-      return Float.floatToIntBits(g);
-    }
-
-  }
+public class ClassWithEverythingTest {
 
 }

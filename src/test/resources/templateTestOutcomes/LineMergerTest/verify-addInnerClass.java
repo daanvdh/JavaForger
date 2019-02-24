@@ -18,7 +18,6 @@
 package inputClassesForTests;
 
 import java.util.Set;
-import my.impord;
 
 /**
  * Input class for unit tests.
@@ -51,6 +50,11 @@ public class ClassWithEverything {
     s = t;
     return j + 1;
   }
+ class AddedInnerClass {
+ protected newMethod() { 
+ // Do Nothing 
+ }
+ }
 
   public class InnerClass {
     public double d = 0.3;

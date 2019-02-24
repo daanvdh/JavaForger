@@ -43,10 +43,10 @@ import configuration.StaticJavaForgerConfiguration;
  */
 public abstract class AbstractFileChangingTest {
 
-  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/CLassWithEverything.java";
-  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/CLassWithEverythingTest.java";
-  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/CLassWithEverything.java";
-  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/CLassWithEverythingTest.java";
+  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/ClassWithEverything.java";
+  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/ClassWithEverythingTest.java";
+  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverything.java";
+  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverythingTest.java";
 
   @Before
   public void setup() throws IOException {

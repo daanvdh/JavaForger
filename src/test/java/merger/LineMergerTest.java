@@ -40,15 +40,24 @@ public class LineMergerTest extends AbstractFileChangingTest {
   private LineMerger merger = new LineMerger();
 
   @Test
-  public void testMethod() {
-    // TODO Auto-generated method stub
-
+  public void testAddInnerClass() throws IOException {
+    String code = "public class ClassWithEverything {\n class AddedInnerClass {\n protected newMethod() { \n // Do Nothing \n }\n }\n }\n";
+    String expectedClass = "verify-addInnerClass.java";
+    executeAndVerify(expectedClass, code);
   }
 
   @Test
-  public void testConstructor() {
-    // TODO Auto-generated method stub
+  public void testMergeInnerClass() throws IOException {
+    String code = "public class ClassWithEverything {\n class InnerClass {\n protected methodBetween3and4() { \n // Do Nothing \n }\n }\n }\n";
+    String expectedClass = "verify-mergeInnerClass.java";
+    executeAndVerify(expectedClass, code);
+  }
 
+  @Test
+  public void testReplaceConstructor() throws IOException {
+    String code = "private ClassWithEverything(int i) {\n this.i = i;\n}\n";
+    String expectedClass = "verify-constructor.java";
+    executeAndVerify(expectedClass, code);
   }
 
   @Test
@@ -106,9 +115,11 @@ public class LineMergerTest extends AbstractFileChangingTest {
     test.setup();
     test.testField();
     test.setup();
-    test.testConstructor();
+    test.testReplaceConstructor();
     test.setup();
-    test.testMethod();
+    test.testAddInnerClass();
+    test.setup();
+    test.testMergeInnerClass();
     test.tearDown();
 
     Assert.fail();

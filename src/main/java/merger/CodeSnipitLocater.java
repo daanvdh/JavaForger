@@ -73,6 +73,11 @@ public class CodeSnipitLocater {
 
   private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
       Iterator<Node> existingNodes, Iterator<Node> newNodes) {
+
+    // TODO this method has to be refactored so that a reference to previous existing nodes is kept so that we can check on equality for previous nodes.
+    // Otherwise it can happen that we insert 2 public methods, first a non-existing, then an existing, but we cannot find he existing anymore, because we
+    // already passed it.
+
     Node existingNode = existingNodes.hasNext() ? existingNodes.next() : null;
     int lastNodeLocation = existingCode.getBegin().get().line + 1;
 
@@ -91,7 +96,8 @@ public class CodeSnipitLocater {
       }
 
       if (compare == 0) {
-        if (ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass())) {
+        if (ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass())
+            && ClassOrInterfaceDeclaration.class.isAssignableFrom(insertNode.getClass())) {
           // Recursively handle classes
           recursiveLocatorForClassBody(newCodeInsertionlocations, existingCode, (ClassOrInterfaceDeclaration) existingNode,
               (ClassOrInterfaceDeclaration) insertNode);
