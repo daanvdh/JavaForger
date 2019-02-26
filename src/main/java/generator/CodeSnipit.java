@@ -57,7 +57,7 @@ public class CodeSnipit {
   private String toStringWithLineNumbers() {
     String[] split = code.split("\\r?\\n");
     List<String> codeList = Arrays.asList(split);
-    IntStream.range(0, codeList.size()).mapToObj(i -> (Integer) i).forEach(i -> codeList.set(i, i + "\t" + codeList.get(i)));
+    IntStream.range(0, codeList.size()).mapToObj(i -> (Integer) i).forEach(i -> codeList.set(i, (i + 1) + "\t" + codeList.get(i)));
     return codeList.stream().collect(Collectors.joining("\n"));
   }
 

@@ -79,7 +79,7 @@ public class StaticJavaForgerConfiguration {
     return getConfig().merger;
   }
 
-  public void setMerger(JavaParserMerger merger) {
+  public void setMerger(CodeSnipitMerger merger) {
     config.merger = merger;
   }
 

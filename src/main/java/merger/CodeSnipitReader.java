@@ -184,7 +184,27 @@ public class CodeSnipitReader {
       result = parseImport(declaration);
 
     }
+
+    // TODO replace 'lineEnd + 1' with 'lineEnd'
+
+    lineBegin = getIndexAfterNewLine(string, lineBegin);
+
     return lineBegin;
+  }
+
+  private int getIndexAfterNewLine(String string, int lineBegin) {
+    int index = getIndexAfterNewLine(string, lineBegin, "\r");
+    index = getIndexAfterNewLine(string, index, "\n");
+    return index;
+  }
+
+  private int getIndexAfterNewLine(String string, int lineBegin, String newLineIndicator) {
+    int newLine = string.substring(lineBegin).indexOf(newLineIndicator);
+    int index = lineBegin;
+    if (0 <= newLine && newLine < 3) {
+      index = index + newLine + 1;
+    }
+    return index;
   }
 
   protected int getFirstIndexAfterComment(String string) {
