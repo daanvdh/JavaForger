@@ -44,13 +44,6 @@ public class CodeSnipitLocationTest {
   }
 
   @Test
-  public void testOf_NodeInputWithJavaDoc() {
-
-    Assert.fail("Currently javadoc is not taken into account for assigning the first line. ");
-
-  }
-
-  @Test
   public void testBefore_NodeInput() {
     Node node = createNode();
 
@@ -59,10 +52,57 @@ public class CodeSnipitLocationTest {
     Assert.assertEquals(CodeSnipitLocation.of(2, 2), location);
   }
 
+  @Test
+  public void testOf_NodeInputWithJavaDoc() {
+    String field = "/**\n Very nice javadoc.\n * With mulitple lines.\n */\nprivate String someField;\n";
+    Node node = wrapInsideCompilationUnit(field);
+
+    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+
+    Assert.assertEquals(CodeSnipitLocation.of(6, 11), location);
+  }
+
+  @Test
+  public void testOf_NodeInputAnnotation() {
+    String field = "@Anno1\n@Anno2\n@Anno3\nprivate String someField;\n";
+    Node node = wrapInsideCompilationUnit(field);
+
+    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+
+    Assert.assertEquals(CodeSnipitLocation.of(6, 10), location);
+  }
+
+  @Test
+  public void testOf_NodeInputWithJavaDocAndAnnotation() {
+    String field = "/**\n Very nice javadoc.\n * With mulitple lines.\n */\n@Anno1\n@Anno2\nprivate String someField;\n";
+    Node node = wrapInsideCompilationUnit(field);
+
+    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+
+    Assert.assertEquals(CodeSnipitLocation.of(6, 13), location);
+  }
+
+  @Test
+  public void testOf_NodeInputWithAnnotationAndJavaDoc() {
+    String field = "@Anno1\n@Anno2\n/**\n Very nice javadoc.\n * With mulitple lines.\n */\nprivate String someField;\n";
+    Node node = wrapInsideCompilationUnit(field);
+
+    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+
+    Assert.assertEquals(CodeSnipitLocation.of(6, 13), location);
+  }
+
   private Node createNode() {
     String code = "import my.impord;\nimport my.secondimpord;\n\npublic class ClassToMerge {\n\n}";
     CompilationUnit cu = parser.parse(code);
     Node node = cu.getChildNodes().get(1);
+    return node;
+  }
+
+  private Node wrapInsideCompilationUnit(String field) {
+    String code = "import my.impord;\nimport my.secondimpord;\n\npublic class ClassToMerge {\n\n" + field + "\n}";
+    CompilationUnit cu = parser.parse(code);
+    Node node = cu.getChildNodes().get(2).getChildNodes().get(1);
     return node;
   }
 

@@ -17,10 +17,14 @@
  */
 package merger;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
+import com.github.javaparser.javadoc.Javadoc;
 
 /**
  * Defines the location of code with an inclusive start line number and an exclusive end line number.
@@ -74,7 +78,25 @@ public class CodeSnipitLocation {
   }
 
   public static CodeSnipitLocation of(Node node) {
-    return of(node.getBegin().get().line, node.getEnd().get().line + 1);
+    int javaDocLines = countJavaDocLines(node);
+    CodeSnipitLocation location = of(node.getBegin().get().line - javaDocLines, node.getEnd().get().line + 1);
+    return location;
+  }
+
+  private static int countJavaDocLines(Node node) {
+    int javaDocLines = 0;
+    if (NodeWithJavadoc.class.isAssignableFrom(node.getClass())) {
+      NodeWithJavadoc<?> javaDocNode = (NodeWithJavadoc<?>) node;
+      Optional<Javadoc> javadoc = javaDocNode.getJavadoc();
+      if (javadoc.isPresent()) {
+        String text = javadoc.get().toText();
+        String[] lines = text.split("\r\n|\r|\n");
+        javaDocLines = lines.length + 2; // The plus 2 is for the begin and end lines containing /** and */.
+
+        // TODO it is currently not supported to have only a single line of javadoc.
+      }
+    }
+    return javaDocLines;
   }
 
   public static CodeSnipitLocation before(Node node) {
