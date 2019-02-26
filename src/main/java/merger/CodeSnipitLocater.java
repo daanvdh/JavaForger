@@ -90,9 +90,14 @@ public class CodeSnipitLocater {
       // while the existingNode is before the insertNode search for the next Node
       while (compare < 0 && existingNodes.hasNext()) {
         previousExistingNode = existingNode;
-        existingNode = existingNodes.next();
         lastNodeLocation = existingNode.getEnd().get().line + 1;
+        existingNode = existingNodes.next();
         compare = comparator.compare(existingNode, insertNode);
+      }
+
+      if (compare < 0 && !existingNodes.hasNext()) {
+        previousExistingNode = existingNode;
+        lastNodeLocation = existingNode.getEnd().get().line + 1;
       }
 
       if (compare == 0) {

@@ -50,11 +50,6 @@ public class ClassWithEverything {
     s = t;
     return j + 1;
   }
- class AddedInnerClass {
- protected newMethod() { 
- // Do Nothing 
- }
- }
 
   public class InnerClass {
     public double d = 0.3;
@@ -70,5 +65,10 @@ public class ClassWithEverything {
     }
 
   }
+ class AddedInnerClass {
+ protected newMethod() { 
+ // Do Nothing 
+ }
+ }
 
 }

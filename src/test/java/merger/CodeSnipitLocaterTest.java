@@ -44,9 +44,23 @@ public class CodeSnipitLocaterTest {
 
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected = new LinkedHashMap<>();
     expected.put(CodeSnipitLocation.of(1, 2), CodeSnipitLocation.of(2, 2));
-    expected.put(CodeSnipitLocation.of(3, 6), CodeSnipitLocation.of(3, 6));
 
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = locater.locate(cu, cu);
+
+    Assert.assertEquals(expected, locations);
+  }
+
+  @Test
+  public void testLocate_innerClass() {
+    String code1 = "public class ClassToMerge {\n\npublic class InnerClass1 {\n\n}\n}";
+    String code2 = "public class ClassToMerge {\n\nclass InnerClass2 {\n\n}\n}";
+    CompilationUnit cu1 = parser.parse(code1);
+    CompilationUnit cu2 = parser.parse(code2);
+
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected = new LinkedHashMap<>();
+    expected.put(CodeSnipitLocation.of(3, 6), CodeSnipitLocation.of(6, 6));
+
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = locater.locate(cu1, cu2);
 
     Assert.assertEquals(expected, locations);
   }

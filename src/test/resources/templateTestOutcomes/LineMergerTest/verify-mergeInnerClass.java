@@ -54,13 +54,13 @@ public class ClassWithEverything {
   public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
- protected methodBetween3and4() { 
- // Do Nothing 
- }
 
     public void method3() {
       method4(d, f);
     }
+ protected void methodBetween3and4() { 
+ // Do Nothing 
+ }
 
     private int method4(double e, float g) {
       d = e;
