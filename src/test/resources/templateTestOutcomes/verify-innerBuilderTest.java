@@ -20,7 +20,7 @@ import org.junit.Test;
 import inputClassesForTests.Product;
 import java.util.Set;
 import java.util.Collections;
-import inputClassesForTests.CLassWithEverything;
+import inputClassesForTests.ClassWithEverything;
 
 
 
@@ -29,30 +29,30 @@ import inputClassesForTests.CLassWithEverything;
  *
  * @author Daan
  */
-public class CLassWithEverythingTest {
+public class ClassWithEverythingTest {
 
 @Test 
-  public void testCLassWithEverything_minimum() {
-    CLassWithEverything cLassWithEverything= CLassWithEverything.builder().build();
+  public void testClassWithEverything_minimum() {
+    ClassWithEverything classWithEverything= ClassWithEverything.builder().build();
 
-    Assert.assertTrue("Unexpected prod", cLassWithEverything.getProd().isEmpty());
-    Assert.assertEquals("Unexpected i", 0, cLassWithEverything.getI());
-    Assert.assertNull("Unexpected c", cLassWithEverything.getC());
-    Assert.assertNull("Unexpected s", cLassWithEverything.getS());
+    Assert.assertTrue("Unexpected prod", classWithEverything.getProd().isEmpty());
+    Assert.assertEquals("Unexpected i", 0, classWithEverything.getI());
+    Assert.assertNull("Unexpected c", classWithEverything.getC());
+    Assert.assertNull("Unexpected s", classWithEverything.getS());
   }
 
 @Test 
-  public void testCLassWithEverything_maximum() {
-    CLassWithEverything cLassWithEverything= createAndFillBuilder().build(); 
+  public void testClassWithEverything_maximum() {
+    ClassWithEverything classWithEverything= createAndFillBuilder().build(); 
 
-    Assert.assertEquals("Unexpected prod", PROD, cLassWithEverything.getProd());
-    Assert.assertEquals("Unexpected i", I, cLassWithEverything.getI());
-    Assert.assertEquals("Unexpected c", C, cLassWithEverything.getC());
-    Assert.assertEquals("Unexpected s", S, cLassWithEverything.getS());
+    Assert.assertEquals("Unexpected prod", PROD, classWithEverything.getProd());
+    Assert.assertEquals("Unexpected i", I, classWithEverything.getI());
+    Assert.assertEquals("Unexpected c", C, classWithEverything.getC());
+    Assert.assertEquals("Unexpected s", S, classWithEverything.getS());
 }
 
-private CLassWithEverything.Builder createAndFillBuilder() {
-    return CLassWithEverything.builder()
+private ClassWithEverything.Builder createAndFillBuilder() {
+    return ClassWithEverything.builder()
     .prod(PROD)
     .i(I)
     .c(C)
@@ -64,7 +64,7 @@ private static final Set<Product> PROD = Collections.singleton(Product.builder()
 
 private static final int I = 1;
 
-private static final CLassWithEverything C = CLassWithEverything.builder().build();
+private static final ClassWithEverything C = ClassWithEverything.builder().build();
 
 private static final String S = "a";
 

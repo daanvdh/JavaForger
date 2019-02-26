@@ -21,7 +21,7 @@ import org.junit.Test;
 import inputClassesForTests.Product;
 import java.util.Set;
 import java.util.Collections;
-import inputClassesForTests.CLassWithEverything;
+import inputClassesForTests.ClassWithEverything;
 
 
 
@@ -30,33 +30,33 @@ import inputClassesForTests.CLassWithEverything;
  *
  * @author Daan
  */
-public class CLassWithEverythingTest {
+public class ClassWithEverythingTest {
 
 @Test
   public void testHashCode_Same() {
-    CLassWithEverything.Builder builder = createAndFillBuilder();
-    CLassWithEverything a = builder.build();
-    CLassWithEverything b = builder.build();
+    ClassWithEverything.Builder builder = createAndFillBuilder();
+    ClassWithEverything a = builder.build();
+    ClassWithEverything b = builder.build();
     Assert.assertEquals("Expected hash code to be the same", a.hashCode(), b.hashCode());
   }
 
 @Test
   public void testHashCode_Different() {
-    verifyHashCode_Different(CLassWithEverything.Builder::prod, Collections.singleton(Product.builder().build()));
-    verifyHashCode_Different(CLassWithEverything.Builder::i, 2);
-    verifyHashCode_Different(CLassWithEverything.Builder::c, CLassWithEverything.builder().build());
-    verifyHashCode_Different(CLassWithEverything.Builder::s, "b");
+    verifyHashCode_Different(ClassWithEverything.Builder::prod, Collections.singleton(Product.builder().build()));
+    verifyHashCode_Different(ClassWithEverything.Builder::i, 2);
+    verifyHashCode_Different(ClassWithEverything.Builder::c, ClassWithEverything.builder().build());
+    verifyHashCode_Different(ClassWithEverything.Builder::s, "b");
   }
 
-private <T> void verifyHashCode_Different(BiFunction<CLassWithEverything.Builder, T, CLassWithEverything.Builder> withMapper, T argument) {
-    CLassWithEverything.Builder builder = createAndFillBuilder();
-    CLassWithEverything a = builder.build();
-    CLassWithEverything b = withMapper.apply(builder, argument).build();
+private <T> void verifyHashCode_Different(BiFunction<ClassWithEverything.Builder, T, ClassWithEverything.Builder> withMapper, T argument) {
+    ClassWithEverything.Builder builder = createAndFillBuilder();
+    ClassWithEverything a = builder.build();
+    ClassWithEverything b = withMapper.apply(builder, argument).build();
     Assert.assertNotEquals("Expected hash code to be different", a.hashCode(), b.hashCode());
   }
 
-private CLassWithEverything.Builder createAndFillBuilder() {
-    return CLassWithEverything.builder()
+private ClassWithEverything.Builder createAndFillBuilder() {
+    return ClassWithEverything.builder()
     .prod(PROD)
     .i(I)
     .c(C)
@@ -68,7 +68,7 @@ private static final Set<Product> PROD = Collections.singleton(Product.builder()
 
 private static final int I = 1;
 
-private static final CLassWithEverything C = CLassWithEverything.builder().build();
+private static final ClassWithEverything C = ClassWithEverything.builder().build();
 
 private static final String S = "a";
 

@@ -25,21 +25,21 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  *
  * @author Daan
  */
-public class CLassWithEverything {
+public class ClassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
   public Set<Product> prod;
   public int i = 0;
-  protected CLassWithEverything c;
+  protected ClassWithEverything c;
   private String s;
 
-  public CLassWithEverything(int j) {
+  public ClassWithEverything(int j) {
     this();
     i = j;
   }
 
-  private CLassWithEverything() {
+  private ClassWithEverything() {
     // Do nothing
   }
 
@@ -53,7 +53,7 @@ public class CLassWithEverything {
     if (this == obj) {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
-      InputClass other = (InputClass) obj;
+      ClassWithEverything other = (ClassWithEverything) obj;
       equals = new EqualsBuilder()
         .append(prod, other.prod)
         .append(i, other.i)
@@ -69,7 +69,7 @@ public class CLassWithEverything {
     return j + 1;
   }
 
-  public class innerClass {
+  public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
 
