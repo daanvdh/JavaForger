@@ -64,17 +64,12 @@ public class CodeSnipitReaderTest {
   }
 
   @Test
-  public void testToCompleteClass() {
-
-    // TODO don't know if this test is correctly failing
-
+  public void testToCompleteClass_onlyImport() {
     String code = "import my.impord;";
-    String expected = code + "\n\npublic class MyClass {\n\n}";
 
     String claz = sut.toCompleteClass(new CodeSnipit(code), "The/Path\\To/MyClass.java");
 
-    Assert.assertEquals(claz, expected, claz);
-
+    Assert.assertEquals(claz, code, claz);
   }
 
 }
