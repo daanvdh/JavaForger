@@ -30,6 +30,7 @@ import freemarker.template.Configuration;
 import generator.JavaForger;
 import merger.CodeSnipitMerger;
 import merger.JavaParserMerger;
+import merger.LineMerger;
 import reader.ClassContainerReader;
 
 /**
@@ -67,7 +68,7 @@ public class StaticJavaForgerConfiguration {
   public static void reset() {
     StaticJavaForgerConfiguration conf = StaticJavaForgerConfiguration.getConfig();
     conf.setReader(new ClassContainerReader());
-    conf.setMerger(new JavaParserMerger());
+    conf.setMerger(new LineMerger());
     conf.setFreeMarkerConfiguration(FreeMarkerConfiguration.getDefaultConfig());
   }
 

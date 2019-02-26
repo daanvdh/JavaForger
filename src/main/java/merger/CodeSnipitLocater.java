@@ -56,7 +56,7 @@ public class CodeSnipitLocater {
     Iterator<Node> existingNodes = existingCode.getChildNodes().iterator();
     Iterator<Node> newNodes = newCode.getChildNodes().iterator();
 
-    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes);
+    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes, null);
   }
 
   private void recursiveLocatorForClassBody(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
@@ -65,23 +65,34 @@ public class CodeSnipitLocater {
     Iterator<Node> newNodes = insertClass.getChildNodes().iterator();
 
     // Throw away the first nodes because those are the class types which we do not want to merge recursively
-    existingNodes.next();
+    Node startNode = existingNodes.next();
     newNodes.next();
 
-    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes);
+    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes, startNode);
   }
 
+  /**
+   * TODO javadoc
+   *
+   * @param newCodeInsertionlocations
+   * @param existingCode
+   * @param existingNodes
+   * @param newNodes
+   * @param startingNode The last node from the existingNodes of the previous recursive call. Needed if the first Node needs to be inserted immediately.
+   */
   private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
-      Iterator<Node> existingNodes, Iterator<Node> newNodes) {
+      Iterator<Node> existingNodes, Iterator<Node> newNodes, Node startingNode) {
 
     // TODO this method has to be refactored so that a reference to previous existing nodes is kept so that we can check on equality for previous nodes.
     // Otherwise it can happen that we insert 2 public methods, first a non-existing, then an existing, but we cannot find he existing anymore, because we
     // already passed it.
 
+    Node previousExistingNode = startingNode;
     Node existingNode = existingNodes.hasNext() ? existingNodes.next() : null;
-    int lastNodeLocation = existingCode.getBegin().get().line + 1;
 
-    Node previousExistingNode = null;
+    // TODO refactor this thing to a location instead. Check if it can be removed.
+    int lastNodeLocation = previousExistingNode == null ? existingCode.getBegin().get().line + 1 : previousExistingNode.getEnd().get().line + 1;
+
     while (newNodes.hasNext() && existingNode != null) {
       Node insertNode = newNodes.next();
       int compare = comparator.compare(existingNode, insertNode);

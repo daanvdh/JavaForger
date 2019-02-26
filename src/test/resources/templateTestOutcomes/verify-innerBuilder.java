@@ -41,8 +41,7 @@ public class ClassWithEverything {
   private ClassWithEverything() {
     // Do nothing
   }
-
-private ClassWithEverything(Builder builder) {
+  private ClassWithEverything(Builder builder) {
     this.prod = builder.prod == null ? this.prod : builder.prod;
     this.i = builder.i == null ? this.i : builder.i;
     this.c = builder.c == null ? this.c : builder.c;
@@ -53,7 +52,11 @@ private ClassWithEverything(Builder builder) {
     method2(i, s);
   }
 
-public static Builder builder() {
+  /**
+   * Creates builder to build {@link ClassWithEverything}.
+   * @return created builder
+   */
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -76,7 +79,9 @@ public static Builder builder() {
     }
 
   }
-  
+  /**
+   * Builder to build {@link ClassWithEverything}.
+   */
   public static final class Builder {
     private Set<Product> prod = new HashSet<>();
     private Integer i;

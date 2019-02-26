@@ -46,8 +46,7 @@ public class ClassWithEverything {
   public void method1() {
     method2(i, s);
   }
-
-@Override
+  @Override
   public int hashCode() {
     return Objects.hash(
       prod

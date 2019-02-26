@@ -47,8 +47,7 @@ public class ClassWithEverything {
   public void method1() {
     method2(i, s);
   }
-
-@Override
+  @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
       .append("prod", prod)

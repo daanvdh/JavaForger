@@ -46,8 +46,7 @@ public class ClassWithEverything {
   public void method1() {
     method2(i, s);
   }
-
-@Override
+  @Override
   public boolean equals(Object obj) {
     boolean equals = false;
     if (this == obj) {
