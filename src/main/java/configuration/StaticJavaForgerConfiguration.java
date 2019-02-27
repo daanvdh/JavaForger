@@ -29,7 +29,6 @@ import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import generator.JavaForger;
 import merger.CodeSnipitMerger;
-import merger.JavaParserMerger;
 import merger.LineMerger;
 import reader.ClassContainerReader;
 
@@ -41,7 +40,7 @@ import reader.ClassContainerReader;
 public class StaticJavaForgerConfiguration {
 
   private ClassContainerReader reader = new ClassContainerReader();
-  private CodeSnipitMerger merger = new JavaParserMerger();
+  private CodeSnipitMerger merger = new LineMerger();
   private Configuration freeMarkerConfiguration;
 
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
