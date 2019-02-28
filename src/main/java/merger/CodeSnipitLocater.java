@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.SimpleName;
 
 /**
  * Determines the location of code to be added, within existing code. Receives code that is already parsed. Ordering is based on the order defined within the
@@ -64,11 +65,27 @@ public class CodeSnipitLocater {
     Iterator<Node> existingNodes = existingClass.getChildNodes().iterator();
     Iterator<Node> newNodes = insertClass.getChildNodes().iterator();
 
+    // TODO it is not yet supported to merge annotations of two classes so in the code below we skip them.
     // Throw away the first nodes because those are the class types which we do not want to merge recursively
-    Node startNode = existingNodes.next();
-    newNodes.next();
+    Node startNode = skiptTo(existingNodes, SimpleName.class);
+    skiptTo(newNodes, SimpleName.class);
 
     recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes, startNode);
+  }
+
+  /**
+   * Skips to the first class node in the iterator that is assignable from the input class and returns it. Returns null if no such node was found.
+   *
+   * @param nodes Iterator containing the nodes
+   * @param claz The class to find in the iterator
+   * @return The first node assignable from claz, null if not found.
+   */
+  private Node skiptTo(Iterator<Node> nodes, Class<SimpleName> claz) {
+    Node n = nodes.hasNext() ? nodes.next() : null;
+    while (n != null && !claz.isAssignableFrom(n.getClass())) {
+      n = nodes.hasNext() ? nodes.next() : null;
+    }
+    return n;
   }
 
   /**
