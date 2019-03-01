@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
@@ -58,6 +59,7 @@ public class AnnotationDefinitionTest extends AbstractTemplateExecutingTest {
   }
 
   @Test
+  @Ignore
   public void test_accessParameter() throws IOException, TemplateException {
     String template = "access.javat";
     String expected = "for annotation one the value for name is Gerrit";

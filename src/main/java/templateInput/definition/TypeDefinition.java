@@ -66,17 +66,17 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.type = type.type;
     this.lineNumber = type.lineNumber;
     this.column = type.column;
-    this.annotations = type.annotations;
-    this.accessModifiers = type.accessModifiers;
+    this.annotations.putAll(type.annotations);
+    this.accessModifiers.addAll(type.accessModifiers);
   }
 
-  public TypeDefinition(Builder builder) {
+  public TypeDefinition(Builder<?> builder) {
     this.name = builder.name;
     this.type = builder.type;
     this.lineNumber = builder.lineNumber;
     this.column = builder.column;
-    this.annotations = builder.annotations;
-    this.accessModifiers = builder.accessModifiers;
+    this.annotations.putAll(builder.annotations);
+    this.accessModifiers.addAll(builder.accessModifiers);
     this.typeImports = builder.typeImports;
   }
 
@@ -218,7 +218,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
       this.type = copy.type;
       this.lineNumber = copy.lineNumber;
       this.column = copy.column;
-      this.annotations = copy.annotations;
+      this.annotations.putAll(copy.annotations);
       this.accessModifiers = copy.accessModifiers;
     }
 
