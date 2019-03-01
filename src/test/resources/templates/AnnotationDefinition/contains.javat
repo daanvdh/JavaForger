@@ -1,0 +1,5 @@
+<#if annotations?seq_contains("one")>
+annotations contains one
+<#else>
+annotations does not contain one
+</#if>

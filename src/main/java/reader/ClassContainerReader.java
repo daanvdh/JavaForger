@@ -48,6 +48,7 @@ import configuration.StaticJavaForgerConfiguration;
 import generator.JavaForgerException;
 import initialization.VariableInitializer;
 import templateInput.ClassContainer;
+import templateInput.definition.AnnotationDefinition;
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.TypeDefinition;
@@ -129,7 +130,8 @@ public class ClassContainerReader {
 
   private ClassContainer parseClass(TypeDeclaration<?> type) {
     ClassOrInterfaceDeclaration cd = (ClassOrInterfaceDeclaration) type;
-    Set<String> annotations = cd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
+    Set<AnnotationDefinition> annotations =
+        cd.getAnnotations().stream().map(annotation -> new AnnotationDefinition(annotation.getName().toString())).collect(Collectors.toSet());
     Set<String> accessModifiers = cd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     List<String> interfaces = cd.getImplementedTypes().stream().map(i -> i.getNameAsString()).collect(Collectors.toList());
     String extend = cd.getExtendedTypes().stream().findFirst().map(e -> e.getNameAsString()).orElse(null);
@@ -157,7 +159,8 @@ public class ClassContainerReader {
 
   private MethodDefinition parseCallable(CallableDeclaration<?> md) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
-    Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
+    Set<AnnotationDefinition> annotations =
+        md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).map(AnnotationDefinition::new).collect(Collectors.toSet());
 
     return MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
         .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).withParameters(getParameters(md))
@@ -166,7 +169,8 @@ public class ClassContainerReader {
 
   private VariableDefinition parseField(Node node) {
     FieldDeclaration fd = (FieldDeclaration) node;
-    Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
+    Set<AnnotationDefinition> annotations =
+        fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).map(AnnotationDefinition::new).collect(Collectors.toSet());
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
         .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))

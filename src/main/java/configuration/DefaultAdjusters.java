@@ -35,7 +35,7 @@ import templateInput.definition.VariableDefinition;
 public class DefaultAdjusters {
 
   public static ClassContainerAdjuster removeDepracatedFields() {
-    return p -> removeVariableIf(p, var -> var.getAnnotations().contains("Deprecated"));
+    return p -> removeVariableIf(p, var -> var.getAnnotations().containsKey("Deprecated"));
   }
 
   public static ClassContainerAdjuster removeStaticFields() {

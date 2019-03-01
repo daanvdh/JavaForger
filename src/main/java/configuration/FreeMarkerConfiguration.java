@@ -67,7 +67,9 @@ public class FreeMarkerConfiguration {
     config.setOutputFormat(PlainTextOutputFormat.INSTANCE);
 
     // This prevents special characters (like <>{}& ) from being escaped.
-    config.setAutoEscapingPolicy(Configuration.DISABLE_AUTO_ESCAPING_POLICY);
+    config.setAutoEscapingPolicy(Configuration.ENABLE_IF_SUPPORTED_AUTO_ESCAPING_POLICY);
+
+    config.setWhitespaceStripping(true);
 
     return config;
   }

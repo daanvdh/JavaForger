@@ -17,15 +17,11 @@
  */
 package templateInput.definition;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import templateInput.StringConverter;
 
 /**
  * Describes a class. This includes attributes defined ON the class (className, implemented interfaces, annotations ...). It excludes attributes defined INSIDE
@@ -43,12 +39,7 @@ public class ClassDefinition extends TypeDefinition {
   }
 
   protected ClassDefinition(Builder builder) {
-    this.name = builder.name;
-    this.type = builder.type;
-    this.lineNumber = builder.lineNumber;
-    this.column = builder.column;
-    this.annotations = builder.annotations;
-    this.accessModifiers = builder.accessModifiers;
+    super(builder);
     this.extend = builder.extend;
     this.interfaces = builder.interfaces;
   }
@@ -109,58 +100,19 @@ public class ClassDefinition extends TypeDefinition {
   /**
    * Builder to build {@link VariableDefinition}.
    */
-  public static final class Builder {
-    private StringConverter name;
-    private String type;
-    private int lineNumber;
-    private int column;
-    private Set<String> annotations = new HashSet<>();
-    private Set<String> accessModifiers = new HashSet<>();
+  public static final class Builder extends TypeDefinition.Builder<ClassDefinition.Builder> {
+
     private String extend;
     public List<String> interfaces;
 
     private Builder() {
+      super();
     }
 
     private Builder(ClassDefinition copy) {
-      this.name = copy.name;
-      this.type = copy.type;
-      this.lineNumber = copy.lineNumber;
-      this.column = copy.column;
-      this.annotations = copy.annotations;
-      this.accessModifiers = copy.accessModifiers;
+      super(copy);
       this.extend = copy.extend;
       this.interfaces = copy.interfaces;
-    }
-
-    public Builder withName(String name) {
-      this.name = new StringConverter(name);
-      return this;
-    }
-
-    public Builder withType(String type) {
-      this.type = type;
-      return this;
-    }
-
-    public Builder withLineNumber(int lineNumber) {
-      this.lineNumber = lineNumber;
-      return this;
-    }
-
-    public Builder withColumn(int column) {
-      this.column = column;
-      return this;
-    }
-
-    public Builder withAnnotations(Set<String> annotations) {
-      this.annotations = annotations;
-      return this;
-    }
-
-    public Builder withAccessModifiers(Set<String> accessModifiers) {
-      this.accessModifiers = accessModifiers;
-      return this;
     }
 
     public Builder withInterfaces(List<String> interfaces) {

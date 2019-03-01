@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import common.SymbolSolverSetup;
 import templateInput.ClassContainer;
+import templateInput.definition.AnnotationDefinition;
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
@@ -69,11 +70,12 @@ public class ClassContainerReaderTest {
     Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("String");
     MethodDefinition m1 = build.withName("getUrl").withLineNumber(46).withColumn(3).build();
     MethodDefinition m2 = build.withName("getName").withLineNumber(50).withColumn(3).build();
-    MethodDefinition m3 = build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton("Override")).build();
-    MethodDefinition m4 =
-        build.withName("hashCode").withLineNumber(59).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("int").build();
-    MethodDefinition m5 = build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean")
-        .withParameters(VariableDefinition.builder().withType("Object").withName("obj").build()).build();
+    MethodDefinition m3 =
+        build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton(new AnnotationDefinition("Override"))).build();
+    MethodDefinition m4 = build.withName("hashCode").withLineNumber(59).withColumn(3)
+        .withAnnotations(Collections.singleton(new AnnotationDefinition("Override"))).withType("int").build();
+    MethodDefinition m5 = build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton(new AnnotationDefinition("Override")))
+        .withType("boolean").withParameters(VariableDefinition.builder().withType("Object").withName("obj").build()).build();
 
     Assert.assertThat(methods, Matchers.contains(m1, m2, m3, m4, m5));
   }

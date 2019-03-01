@@ -17,11 +17,16 @@
  */
 package templateInput.definition;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -44,7 +49,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   protected LinkedHashSet<String> typeImports = new LinkedHashSet<>();
   protected int lineNumber;
   protected int column;
-  protected Set<String> annotations = new HashSet<>();
+  protected Map<String, AnnotationDefinition> annotations = new HashMap<>();
   protected Set<String> accessModifiers = new HashSet<>();
 
   public TypeDefinition() {
@@ -63,6 +68,16 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.column = type.column;
     this.annotations = type.annotations;
     this.accessModifiers = type.accessModifiers;
+  }
+
+  public TypeDefinition(Builder builder) {
+    this.name = builder.name;
+    this.type = builder.type;
+    this.lineNumber = builder.lineNumber;
+    this.column = builder.column;
+    this.annotations = builder.annotations;
+    this.accessModifiers = builder.accessModifiers;
+    this.typeImports = builder.typeImports;
   }
 
   @Override
@@ -120,12 +135,17 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.column = column;
   }
 
-  public Set<String> getAnnotations() {
+  public Map<String, AnnotationDefinition> getAnnotations() {
     return annotations;
   }
 
   public void setAnnotations(Set<String> annotations) {
-    this.annotations = annotations;
+    this.annotations = annotations.stream().map(AnnotationDefinition::new).collect(Collectors.toMap(AnnotationDefinition::getName, Function.identity()));
+  }
+
+  public void setAnnotations(HashMap<String, AnnotationDefinition> annotations) {
+    this.annotations.clear();
+    this.annotations.putAll(annotations);
   }
 
   public Set<String> getAccessModifiers() {
@@ -177,6 +197,77 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
           .append(annotations, other.annotations).append(accessModifiers, other.accessModifiers).append(typeImports, other.typeImports).isEquals();
     }
     return equals;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends TypeDefinition.Builder<?>> {
+
+    private StringConverter name;
+    private String type;
+    private int lineNumber;
+    private int column;
+    private Set<String> accessModifiers = new HashSet<>();
+    private Map<String, AnnotationDefinition> annotations = new HashMap<>();
+    private LinkedHashSet<String> typeImports = new LinkedHashSet<>();
+
+    protected Builder() {
+    }
+
+    protected Builder(TypeDefinition copy) {
+      this.name = copy.name;
+      this.type = copy.type;
+      this.lineNumber = copy.lineNumber;
+      this.column = copy.column;
+      this.annotations = copy.annotations;
+      this.accessModifiers = copy.accessModifiers;
+    }
+
+    public T withName(String name) {
+      this.name = new StringConverter(name);
+      return (T) this;
+    }
+
+    public T withType(String type) {
+      this.type = type;
+      return (T) this;
+    }
+
+    public T withLineNumber(int lineNumber) {
+      this.lineNumber = lineNumber;
+      return (T) this;
+    }
+
+    public T withColumn(int column) {
+      this.column = column;
+      return (T) this;
+    }
+
+    public T withAnnotations(Map<String, AnnotationDefinition> annotations) {
+      this.annotations = annotations;
+      return (T) this;
+    }
+
+    public T withAnnotations(Set<AnnotationDefinition> annotations) {
+      this.annotations.clear();
+      this.annotations.putAll(annotations.stream().collect(Collectors.toMap(AnnotationDefinition::getName, Function.identity())));
+      return (T) this;
+    }
+
+    public T withAccessModifiers(Set<String> accessModifiers) {
+      this.accessModifiers = accessModifiers;
+      return (T) this;
+    }
+
+    public T withTypeImport(String typeImport) {
+      this.typeImports.add(typeImport);
+      return (T) this;
+    }
+
+    public T withTypeImports(String... imports) {
+      this.typeImports.addAll(Arrays.asList(imports));
+      return (T) this;
+    }
+
   }
 
 }
