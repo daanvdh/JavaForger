@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
@@ -44,7 +45,12 @@ public class AnnotationDefinitionTest extends AbstractTemplateExecutingTest {
     String template = "contains.javat";
     String expected = "annotations contains one";
     TemplateInputParameters parameters = new TemplateInputParameters();
-    parameters.put("annotations", Sets.newSet(new AnnotationDefinition("one"), new AnnotationDefinition("two")));
+
+    Map<String, AnnotationDefinition> annotations = new HashMap<>();
+    annotations.put("one", new AnnotationDefinition("one"));
+    annotations.put("two", new AnnotationDefinition("two"));
+    parameters.put("annotations", annotations);
+
     executeAndVerify(template, null, parameters, expected);
   }
 
@@ -55,6 +61,8 @@ public class AnnotationDefinitionTest extends AbstractTemplateExecutingTest {
     TemplateInputParameters parameters = new TemplateInputParameters();
     parameters.put("annotations", Sets.newSet(new AnnotationDefinition("two"), new AnnotationDefinition("three")));
     executeAndVerify(template, null, parameters, expected);
+
+    Assert.fail("This test should be refactored to have a hashmap as input, after that it will fail...");
   }
 
   @Test
