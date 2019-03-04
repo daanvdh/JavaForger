@@ -62,6 +62,7 @@ public class VariableDefinition extends InitializedTypeDefinition {
     public VariableDefinition build() {
       return new VariableDefinition(this);
     }
+
   }
 
 }

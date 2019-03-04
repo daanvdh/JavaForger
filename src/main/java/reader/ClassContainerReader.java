@@ -39,6 +39,8 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
@@ -130,14 +132,12 @@ public class ClassContainerReader {
 
   private ClassContainer parseClass(TypeDeclaration<?> type) {
     ClassOrInterfaceDeclaration cd = (ClassOrInterfaceDeclaration) type;
-    Set<AnnotationDefinition> annotations =
-        cd.getAnnotations().stream().map(annotation -> new AnnotationDefinition(annotation.getName().toString())).collect(Collectors.toSet());
     Set<String> accessModifiers = cd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     List<String> interfaces = cd.getImplementedTypes().stream().map(i -> i.getNameAsString()).collect(Collectors.toList());
     String extend = cd.getExtendedTypes().stream().findFirst().map(e -> e.getNameAsString()).orElse(null);
 
     ClassDefinition def = ClassDefinition.builder().withName(cd.getNameAsString()).withType(cd.getNameAsString())
-        .withLineNumber(cd.getBegin().map(p -> p.line).orElse(-1)).withColumn(cd.getBegin().map(p -> p.column).orElse(-1)).withAnnotations(annotations)
+        .withLineNumber(cd.getBegin().map(p -> p.line).orElse(-1)).withColumn(cd.getBegin().map(p -> p.column).orElse(-1)).withAnnotations(parseAnnotations(cd))
         .withAccessModifiers(accessModifiers).withExtend(extend).withInterfaces(interfaces).build();
     return new ClassContainer(def);
   }
@@ -159,21 +159,16 @@ public class ClassContainerReader {
 
   private MethodDefinition parseCallable(CallableDeclaration<?> md) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
-    Set<AnnotationDefinition> annotations =
-        md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).map(AnnotationDefinition::new).collect(Collectors.toSet());
-
-    return MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
+    return MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(parseAnnotations(md))
         .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).withParameters(getParameters(md))
         .build();
   }
 
   private VariableDefinition parseField(Node node) {
     FieldDeclaration fd = (FieldDeclaration) node;
-    Set<AnnotationDefinition> annotations =
-        fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).map(AnnotationDefinition::new).collect(Collectors.toSet());
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
-        .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
+        .withAnnotations(parseAnnotations(fd)).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
         .withAccessModifiers(accessModifiers).build();
 
     resolveAndSetImport(fd.getElementType(), variable);
@@ -193,6 +188,16 @@ public class ClassContainerReader {
     if (!imports.isEmpty()) {
       imports.stream().filter(s -> !s.contains("?")).forEach(s -> variable.addTypeImport(s));
     }
+  }
+
+  private Set<AnnotationDefinition> parseAnnotations(NodeWithAnnotations<?> annotations) {
+    return annotations.getAnnotations().stream().map(annotation -> parseAnnotation(annotation)).collect(Collectors.toSet());
+  }
+
+  private AnnotationDefinition parseAnnotation(AnnotationExpr annotation) {
+    AnnotationDefinition anno = new AnnotationDefinition(annotation.getName().toString());
+    annotation.findAll(MemberValuePair.class).stream().forEach(a -> anno.addParameter(a.getChildNodes().get(0).toString(), a.getChildNodes().get(1).toString()));
+    return anno;
   }
 
   private List<String> resolve(Type type) {

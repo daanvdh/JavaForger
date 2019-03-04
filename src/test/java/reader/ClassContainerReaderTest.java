@@ -68,13 +68,13 @@ public class ClassContainerReaderTest {
     List<? extends MethodDefinition> methods = sut.read(input).getMethods();
 
     Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("String");
-    MethodDefinition m1 = build.withName("getUrl").withLineNumber(46).withColumn(3).build();
-    MethodDefinition m2 = build.withName("getName").withLineNumber(50).withColumn(3).build();
+    MethodDefinition m1 = build.withName("getUrl").withLineNumber(47).withColumn(3).build();
+    MethodDefinition m2 = build.withName("getName").withLineNumber(51).withColumn(3).build();
     MethodDefinition m3 =
-        build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton(new AnnotationDefinition("Override"))).build();
-    MethodDefinition m4 = build.withName("hashCode").withLineNumber(59).withColumn(3)
+        build.withName("toString").withLineNumber(55).withColumn(3).withAnnotations(Collections.singleton(new AnnotationDefinition("Override"))).build();
+    MethodDefinition m4 = build.withName("hashCode").withLineNumber(60).withColumn(3)
         .withAnnotations(Collections.singleton(new AnnotationDefinition("Override"))).withType("int").build();
-    MethodDefinition m5 = build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton(new AnnotationDefinition("Override")))
+    MethodDefinition m5 = build.withName("equals").withLineNumber(65).withColumn(3).withAnnotations(Collections.singleton(new AnnotationDefinition("Override")))
         .withType("boolean").withParameters(VariableDefinition.builder().withType("Object").withName("obj").build()).build();
 
     Assert.assertThat(methods, Matchers.contains(m1, m2, m3, m4, m5));
@@ -87,9 +87,9 @@ public class ClassContainerReaderTest {
 
     Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("Product").withName("Product").withColumn(3)
         .withTypeImports("inputClassesForTests");
-    MethodDefinition m1 = build.withLineNumber(36).withParameters(VariableDefinition.builder().withType("String").withName("name2").build(),
+    MethodDefinition m1 = build.withLineNumber(37).withParameters(VariableDefinition.builder().withType("String").withName("name2").build(),
         VariableDefinition.builder().withType("String").withName("url").build()).build();
-    MethodDefinition m2 = build.withLineNumber(42).withParameters().build();
+    MethodDefinition m2 = build.withLineNumber(43).withParameters().build();
 
     Assert.assertThat(constructors, Matchers.contains(m1, m2));
   }
@@ -102,11 +102,13 @@ public class ClassContainerReaderTest {
     VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
         .withAccessModifiers(Collections.singleton("private")).build();
     VariableDefinition v2 = VariableDefinition.builder().withName("name").withType("String").withLineNumber(33).withColumn(3)
-        .withAccessModifiers(Collections.singleton("private")).build();
-    VariableDefinition v3 = VariableDefinition.builder().withName("prod").withType("Product").withLineNumber(34).withColumn(3)
+        .withAccessModifiers(Collections.singleton("private")).withAnnotation(new AnnotationDefinition("TestAnnotation")).build();
+    VariableDefinition v3 = VariableDefinition.builder().withName("prod").withType("Product").withLineNumber(35).withColumn(3)
         .withAccessModifiers(Collections.singleton("public")).withTypeImport("inputClassesForTests.Product").build();
 
     Assert.assertThat(variables, Matchers.contains(v1, v2, v3));
+
+    Assert.fail("This test should test if the parameters within the annotation of v2 are parserd");
   }
 
 }

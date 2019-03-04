@@ -253,6 +253,11 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
       return (T) this;
     }
 
+    public T withAnnotation(AnnotationDefinition annotation) {
+      this.annotations.put(annotation.getName(), annotation);
+      return (T) this;
+    }
+
     public T withAccessModifiers(Set<String> accessModifiers) {
       this.accessModifiers = accessModifiers;
       return (T) this;

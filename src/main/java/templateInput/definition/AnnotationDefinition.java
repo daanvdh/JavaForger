@@ -25,9 +25,10 @@ import java.util.Map;
  *
  * @author Daan
  */
-// TODO probably best to not extend HashMap, but to implement a custom object wrapper:
-// https://freemarker.apache.org/docs/pgui_datamodel_objectWrapper.html
 public class AnnotationDefinition {
+
+  // TODO To be able to access annotation parameters directly instead of doing .parameters before accessing it, a custom object wrapper has to be implemented.
+  // https://freemarker.apache.org/docs/pgui_datamodel_objectWrapper.html
 
   /** The name of the annotation */
   private String name;
@@ -54,6 +55,10 @@ public class AnnotationDefinition {
 
   public void setParameters(Map<String, String> parameters) {
     this.parameters = parameters;
+  }
+
+  public void addParameter(String key, String value) {
+    this.parameters.put(key, value);
   }
 
   /**

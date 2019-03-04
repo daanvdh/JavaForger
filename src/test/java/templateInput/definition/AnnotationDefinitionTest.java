@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
@@ -59,7 +58,6 @@ public class AnnotationDefinitionTest extends AbstractTemplateExecutingTest {
   }
 
   @Test
-  @Ignore
   public void test_accessParameter() throws IOException, TemplateException {
     String template = "access.javat";
     String expected = "for annotation one the value for name is Gerrit";
@@ -71,10 +69,6 @@ public class AnnotationDefinitionTest extends AbstractTemplateExecutingTest {
     annotation.setParameters(annotationParameters);
     TemplateInputParameters parameters = new TemplateInputParameters();
     parameters.put("annotations", Collections.singletonMap(annotation.getName(), annotation));
-
-    // TODO To fix this test we need to write a custom wrapper for the AnnotationDefinition, so that parameters are directly accessible form the template
-    // Look at: SimpleMapModel
-    // https://freemarker.apache.org/docs/pgui_datamodel_objectWrapper.html
 
     executeAndVerify(template, null, parameters, expected);
   }

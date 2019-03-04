@@ -30,6 +30,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class Product {
   private String url;
+  @TestAnnotation(name = "theName", type = "Str", value = "unknown")
   private String name;
   public Product prod;
 
