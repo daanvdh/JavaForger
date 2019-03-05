@@ -17,8 +17,9 @@
  */
 package merger;
 
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -46,112 +47,100 @@ public class CodeSnipitLocater {
    *         existing class the code should be added. The map is ordered on lines where the code should be added.
    */
   public LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locate(CompilationUnit existingCode, Node newCode) {
+    return recursiveLocator(existingCode.getChildNodes(), newCode.getChildNodes());
+  }
+
+  /**
+   * Calculates the insertion locations for the insertNodes within the existingNodes. Recursively handles classes. The order of the insertNodes is retained,
+   * unless an earlier existing node was equal to an insert node.
+   *
+   * @param existingNodes The nodes from the existing class. May not be empty.
+   * @param insertNodes The nodes from the class to be inserted. May not be empty.
+   * @return The map of where insertion-code (from) needs to be inserted (to).
+   */
+  protected LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> recursiveLocator(List<Node> existingNodes, List<Node> insertNodes) {
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = new LinkedHashMap<>();
 
-    recursiveLocator(locations, existingCode, newCode);
+    // -1 indicates that the new node needs to be inserted before the first node within the existing nodes.
+    int insertAfter = -1;
 
+    for (Node insertNode : insertNodes) {
+      if (!skipNode(insertNode)) {
+        int equalNodeIndex = findEqualNode(existingNodes, insertNode);
+        if (equalNodeIndex >= 0) {
+          Node existingNode = existingNodes.get(equalNodeIndex);
+          insertAfter = Integer.max(insertAfter, equalNodeIndex);
+          if (ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass())
+              && ClassOrInterfaceDeclaration.class.isAssignableFrom(insertNode.getClass())) {
+            // Recursive call
+            locations.putAll(recursiveLocator(existingNode.getChildNodes(), insertNode.getChildNodes()));
+          } else {
+            locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+          }
+        } else {
+          insertAfter = findInsertAfterIndex(existingNodes, insertAfter, insertNode);
+          if (insertAfter < 0) {
+            locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNodes.get(0)));
+          } else {
+            locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.after(existingNodes.get(insertAfter)));
+          }
+        }
+      }
+    }
     return locations;
   }
 
-  private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode, Node newCode) {
-    Iterator<Node> existingNodes = existingCode.getChildNodes().iterator();
-    Iterator<Node> newNodes = newCode.getChildNodes().iterator();
-
-    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes, null);
-  }
-
-  private void recursiveLocatorForClassBody(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
-      ClassOrInterfaceDeclaration existingClass, ClassOrInterfaceDeclaration insertClass) {
-    Iterator<Node> existingNodes = existingClass.getChildNodes().iterator();
-    Iterator<Node> newNodes = insertClass.getChildNodes().iterator();
-
-    // TODO it is not yet supported to merge annotations of two classes so in the code below we skip them.
-    // Throw away the first nodes because those are the class types which we do not want to merge recursively
-    Node startNode = skiptTo(existingNodes, SimpleName.class);
-    skiptTo(newNodes, SimpleName.class);
-
-    recursiveLocator(newCodeInsertionlocations, existingCode, existingNodes, newNodes, startNode);
+  /**
+   * Indicates if the input node needs to be skipped, because it is not supported.
+   *
+   * @param node The node to be checked.
+   * @return true if the input needs to be skipped, false otherwise.
+   */
+  private boolean skipNode(Node node) {
+    return Arrays.asList(SimpleName.class).stream().anyMatch(claz -> claz.isAssignableFrom(node.getClass()));
   }
 
   /**
-   * Skips to the first class node in the iterator that is assignable from the input class and returns it. Returns null if no such node was found.
+   * Returns an index (integer) within existingNodes or -1 if it does not exist, so that we can set the existingIndex to that value if it's higher.
    *
-   * @param nodes Iterator containing the nodes
-   * @param claz The class to find in the iterator
-   * @return The first node assignable from claz, null if not found.
+   * @param existingNodes The nodes to check if one is equal to the insertNode.
+   * @param insertNode The node to check.
+   * @return The index of the node equal to the insertNode if it exists, -1 otherwise.
    */
-  private Node skiptTo(Iterator<Node> nodes, Class<SimpleName> claz) {
-    Node n = nodes.hasNext() ? nodes.next() : null;
-    while (n != null && !claz.isAssignableFrom(n.getClass())) {
-      n = nodes.hasNext() ? nodes.next() : null;
+  private int findEqualNode(List<Node> existingNodes, Node insertNode) {
+    for (int index = 0; index < existingNodes.size(); index++) {
+      if (comparator.compare(existingNodes.get(index), insertNode) == 0) {
+        return index;
+      }
     }
-    return n;
+    return -1;
   }
 
   /**
-   * TODO javadoc
+   * Finds the next index after which the insertNode needs to be inserted.
    *
-   * @param newCodeInsertionlocations
-   * @param existingCode
-   * @param existingNodes
-   * @param newNodes
-   * @param startingNode The last node from the existingNodes of the previous recursive call. Needed if the first Node needs to be inserted immediately.
+   * @param existingNodes The existing nodes we need to compare the insertNode with.
+   * @param previousIndex The index used in a previous iteration to insert a next node. This index might be -1 it is the first time a node is inserted for the
+   *          input existingNodes.
+   * @param insertNode The node for which we need to find an insert location.
+   * @return An index between the previousIndex (inclusive) and existingNodes.size (exclusive)
    */
-  private void recursiveLocator(LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionlocations, Node existingCode,
-      Iterator<Node> existingNodes, Iterator<Node> newNodes, Node startingNode) {
+  private int findInsertAfterIndex(List<Node> existingNodes, int previousIndex, Node insertNode) {
+    int index = previousIndex;
 
-    // TODO this method has to be refactored so that a reference to previous existing nodes is kept so that we can check on equality for previous nodes.
-    // Otherwise it can happen that we insert 2 public methods, first a non-existing, then an existing, but we cannot find he existing anymore, because we
-    // already passed it.
+    // Check if the previous index should be before the insertNode
+    int compare = comparator.compare(existingNodes.get(Integer.max(0, index)), insertNode);
 
-    Node previousExistingNode = startingNode;
-    Node existingNode = existingNodes.hasNext() ? existingNodes.next() : null;
-
-    // TODO refactor this thing to a location instead. Check if it can be removed.
-    int lastNodeLocation = previousExistingNode == null ? existingCode.getBegin().get().line + 1 : previousExistingNode.getEnd().get().line + 1;
-
-    while (newNodes.hasNext() && existingNode != null) {
-      Node insertNode = newNodes.next();
-      int compare = comparator.compare(existingNode, insertNode);
-
-      previousExistingNode = compare < 0 ? existingNode : previousExistingNode;
-
-      // while the existingNode is before the insertNode search for the next Node
-      while (compare < 0 && existingNodes.hasNext()) {
-        previousExistingNode = existingNode;
-        lastNodeLocation = existingNode.getEnd().get().line + 1;
-        existingNode = existingNodes.next();
-        compare = comparator.compare(existingNode, insertNode);
-      }
-
-      if (compare < 0 && !existingNodes.hasNext()) {
-        previousExistingNode = existingNode;
-        lastNodeLocation = existingNode.getEnd().get().line + 1;
-      }
-
-      if (compare == 0) {
-        if (ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass())
-            && ClassOrInterfaceDeclaration.class.isAssignableFrom(insertNode.getClass())) {
-          // Recursively handle classes
-          recursiveLocatorForClassBody(newCodeInsertionlocations, existingCode, (ClassOrInterfaceDeclaration) existingNode,
-              (ClassOrInterfaceDeclaration) insertNode);
-        } else {
-          newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
-        }
-      } else {
-        if (previousExistingNode == null) {
-          newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNode));
-        } else {
-          newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.after(previousExistingNode));
-        }
+    // While the current index is before the insertIndex
+    while (compare < 0 && index < existingNodes.size() - 1) {
+      // compare the next existing node
+      compare = comparator.compare(existingNodes.get(index + 1), insertNode);
+      // only increment if next existing node should be placed before insertNode
+      if (compare < 0) {
+        index++;
       }
     }
-
-    // Add the rest of nodes after the last node
-    while (newNodes.hasNext()) {
-      Node insertNode = newNodes.next();
-      newCodeInsertionlocations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(lastNodeLocation));
-    }
+    return index;
   }
 
 }

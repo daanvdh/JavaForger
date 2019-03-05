@@ -34,6 +34,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.type.Type;
 
@@ -50,6 +51,7 @@ public class NodeComparator implements Comparator<Node> {
     Integer compare;
     compare = comparePackage(a, b);
     compare = compare != null ? compare : compareImport(a, b);
+    compare = compare != null ? compare : compareSimpleName(a, b);
     compare = compare != null ? compare : compareField(a, b);
     compare = compare != null ? compare : compareConstructor(a, b);
     compare = compare != null ? compare : compareMethod(a, b);
@@ -81,6 +83,10 @@ public class NodeComparator implements Comparator<Node> {
       compare = null;
     }
     return compare;
+  }
+
+  private Integer compareSimpleName(Node a, Node b) {
+    return compareNode(a, b, SimpleName.class, (x, y) -> ((SimpleName) x).toString().equals(((SimpleName) y).toString()));
   }
 
   private Integer compareField(Node a, Node b) {
