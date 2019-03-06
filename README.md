@@ -87,7 +87,7 @@ Setting the custom template location can be done as follows:
 
 We can define a template called "equals.javat" as given below. 
 We can see that we access the fields parsed from an input class in a loop, where we use the name of each field to construct the EqualsBuilder. 
-The currently supported classes containing the parsed data are: VariableDefinition, ClassDefinition and MethodDefinition. 
+The currently supported variables are described in [TemplateVariables.md](TemplateVariables.md). 
 	
 	@Override
 	public boolean equals(Object obj) {

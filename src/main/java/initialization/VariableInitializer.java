@@ -65,26 +65,26 @@ public class VariableInitializer {
   }
 
   public void init(InitializedTypeDefinition var) {
-    if (this.defaultValue1.containsKey(var.getType())) {
+    if (this.defaultValue1.containsKey(var.getType().toString())) {
       setDefaultInit1(var);
       setDefaultInit2(var);
       setNoInit(var);
-    } else if (var.getType().contains("<")) {
+    } else if (var.getType().toString().contains("<")) {
       initParameterized(var);
     } else {
       // TODO the stuff below should be replaced by a call to the Generator with a custom "builderUsage.javat" file defining the start and end of a builder.
       String init = var.getType() + ".builder().build()";
       var.setInit1(init);
       var.setInit2(init);
-      var.setNoInit(getNoInitFor(var.getType()));
+      var.setNoInit(getNoInitFor(var.getType().toString()));
     }
     var.setDefaultInit(emptyInit.containsKey(var.getTypeWithoutParameters()) ? emptyInit.get(var.getTypeWithoutParameters()).getValue() : null);
     var.setCollection(collections.contains(var.getTypeWithoutParameters()));
   }
 
   private void setNoInit(InitializedTypeDefinition var) {
-    if (this.testNoInit.containsKey(var.getType())) {
-      InitValue value = this.testNoInit.get(var.getType());
+    if (this.testNoInit.containsKey(var.getType().toString())) {
+      InitValue value = this.testNoInit.get(var.getType().toString());
       var.setNoInit(value.getValue());
       var.addInitImports(value.getImports());
     } else {
@@ -93,16 +93,16 @@ public class VariableInitializer {
   }
 
   private void setDefaultInit1(InitializedTypeDefinition var) {
-    if (defaultValue1.containsKey(var.getType())) {
-      InitValue value = defaultValue1.get(var.getType());
+    if (defaultValue1.containsKey(var.getType().toString())) {
+      InitValue value = defaultValue1.get(var.getType().toString());
       var.setInit1(value.getValue());
       var.addInitImports(value.getImports());
     }
   }
 
   private void setDefaultInit2(InitializedTypeDefinition var) {
-    if (defaultValue2.containsKey(var.getType())) {
-      InitValue value = defaultValue2.get(var.getType());
+    if (defaultValue2.containsKey(var.getType().toString())) {
+      InitValue value = defaultValue2.get(var.getType().toString());
       var.setInit2(value.getValue());
       var.addInitImports(value.getImports());
     }
@@ -137,8 +137,8 @@ public class VariableInitializer {
   }
 
   private List<VariableDefinition> getSubTypes(InitializedTypeDefinition var) {
-    int indexOf = var.getType().indexOf("<");
-    String subString = var.getType().substring(indexOf + 1, var.getType().length() - 1);
+    int indexOf = var.getType().toString().indexOf("<");
+    String subString = var.getType().toString().substring(indexOf + 1, var.getType().toString().length() - 1);
     List<String> subVariableTypes = splitSubTypes(subString);
     List<VariableDefinition> subTypes =
         subVariableTypes.stream().map(subType -> VariableDefinition.builder().withType(subType).build()).collect(Collectors.toList());

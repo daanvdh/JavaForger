@@ -44,7 +44,7 @@ public class ClassDefinition extends TypeDefinition {
 
   protected ClassDefinition(Builder builder) {
     this.name = builder.name;
-    this.type = builder.type;
+    this.type = new StringConverter(builder.type);
     this.lineNumber = builder.lineNumber;
     this.column = builder.column;
     this.annotations = builder.annotations;
@@ -124,7 +124,7 @@ public class ClassDefinition extends TypeDefinition {
 
     private Builder(ClassDefinition copy) {
       this.name = copy.name;
-      this.type = copy.type;
+      this.type = copy.type.toString();
       this.lineNumber = copy.lineNumber;
       this.column = copy.column;
       this.annotations = copy.annotations;
