@@ -20,11 +20,13 @@ package merger;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 /**
  * Determines the location of code to be added, within existing code. Receives code that is already parsed. Ordering is based on the order defined within the
@@ -64,30 +66,57 @@ public class CodeSnipitLocater {
     // -1 indicates that the new node needs to be inserted before the first node within the existing nodes.
     int insertAfter = -1;
 
-    for (Node insertNode : insertNodes) {
-      if (!skipNode(insertNode)) {
-        int equalNodeIndex = findEqualNode(existingNodes, insertNode);
-        if (equalNodeIndex >= 0) {
-          Node existingNode = existingNodes.get(equalNodeIndex);
-          insertAfter = Integer.max(insertAfter, equalNodeIndex);
-          if (ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass())
-              && ClassOrInterfaceDeclaration.class.isAssignableFrom(insertNode.getClass())) {
-            // Recursive call
-            locations.putAll(recursiveLocator(existingNode.getChildNodes(), insertNode.getChildNodes()));
-          } else {
-            locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
-          }
+    List<Node> supportedInsertNodes = insertNodes.stream().filter(comparator::nodeTypeIsSupported).collect(Collectors.toList());
+
+    for (Node insertNode : supportedInsertNodes) {
+      int equalNodeIndex = findEqualNode(existingNodes, insertNode);
+      if (equalNodeIndex >= 0) {
+        locations.putAll(handleEqualNodesRecursively(insertNode, existingNodes.get(equalNodeIndex)));
+        insertAfter = Integer.max(insertAfter, equalNodeIndex);
+      } else {
+        insertAfter = findInsertAfterIndex(existingNodes, insertAfter, insertNode);
+        if (insertAfter < 0) {
+          locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNodes.get(0)));
         } else {
-          insertAfter = findInsertAfterIndex(existingNodes, insertAfter, insertNode);
-          if (insertAfter < 0) {
-            locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNodes.get(0)));
-          } else {
-            locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.after(existingNodes.get(insertAfter)));
-          }
+          locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.after(existingNodes.get(insertAfter)));
         }
       }
     }
     return locations;
+  }
+
+  private LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> handleEqualNodesRecursively(Node insertNode, Node existingNode) {
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> loc = new LinkedHashMap<>();
+    if (isClass(existingNode) && isClass(insertNode)) {
+      List<Node> insertNodes = getChildNodes(insertNode);
+      List<Node> existingNodes = getChildNodes(existingNode);
+      if (!insertNodes.isEmpty()) {
+        if (existingNodes.isEmpty()) {
+          loc = insertNodes.stream().collect(
+              Collectors.toMap(CodeSnipitLocation::of, c -> CodeSnipitLocation.after(existingNode.getChildNodes().get(0)), (a, b) -> a, LinkedHashMap::new));
+        } else {
+          // Recursive call
+          loc = recursiveLocator(existingNodes, insertNodes);
+        }
+      }
+    } else {
+      loc.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+    }
+    return loc;
+  }
+
+  private boolean isClass(Node existingNode) {
+    return ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass());
+  }
+
+  /**
+   * Gets the child nodes and strips off any nodes that are part of the definition of the parent node, such as the name of the class or what it extends.
+   *
+   * @param node
+   * @return
+   */
+  private List<Node> getChildNodes(Node node) {
+    return node.getChildNodes().stream().filter(this::skipNode).collect(Collectors.toList());
   }
 
   /**
@@ -97,7 +126,7 @@ public class CodeSnipitLocater {
    * @return true if the input needs to be skipped, false otherwise.
    */
   private boolean skipNode(Node node) {
-    return Arrays.asList(SimpleName.class).stream().anyMatch(claz -> claz.isAssignableFrom(node.getClass()));
+    return !Arrays.asList(SimpleName.class, ClassOrInterfaceType.class).stream().anyMatch(claz -> claz.isAssignableFrom(node.getClass()));
   }
 
   /**
