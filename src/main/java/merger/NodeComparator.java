@@ -49,11 +49,11 @@ public class NodeComparator implements Comparator<Node> {
 
   public boolean nodeTypeIsSupported(Node node) {
     return Arrays.asList( //
-        PackageDeclaration.class//
-        , ImportDeclaration.class//
-        , ClassOrInterfaceDeclaration.class//
-        , BodyDeclaration.class//
-        , FieldDeclaration.class//
+        PackageDeclaration.class //
+        , ImportDeclaration.class //
+        , ClassOrInterfaceDeclaration.class //
+        , BodyDeclaration.class //
+        , FieldDeclaration.class //
     ).stream().anyMatch(claz -> claz.isAssignableFrom(node.getClass()));
   }
 

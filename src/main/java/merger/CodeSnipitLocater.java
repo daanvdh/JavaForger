@@ -17,7 +17,6 @@
  */
 package merger;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +25,8 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.SimpleName;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
+
+import generator.JavaForgerException;
 
 /**
  * Determines the location of code to be added, within existing code. Receives code that is already parsed. Ordering is based on the order defined within the
@@ -92,8 +92,8 @@ public class CodeSnipitLocater {
       List<Node> existingNodes = getChildNodes(existingNode);
       if (!insertNodes.isEmpty()) {
         if (existingNodes.isEmpty()) {
-          loc = insertNodes.stream().collect(
-              Collectors.toMap(CodeSnipitLocation::of, c -> CodeSnipitLocation.after(existingNode.getChildNodes().get(0)), (a, b) -> a, LinkedHashMap::new));
+          loc = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode),
+              (a, b) -> a, LinkedHashMap::new));
         } else {
           // Recursive call
           loc = recursiveLocator(existingNodes, insertNodes);
@@ -103,6 +103,15 @@ public class CodeSnipitLocater {
       loc.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
     }
     return loc;
+  }
+
+  private CodeSnipitLocation getFirstInsertLocation(ClassOrInterfaceDeclaration existingNode) {
+    return CodeSnipitLocation.after(getNodeAfterToInsert(existingNode));
+  }
+
+  private Node getNodeAfterToInsert(ClassOrInterfaceDeclaration existingNode) {
+    return existingNode.getChildNodes().stream().filter(node -> SimpleName.class.isAssignableFrom(node.getClass())).findFirst().orElseThrow(
+        () -> new JavaForgerException("Cannot insert code into a class without a simpleName defined. Existing node is: " + existingNode.toString()));
   }
 
   private boolean isClass(Node existingNode) {
@@ -116,17 +125,7 @@ public class CodeSnipitLocater {
    * @return
    */
   private List<Node> getChildNodes(Node node) {
-    return node.getChildNodes().stream().filter(this::skipNode).collect(Collectors.toList());
-  }
-
-  /**
-   * Indicates if the input node needs to be skipped, because it is not supported.
-   *
-   * @param node The node to be checked.
-   * @return true if the input needs to be skipped, false otherwise.
-   */
-  private boolean skipNode(Node node) {
-    return !Arrays.asList(SimpleName.class, ClassOrInterfaceType.class).stream().anyMatch(claz -> claz.isAssignableFrom(node.getClass()));
+    return node.getChildNodes().stream().filter(comparator::nodeTypeIsSupported).collect(Collectors.toList());
   }
 
   /**
