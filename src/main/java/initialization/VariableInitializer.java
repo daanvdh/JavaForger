@@ -253,6 +253,7 @@ public class VariableInitializer {
   }
 
   private void initializeJavaEmptyInit() {
+    emptyInit.put("Collection", new InitValue("new ArrayList<>()"));
     emptyInit.put("Optional", new InitValue("Optional.empty()"));
     emptyInit.put("List", new InitValue("new ArrayList<>()"));
     emptyInit.put("HashMap", new InitValue("new HashMap<>()"));
@@ -269,6 +270,7 @@ public class VariableInitializer {
     testNoInit.put("double", new InitValue("0.0"));
     testNoInit.put("float", new InitValue("0.0"));
     testNoInit.put("Optional", new InitValue("Optional.empty()"));
+    testNoInit.put("Collection", new InitValue("Collections.emptyList()", "java.util.Collections"));
     testNoInit.put("List", new InitValue("Collections.emptyList()", "java.util.Collections"));
     testNoInit.put("ArrayList", new InitValue("Collections.emptyList()", "java.util.Collections"));
     testNoInit.put("HashMap", new InitValue("Collections.emptyMap()", "java.util.Collections"));
