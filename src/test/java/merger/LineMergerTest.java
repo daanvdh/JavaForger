@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import common.AbstractFileChangingTest;
 import configuration.JavaForgerConfiguration;
-import freemarker.template.TemplateException;
 import generator.CodeSnipit;
 
 /**
@@ -93,7 +92,6 @@ public class LineMergerTest extends AbstractFileChangingTest {
    *
    * @param args
    * @throws IOException
-   * @throws TemplateException
    */
   public static void main(String[] args) throws IOException {
 

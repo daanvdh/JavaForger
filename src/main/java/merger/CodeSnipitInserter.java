@@ -35,10 +35,19 @@ import configuration.JavaForgerConfiguration;
  */
 public class CodeSnipitInserter {
 
-  public void insert(JavaForgerConfiguration config, String mergeClassPath, String newClass,
+  /**
+   * Inserts the new code into the file given by the mergeClassPath according to the insertLocations.
+   *
+   * @param config {@link JavaForgerConfiguration} indicating insert settings, such as if it is allowed to override code or only to insert.
+   * @param mergeClassPath The path to the class to merge the new code into.
+   * @param newCode The code to insert.
+   * @param newCodeInsertionLocations Defines where new code needs to be inserted in the existing code. This map should be ordered on increasing insertLocation.
+   * @throws IOException If path to existing class is invalid.
+   */
+  public void insert(JavaForgerConfiguration config, String mergeClassPath, String newCode,
       LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) throws IOException {
     List<String> existingLines = Files.readAllLines(Paths.get(mergeClassPath), StandardCharsets.UTF_8);
-    List<String> newlines = Arrays.asList(newClass.split("\\r?\\n"));
+    List<String> newlines = Arrays.asList(newCode.split("\\r?\\n"));
     List<String> result = insert(config, existingLines, newlines, newCodeInsertionLocations);
     Files.write(Paths.get(mergeClassPath), result, StandardCharsets.UTF_8);
   }
