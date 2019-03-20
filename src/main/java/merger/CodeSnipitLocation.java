@@ -65,6 +65,13 @@ public class CodeSnipitLocation {
     return end - 1;
   }
 
+  /**
+   * @return {@code true} if the end line is higher than the start line, {@code false} otherwise.
+   */
+  public boolean containsLines() {
+    return end > start;
+  }
+
   public int size() {
     return end - start;
   }

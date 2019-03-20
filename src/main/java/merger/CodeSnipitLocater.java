@@ -92,8 +92,8 @@ public class CodeSnipitLocater {
       List<Node> existingNodes = getChildNodes(existingNode);
       if (!insertNodes.isEmpty()) {
         if (existingNodes.isEmpty()) {
-          loc = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode),
-              (a, b) -> a, LinkedHashMap::new));
+          CodeSnipitLocation firstInsertLocation = getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode);
+          loc = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> firstInsertLocation, (a, b) -> a, LinkedHashMap::new));
         } else {
           // Recursive call
           loc = recursiveLocator(existingNodes, insertNodes);

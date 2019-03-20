@@ -64,6 +64,12 @@ public class JavaForgerConfiguration {
    */
   private JavaForgerConfiguration configIfFileDoesNotExist;
 
+  /**
+   * Determines if existing constructors, methods or fields should be overridden with generated equivalents. Classes are never overridden independent from this
+   * setting, because we recursively check what's inside.
+   */
+  private boolean override = false;
+
   public JavaForgerConfiguration() {
     // Make Constructor visible
   }
@@ -78,6 +84,7 @@ public class JavaForgerConfiguration {
     this.adjusters.addAll(builder.adjusters);
     this.createFileIfNotExists = builder.createFileIfNotExists;
     this.configIfFileDoesNotExist = builder.configIfFileDoesNotExist;
+    this.override = (builder.override == null) ? this.override : builder.override;
   }
 
   public boolean isMerge() {
@@ -180,6 +187,20 @@ public class JavaForgerConfiguration {
   }
 
   /**
+   * @see JavaForgerConfiguration#override
+   */
+  public void setOverride(boolean override) {
+    this.override = override;
+  }
+
+  /**
+   * @see JavaForgerConfiguration#override
+   */
+  public boolean isOverride() {
+    return override;
+  }
+
+  /**
    * Execute the given consumer on this {@link JavaForgerConfiguration} and all child configurations.
    *
    * @param consumer The consumer to be executed.
@@ -236,6 +257,7 @@ public class JavaForgerConfiguration {
     private List<ClassContainerAdjuster> adjusters = new ArrayList<>();
     private boolean createFileIfNotExists;
     private JavaForgerConfiguration configIfFileDoesNotExist;
+    private Boolean override;
 
     private Builder() {
       // Make constructor visible
@@ -301,5 +323,11 @@ public class JavaForgerConfiguration {
       return this;
     }
 
+    public Builder withOverride(boolean override) {
+      this.override = override;
+      return this;
+    }
+
   }
+
 }

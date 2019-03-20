@@ -41,7 +41,7 @@ public class LineMerger extends CodeSnipitMerger {
     CompilationUnit existingCode = reader.read(mergeClassPath);
     CompilationUnit newCode = reader.read(codeSnipit, mergeClassPath);
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
-    inserter.insert(mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
+    inserter.insert(config, mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
   }
 
 }

@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import configuration.JavaForgerConfiguration;
+
 /**
  * Class for insterting code into an existing class based on earlier determined insertion locations.
  *
@@ -33,15 +35,15 @@ import java.util.Map;
  */
 public class CodeSnipitInserter {
 
-  public void insert(String mergeClassPath, String newClass, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations)
-      throws IOException {
+  public void insert(JavaForgerConfiguration config, String mergeClassPath, String newClass,
+      LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) throws IOException {
     List<String> existingLines = Files.readAllLines(Paths.get(mergeClassPath), StandardCharsets.UTF_8);
     List<String> newlines = Arrays.asList(newClass.split("\\r?\\n"));
-    List<String> result = insert(existingLines, newlines, newCodeInsertionLocations);
+    List<String> result = insert(config, existingLines, newlines, newCodeInsertionLocations);
     Files.write(Paths.get(mergeClassPath), result, StandardCharsets.UTF_8);
   }
 
-  private List<String> insert(List<String> existingLines, List<String> newlines,
+  private List<String> insert(JavaForgerConfiguration config, List<String> existingLines, List<String> newlines,
       LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) {
     // Because newCodeInsertionLocations is ordered, we keep track of the already added lines to determine the new insertion location
     int addedLines = 0;
@@ -50,17 +52,17 @@ public class CodeSnipitInserter {
       CodeSnipitLocation codeLocation = locations.getKey();
       CodeSnipitLocation insertLocation = locations.getValue();
 
-      // Remove old lines
-      for (int i = insertLocation.getFirstIndex(); i < insertLocation.getLastIndex(); i++) {
-        existingLines.remove(addedLines + insertLocation.getFirstIndex());
+      if (config.isOverride() || !insertLocation.containsLines()) {
+        // Remove old lines
+        for (int i = insertLocation.getFirstIndex(); i < insertLocation.getLastIndex(); i++) {
+          existingLines.remove(addedLines + insertLocation.getFirstIndex());
+        }
+        // write new lines
+        for (int i = 0; i < codeLocation.size(); i++) {
+          existingLines.add(addedLines + insertLocation.getFirstIndex() + i, newlines.get(codeLocation.getFirstIndex() + i));
+        }
+        addedLines += codeLocation.size() - insertLocation.size();
       }
-
-      // write new lines
-      for (int i = 0; i < codeLocation.size(); i++) {
-        existingLines.add(addedLines + insertLocation.getFirstIndex() + i, newlines.get(codeLocation.getFirstIndex() + i));
-      }
-
-      addedLines += codeLocation.size() - insertLocation.size();
     }
     return existingLines;
   }
