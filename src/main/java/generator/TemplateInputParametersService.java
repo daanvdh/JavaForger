@@ -23,6 +23,7 @@ import configuration.ClassProvider;
 import configuration.JavaForgerConfiguration;
 import configuration.PathConverter;
 import configuration.StaticJavaForgerConfiguration;
+import initialization.VariableInitializer;
 import reader.ClassContainerReader;
 import templateInput.ClassContainer;
 import templateInput.TemplateInputDefaults;
@@ -36,6 +37,7 @@ import templateInput.TemplateInputParameters;
 public class TemplateInputParametersService {
 
   private ClassContainerReader reader = StaticJavaForgerConfiguration.getReader();
+  private VariableInitializer initializer = StaticJavaForgerConfiguration.getInitializer();
 
   /**
    * Gets the {@link TemplateInputParameters} from the {@link JavaForgerConfiguration} and inserts all missing input parameters given by
@@ -58,6 +60,7 @@ public class TemplateInputParametersService {
         String newInputClass = getInputClass(config, inputClass, mergeClassPath);
 
         ClassContainer claz = reader.read(newInputClass);
+        initializer.init(claz);
         config.getAdjuster().accept(claz);
         if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
           inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
