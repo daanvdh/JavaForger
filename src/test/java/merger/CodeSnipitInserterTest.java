@@ -19,6 +19,7 @@ package merger;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,10 +59,18 @@ public class CodeSnipitInserterTest extends AbstractFileChangingTest {
     executeAndVerify("verify-inserted.java", true, CodeSnipitLocation.of(19));
   }
 
-  private void executeAndVerify(String expectedClass, boolean override, CodeSnipitLocation insertLocation) throws IOException {
+  private void executeAndVerify(String expectedClass, boolean override, CodeSnipitLocation... insertLocation) throws IOException {
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = new LinkedHashMap<>();
-    newCodeInsertionLocations.put(CodeSnipitLocation.of(1, 2), insertLocation);
-    inserter.insert(JavaForgerConfiguration.builder().withOverride(override).build(), INPUT_CLASS, "this is the new Code\n", newCodeInsertionLocations);
+
+    IntStream.range(0, insertLocation.length).forEach(i -> newCodeInsertionLocations.put(CodeSnipitLocation.of(1 + i, 2 + i), insertLocation[i]));
+
+    executeAndVerify(expectedClass, override, newCodeInsertionLocations);
+  }
+
+  private void executeAndVerify(String expectedClass, boolean override, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations)
+      throws IOException {
+    inserter.insert(JavaForgerConfiguration.builder().withOverride(override).build(), INPUT_CLASS, "this is the new Code 1\nthis is the new Code 2\n",
+        newCodeInsertionLocations);
     verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_CLASS);
   }
 

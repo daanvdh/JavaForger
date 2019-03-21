@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 package inputClassesForTests;
-this is the new Code
+this is the new Code 1
 
 import java.util.Set;
 
