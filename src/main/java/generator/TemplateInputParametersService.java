@@ -23,7 +23,7 @@ import configuration.ClassProvider;
 import configuration.JavaForgerConfiguration;
 import configuration.PathConverter;
 import configuration.StaticJavaForgerConfiguration;
-import initialization.VariableInitializer;
+import initialization.InitializationService;
 import reader.ClassContainerReader;
 import templateInput.ClassContainer;
 import templateInput.TemplateInputDefaults;
@@ -37,7 +37,7 @@ import templateInput.TemplateInputParameters;
 public class TemplateInputParametersService {
 
   private ClassContainerReader reader = StaticJavaForgerConfiguration.getReader();
-  private VariableInitializer initializer = StaticJavaForgerConfiguration.getInitializer();
+  private InitializationService initializer = StaticJavaForgerConfiguration.getInitializer();
 
   /**
    * Gets the {@link TemplateInputParameters} from the {@link JavaForgerConfiguration} and inserts all missing input parameters given by

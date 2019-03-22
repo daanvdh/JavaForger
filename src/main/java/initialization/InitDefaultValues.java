@@ -32,6 +32,8 @@ public class InitDefaultValues {
   private static Map<String, InitValue> testNoInit = new HashMap<>();
   /** The first value that can be used to initialize the type given by the key of this hashMap. */
   private static Map<String, InitValue> defaultValue1 = new HashMap<>();
+  // TODO The defaultValue2 needs to be removed at some point since we now have the InitConverter. But we have to come up with a solution for Date because the
+  // random numbers need to be modulo 12 (months), 24 (hours), 60 (minutes)
   /** The second value that can be used to initialize the type given by the key of this hashMap. This value is different from defaultValue1. */
   private static Map<String, InitValue> defaultValue2 = new HashMap<>();
   private static Map<String, InitValue> parameterizedVariables = new HashMap<>();
@@ -103,36 +105,36 @@ public class InitDefaultValues {
   }
 
   private void initializeJavaDefaults() {
-    defaultValue1.put("int", new InitValue("1"));
-    defaultValue2.put("int", new InitValue("2"));
-    defaultValue1.put("Integer", new InitValue("3"));
-    defaultValue2.put("Integer", new InitValue("4"));
+    defaultValue1.put("int", new InitValue("%d"));
+    defaultValue2.put("int", new InitValue("%d"));
+    defaultValue1.put("Integer", new InitValue("%d"));
+    defaultValue2.put("Integer", new InitValue("%d"));
     defaultValue1.put("boolean", new InitValue("true"));
     defaultValue2.put("boolean", new InitValue("false"));
     defaultValue1.put("Boolean", new InitValue("false"));
     defaultValue2.put("Boolean", new InitValue("true"));
-    defaultValue1.put("long", new InitValue("1L"));
-    defaultValue2.put("long", new InitValue("2L"));
-    defaultValue1.put("Long", new InitValue("3L"));
-    defaultValue2.put("Long", new InitValue("4L"));
-    defaultValue1.put("double", new InitValue("1.0"));
-    defaultValue2.put("double", new InitValue("2.0"));
-    defaultValue1.put("Double", new InitValue("3.0"));
-    defaultValue2.put("Double", new InitValue("4.0"));
-    defaultValue1.put("float", new InitValue("1.0"));
-    defaultValue2.put("float", new InitValue("2.0"));
-    defaultValue1.put("Float", new InitValue("3.0"));
-    defaultValue2.put("Float", new InitValue("4.0"));
-    defaultValue1.put("String", new InitValue("\"a\""));
-    defaultValue2.put("String", new InitValue("\"b\""));
+    defaultValue1.put("long", new InitValue("%dL"));
+    defaultValue2.put("long", new InitValue("%dL"));
+    defaultValue1.put("Long", new InitValue("%dL"));
+    defaultValue2.put("Long", new InitValue("%dL"));
+    defaultValue1.put("double", new InitValue("%d.%d"));
+    defaultValue2.put("double", new InitValue("%d.%d"));
+    defaultValue1.put("Double", new InitValue("%d.%d"));
+    defaultValue2.put("Double", new InitValue("%d.%d"));
+    defaultValue1.put("float", new InitValue("%d.%d"));
+    defaultValue2.put("float", new InitValue("%d.%d"));
+    defaultValue1.put("Float", new InitValue("%d.%d"));
+    defaultValue2.put("Float", new InitValue("%d.%d"));
+    defaultValue1.put("String", new InitValue("\"%s\""));
+    defaultValue2.put("String", new InitValue("\"%s\""));
     defaultValue1.put("Object", new InitValue("new Object()"));
     defaultValue2.put("Object", new InitValue("new Object()"));
 
     // Special ones
     defaultValue1.put("LocalDateTime", new InitValue("LocalDateTime.of(2017, 3, 25, 0, 0)"));
     defaultValue2.put("LocalDateTime", new InitValue("LocalDateTime.of(2018, 4, 26, 1, 1)"));
-    defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(5)", "java.math.BigDecimal"));
-    defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(6)", "java.math.BigDecimal"));
+    defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(%d)", "java.math.BigDecimal"));
+    defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(%d)", "java.math.BigDecimal"));
     defaultValue1.put("ZonedDateTime",
         new InitValue("ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
     defaultValue2.put("ZonedDateTime",
@@ -147,8 +149,8 @@ public class InitDefaultValues {
     defaultValue2.put("Volume", new InitValue("SI.CUBIC_METRE", "javax.measure.unit.SI")); // no alternative
     defaultValue1.put("Mass", new InitValue("SI.KILOGRAM", "javax.measure.unit.SI"));
     defaultValue2.put("Mass", new InitValue("SI.KILOGRAM", "javax.measure.unit.SI"));
-    defaultValue1.put("Duration", new InitValue("Duration.ofDays(1);", " java.time.Duration"));
-    defaultValue2.put("Duration", new InitValue("Duration.ofDays(2);", " java.time.Duration"));
+    defaultValue1.put("Duration", new InitValue("Duration.ofDays(%d);", " java.time.Duration"));
+    defaultValue2.put("Duration", new InitValue("Duration.ofDays(%d);", " java.time.Duration"));
 
   }
 

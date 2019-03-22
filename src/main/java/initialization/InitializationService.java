@@ -31,26 +31,24 @@ import templateInput.definition.VariableDefinition;
  *
  * @author Daan
  */
-public class VariableInitializer {
+public class InitializationService {
 
   private InitDefaultValues defaults = new InitDefaultValues();
+  private InitConverter converter = new InitConverter();
 
   public void init(ClassContainer claz) {
+    converter.reset();
     initVariables(claz.getFields());
     initMethods(claz.getMethods());
     initMethods(claz.getConstructors());
   }
 
-  private void initMethods(List<? extends MethodDefinition> methods) {
-    methods.stream().forEach(this::init);
-    methods.forEach(m -> initVariables(m.getParameters()));
-  }
-
-  private void initVariables(List<? extends VariableDefinition> list) {
-    list.stream().forEach(this::init);
-  }
-
   public void init(InitializedTypeDefinition var) {
+    converter.reset();
+    initialize(var);
+  }
+
+  private void initialize(InitializedTypeDefinition var) {
     if (defaults.containsDefaultValue(var.getType().toString())) {
       setDefaultInit1(var);
       setDefaultInit2(var);
@@ -68,6 +66,15 @@ public class VariableInitializer {
     var.setCollection(defaults.isCollection(var.getTypeWithoutParameters()));
   }
 
+  private void initMethods(List<? extends MethodDefinition> methods) {
+    methods.stream().forEach(this::initialize);
+    methods.forEach(m -> initVariables(m.getParameters()));
+  }
+
+  private void initVariables(List<? extends VariableDefinition> list) {
+    list.stream().forEach(this::initialize);
+  }
+
   private void setNoInit(InitializedTypeDefinition var) {
     if (defaults.containsTestNoInit(var.getType().toString())) {
       InitValue value = defaults.getTestNoInit(var.getType().toString());
@@ -81,7 +88,7 @@ public class VariableInitializer {
   private void setDefaultInit1(InitializedTypeDefinition var) {
     if (defaults.containsDefaultValue(var.getType().toString())) {
       InitValue value = defaults.getDefaultValue1(var.getType().toString());
-      var.setInit1(value.getValue());
+      var.setInit1(converter.convert(value.getValue()));
       var.addInitImports(value.getImports());
     }
   }
@@ -89,7 +96,7 @@ public class VariableInitializer {
   private void setDefaultInit2(InitializedTypeDefinition var) {
     if (defaults.containsDefaultValue(var.getType().toString())) {
       InitValue value = defaults.getDefaultValue2(var.getType().toString());
-      var.setInit2(value.getValue());
+      var.setInit2(converter.convert(value.getValue()));
       var.addInitImports(value.getImports());
     }
   }
@@ -129,7 +136,7 @@ public class VariableInitializer {
     List<VariableDefinition> subTypes =
         subVariableTypes.stream().map(subType -> VariableDefinition.builder().withType(subType).build()).collect(Collectors.toList());
     // This is a recursive call, to the caller
-    subTypes.forEach(subVar -> init(subVar));
+    subTypes.forEach(subVar -> initialize(subVar));
     return subTypes;
   }
 
