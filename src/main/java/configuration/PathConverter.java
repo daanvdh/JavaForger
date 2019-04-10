@@ -38,4 +38,16 @@ public class PathConverter {
     return pack.replace("/", ".");
   }
 
+  /**
+   * Converts a complete path to only the name of the class.
+   *
+   * @param path The path containing the class name
+   * @return The name of the class
+   */
+  public static String toClassName(String path) {
+    String safePath = path.replace("\\", "/");
+    String className = safePath.substring(safePath.lastIndexOf("/") + 1, safePath.indexOf(".java"));
+    return className;
+  }
+
 }

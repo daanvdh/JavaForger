@@ -29,11 +29,11 @@ import configuration.JavaForgerConfiguration;
 import generator.CodeSnipit;
 
 /**
- * Unit test for {@link CodeSnipitMerger}.
+ * Unit test for {@link JavaParserMerger}.
  *
  * @author Daan
  */
-public class CodeSnipitMergerTest extends AbstractFileChangingTest {
+public class JavaParserMergerTest extends AbstractFileChangingTest {
 
   /** Path to the file which will be written to create an expected file */
   private static final String EXPECTED_CLASS = "src/test/resources/temporaryTestResults/ExpectedClass.java";
@@ -59,7 +59,7 @@ public class CodeSnipitMergerTest extends AbstractFileChangingTest {
   }
 
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
-    new CodeSnipitMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
+    new JavaParserMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
 
     super.stringToFile(EXPECTED_CLASS, expected);
 

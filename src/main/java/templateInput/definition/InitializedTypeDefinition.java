@@ -66,7 +66,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
 
   protected InitializedTypeDefinition(Builder<?> builder) {
     this.name = builder.name;
-    this.type = builder.type;
+    this.type = new StringConverter(builder.type);
     this.lineNumber = builder.lineNumber;
     this.column = builder.column;
     this.annotations = builder.annotations;
@@ -118,7 +118,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
   }
 
   public String getGetter() {
-    String prefix = this.type.equals("boolean") ? "is" : "get";
+    String prefix = this.type.toString().equals("boolean") ? "is" : "get";
     return prefix + getName().getUpperFirst();
   }
 
@@ -127,9 +127,9 @@ public class InitializedTypeDefinition extends TypeDefinition {
   }
 
   public String getTypeWithoutParameters() {
-    int indexOf = type.indexOf("<");
-    indexOf = indexOf < 1 ? type.length() : indexOf;
-    String mainType = type.substring(0, indexOf);
+    int indexOf = type.toString().indexOf("<");
+    indexOf = indexOf < 1 ? type.toString().length() : indexOf;
+    String mainType = type.toString().substring(0, indexOf);
     return mainType;
   }
 

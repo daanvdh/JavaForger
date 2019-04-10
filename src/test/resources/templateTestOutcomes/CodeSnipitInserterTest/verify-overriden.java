@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package inputClassesForTests;
+this is the new Code 1
 
 import java.util.Set;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Input class for unit tests.
@@ -46,22 +45,6 @@ public class ClassWithEverything {
   public void method1() {
     method2(i, s);
   }
-  @Override
-  public boolean equals(Object obj) {
-    boolean equals = false;
-    if (this == obj) {
-      equals = true;
-    } else if (obj != null && getClass() == obj.getClass()) {
-      ClassWithEverything other = (ClassWithEverything) obj;
-      equals = new EqualsBuilder()
-        .append(prod, other.prod)
-        .append(i, other.i)
-        .append(c, other.c)
-        .append(s, other.s)
-        .isEquals();
-      }
-      return equals;
-    }
 
   private int method2(int j, String t) {
     s = t;

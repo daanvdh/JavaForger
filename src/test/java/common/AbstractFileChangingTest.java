@@ -43,10 +43,10 @@ import configuration.StaticJavaForgerConfiguration;
  */
 public abstract class AbstractFileChangingTest {
 
-  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/CLassWithEverything.java";
-  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/CLassWithEverythingTest.java";
-  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/InputClass.java";
-  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/InputClassTest.java";
+  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/ClassWithEverything.java";
+  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/ClassWithEverythingTest.java";
+  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverything.java";
+  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverythingTest.java";
 
   @Before
   public void setup() throws IOException {
@@ -59,6 +59,7 @@ public abstract class AbstractFileChangingTest {
 
   @After
   public void tearDown() {
+    StaticJavaForgerConfiguration.reset();
     removeTestClassIfExists(INPUT_CLASS);
     removeTestClassIfExists(INPUT_TEST_CLASS);
   }
@@ -81,6 +82,13 @@ public abstract class AbstractFileChangingTest {
     return new String(encoded, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Writes the content to the file given by path.
+   *
+   * @param path The path to the file to write to
+   * @param content The content to fill the file with
+   * @throws IOException
+   */
   protected void stringToFile(String path, String content) throws IOException {
     try (PrintWriter writer = new PrintWriter(path, "UTF-8")) {
       writer.write(content);
