@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import initialization.VariableInitializer;
+import initialization.InitDefaultValues;
 import templateInput.StringConverter;
 
 /**
@@ -89,11 +89,11 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   }
 
   public String getNonPrimitiveType() {
-    return VariableInitializer.getObjectForPrimitive(type.toString());
+    return InitDefaultValues.getObjectForPrimitive(type.toString());
   }
 
   public boolean isPrimitive() {
-    return VariableInitializer.isPrimitive(type.toString());
+    return InitDefaultValues.isPrimitive(type.toString());
   }
 
   public void setType(String type) {

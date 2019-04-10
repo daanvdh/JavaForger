@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 by Daan van den Heuvel.
+ * Copyright 2019 by Daan van den Heuvel.
  *
  * This file is part of JavaForger.
  *
@@ -17,27 +17,23 @@
  */
 package initialization;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import templateInput.definition.InitializedTypeDefinition;
-import templateInput.definition.VariableDefinition;
 
 /**
- * Class for initializing {@link VariableDefinition} for creating java code or unit tests from templates.
+ * Class containing all defaults for different java types in different contexts.
  *
  * @author Daan
  */
-public class VariableInitializer {
+public class InitDefaultValues {
 
   private static Map<String, InitValue> testNoInit = new HashMap<>();
   /** The first value that can be used to initialize the type given by the key of this hashMap. */
   private static Map<String, InitValue> defaultValue1 = new HashMap<>();
+  // TODO The defaultValue2 needs to be removed at some point since we now have the InitConverter. But we have to come up with a solution for Date because the
+  // random numbers need to be modulo 12 (months), 24 (hours), 60 (minutes)
   /** The second value that can be used to initialize the type given by the key of this hashMap. This value is different from defaultValue1. */
   private static Map<String, InitValue> defaultValue2 = new HashMap<>();
   private static Map<String, InitValue> parameterizedVariables = new HashMap<>();
@@ -46,7 +42,7 @@ public class VariableInitializer {
 
   private static Map<String, String> primitiveToObject;
 
-  public VariableInitializer() {
+  public InitDefaultValues() {
     initializeJavaDefaults();
     initializeJavaNoInit();
     initializeJavaEmptyInit();
@@ -64,175 +60,81 @@ public class VariableInitializer {
     return primitiveToObject.containsKey(type);
   }
 
-  public void init(InitializedTypeDefinition var) {
-    if (this.defaultValue1.containsKey(var.getType().toString())) {
-      setDefaultInit1(var);
-      setDefaultInit2(var);
-      setNoInit(var);
-    } else if (var.getType().toString().contains("<")) {
-      initParameterized(var);
-    } else {
-      // TODO the stuff below should be replaced by a call to the Generator with a custom "builderUsage.javat" file defining the start and end of a builder.
-      String init = var.getType() + ".builder().build()";
-      var.setInit1(init);
-      var.setInit2(init);
-      var.setNoInit(getNoInitFor(var.getType().toString()));
-    }
-    var.setDefaultInit(emptyInit.containsKey(var.getTypeWithoutParameters()) ? emptyInit.get(var.getTypeWithoutParameters()).getValue() : null);
-    var.setCollection(collections.contains(var.getTypeWithoutParameters()));
+  public boolean containsDefaultValue(String type) {
+    return defaultValue1.containsKey(type);
   }
 
-  private void setNoInit(InitializedTypeDefinition var) {
-    if (this.testNoInit.containsKey(var.getType().toString())) {
-      InitValue value = this.testNoInit.get(var.getType().toString());
-      var.setNoInit(value.getValue());
-      var.addInitImports(value.getImports());
-    } else {
-      var.setNoInit("null");
-    }
+  public InitValue getDefaultValue1(String type) {
+    return defaultValue1.get(type);
   }
 
-  private void setDefaultInit1(InitializedTypeDefinition var) {
-    if (defaultValue1.containsKey(var.getType().toString())) {
-      InitValue value = defaultValue1.get(var.getType().toString());
-      var.setInit1(value.getValue());
-      var.addInitImports(value.getImports());
-    }
+  public InitValue getDefaultValue2(String type) {
+    return defaultValue2.get(type);
   }
 
-  private void setDefaultInit2(InitializedTypeDefinition var) {
-    if (defaultValue2.containsKey(var.getType().toString())) {
-      InitValue value = defaultValue2.get(var.getType().toString());
-      var.setInit2(value.getValue());
-      var.addInitImports(value.getImports());
-    }
+  public boolean containsEmptyInit(String type) {
+    return emptyInit.containsKey(type);
   }
 
-  private void initParameterized(InitializedTypeDefinition var) {
-    String mainType = var.getTypeWithoutParameters();
-    StringBuilder sb1 = new StringBuilder();
-    StringBuilder sb2 = new StringBuilder();
-    if (this.parameterizedVariables.containsKey(mainType)) {
-      InitValue value = this.parameterizedVariables.get(mainType);
-      sb1.append(value.getValue());
-      sb2.append(value.getValue());
-      var.addInitImports(value.getImports());
-      List<VariableDefinition> subTypes = getSubTypes(var);
-
-      String init1 = subTypes.stream().map(VariableDefinition::getInit1).collect(Collectors.joining(", "));
-      String init2 = subTypes.stream().map(VariableDefinition::getInit2).collect(Collectors.joining(", "));
-
-      sb1.append(init1 + ")");
-      sb2.append(init2 + ")");
-
-      subTypes.stream().forEach(v -> var.addInitImports(v.getInitImports()));
-
-    } else {
-      sb1.append(mainType + ".builder().build()");
-      sb2.append(mainType + ".builder().build()");
-    }
-    var.setInit1(sb1.toString());
-    var.setInit2(sb2.toString());
-    var.setNoInit(getNoInitFor(mainType));
+  public InitValue getEmptyInit(String type) {
+    return emptyInit.get(type);
   }
 
-  private List<VariableDefinition> getSubTypes(InitializedTypeDefinition var) {
-    int indexOf = var.getType().toString().indexOf("<");
-    String subString = var.getType().toString().substring(indexOf + 1, var.getType().toString().length() - 1);
-    List<String> subVariableTypes = splitSubTypes(subString);
-    List<VariableDefinition> subTypes =
-        subVariableTypes.stream().map(subType -> VariableDefinition.builder().withType(subType).build()).collect(Collectors.toList());
-    // This is a recursive call, to the caller
-    subTypes.forEach(subVar -> init(subVar));
-    return subTypes;
+  public boolean isCollection(String type) {
+    return collections.contains(type);
   }
 
-  /**
-   * This method receives the inner type of a parmeterized type (e.g. 'InnerType1, ? extends InnerType2' which originates from 'ParameterizedType<InnerType1, ?
-   * extends InnerType2>'). All comma-seperated types are then split into subStrings and returned. This method does not split any inner parameterized types,
-   * this should be done by recursively calling this method on inner types.
-   *
-   * @param type The comma-separated inner type of a parameterized type.
-   * @return
-   */
-  private List<String> splitSubTypes(String type) {
-    List<String> subVariableTypes = new ArrayList<>();
-    int withinBrackets = 0;
-    StringBuilder currentVar = new StringBuilder();
-
-    for (char c : type.toCharArray()) {
-      if (withinBrackets > 0) {
-        currentVar.append(c);
-        if (c == '>') {
-          withinBrackets--;
-          if (withinBrackets <= 0) {
-            subVariableTypes.add(currentVar.toString());
-            currentVar = new StringBuilder();
-          }
-        }
-      } else if (c == '<') {
-        currentVar.append(c);
-        withinBrackets++;
-      } else if (Character.isLetter(c) || Character.isDigit(c)) {
-        currentVar.append(c);
-      } else if (c == '?') {
-        // This has to be added so that the if statement checking 'extends' can safely remove it.
-        subVariableTypes.add("?");
-      } else if (currentVar.length() > 0) {
-        String current = currentVar.toString();
-        if (current.equals("extends")) {
-          // We do not want to store extends
-          // If this variable is the keyword extends, then the previous variable does not define a type
-          subVariableTypes.remove(subVariableTypes.size() - 1);
-          currentVar = new StringBuilder();
-        } else {
-          subVariableTypes.add(current);
-          currentVar = new StringBuilder();
-        }
-      }
-    }
-
-    if (currentVar.length() > 0) {
-      subVariableTypes.add(currentVar.toString());
-    }
-    return subVariableTypes;
+  public boolean containsTestNoInit(String type) {
+    return testNoInit.containsKey(type);
   }
 
-  private String getNoInitFor(String type) {
+  public InitValue getTestNoInit(String type) {
+    return testNoInit.get(type);
+  }
+
+  public String getNoInitFor(String type) {
     return this.testNoInit.containsKey(type) ? this.testNoInit.get(type).getValue() : "null";
   }
 
+  public boolean isParameterizedVariable(String type) {
+    return parameterizedVariables.containsKey(type);
+  }
+
+  public InitValue getParameterizedVariable(String type) {
+    return parameterizedVariables.get(type);
+  }
+
   private void initializeJavaDefaults() {
-    defaultValue1.put("int", new InitValue("1"));
-    defaultValue2.put("int", new InitValue("2"));
-    defaultValue1.put("Integer", new InitValue("3"));
-    defaultValue2.put("Integer", new InitValue("4"));
+    defaultValue1.put("int", new InitValue("%d"));
+    defaultValue2.put("int", new InitValue("%d"));
+    defaultValue1.put("Integer", new InitValue("%d"));
+    defaultValue2.put("Integer", new InitValue("%d"));
     defaultValue1.put("boolean", new InitValue("true"));
     defaultValue2.put("boolean", new InitValue("false"));
     defaultValue1.put("Boolean", new InitValue("false"));
     defaultValue2.put("Boolean", new InitValue("true"));
-    defaultValue1.put("long", new InitValue("1L"));
-    defaultValue2.put("long", new InitValue("2L"));
-    defaultValue1.put("Long", new InitValue("3L"));
-    defaultValue2.put("Long", new InitValue("4L"));
-    defaultValue1.put("double", new InitValue("1.0"));
-    defaultValue2.put("double", new InitValue("2.0"));
-    defaultValue1.put("Double", new InitValue("3.0"));
-    defaultValue2.put("Double", new InitValue("4.0"));
-    defaultValue1.put("float", new InitValue("1.0"));
-    defaultValue2.put("float", new InitValue("2.0"));
-    defaultValue1.put("Float", new InitValue("3.0"));
-    defaultValue2.put("Float", new InitValue("4.0"));
-    defaultValue1.put("String", new InitValue("\"a\""));
-    defaultValue2.put("String", new InitValue("\"b\""));
+    defaultValue1.put("long", new InitValue("%dL"));
+    defaultValue2.put("long", new InitValue("%dL"));
+    defaultValue1.put("Long", new InitValue("%dL"));
+    defaultValue2.put("Long", new InitValue("%dL"));
+    defaultValue1.put("double", new InitValue("%d.%d"));
+    defaultValue2.put("double", new InitValue("%d.%d"));
+    defaultValue1.put("Double", new InitValue("%d.%d"));
+    defaultValue2.put("Double", new InitValue("%d.%d"));
+    defaultValue1.put("float", new InitValue("%d.%d"));
+    defaultValue2.put("float", new InitValue("%d.%d"));
+    defaultValue1.put("Float", new InitValue("%d.%d"));
+    defaultValue2.put("Float", new InitValue("%d.%d"));
+    defaultValue1.put("String", new InitValue("\"%s\""));
+    defaultValue2.put("String", new InitValue("\"%s\""));
     defaultValue1.put("Object", new InitValue("new Object()"));
     defaultValue2.put("Object", new InitValue("new Object()"));
 
     // Special ones
     defaultValue1.put("LocalDateTime", new InitValue("LocalDateTime.of(2017, 3, 25, 0, 0)"));
     defaultValue2.put("LocalDateTime", new InitValue("LocalDateTime.of(2018, 4, 26, 1, 1)"));
-    defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(5)", "java.math.BigDecimal"));
-    defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(6)", "java.math.BigDecimal"));
+    defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(%d)", "java.math.BigDecimal"));
+    defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(%d)", "java.math.BigDecimal"));
     defaultValue1.put("ZonedDateTime",
         new InitValue("ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
     defaultValue2.put("ZonedDateTime",
@@ -247,8 +149,8 @@ public class VariableInitializer {
     defaultValue2.put("Volume", new InitValue("SI.CUBIC_METRE", "javax.measure.unit.SI")); // no alternative
     defaultValue1.put("Mass", new InitValue("SI.KILOGRAM", "javax.measure.unit.SI"));
     defaultValue2.put("Mass", new InitValue("SI.KILOGRAM", "javax.measure.unit.SI"));
-    defaultValue1.put("Duration", new InitValue("Duration.ofDays(1);", " java.time.Duration"));
-    defaultValue2.put("Duration", new InitValue("Duration.ofDays(2);", " java.time.Duration"));
+    defaultValue1.put("Duration", new InitValue("Duration.ofDays(%d);", " java.time.Duration"));
+    defaultValue2.put("Duration", new InitValue("Duration.ofDays(%d);", " java.time.Duration"));
 
   }
 

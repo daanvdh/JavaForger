@@ -31,7 +31,7 @@ import com.github.javaparser.javadoc.Javadoc;
  *
  * @author Daan
  */
-public class CodeSnipitLocation {
+public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
 
   /** start of the code snipit (inclusive), first possible line number is '1' */
   private final int start;
@@ -63,6 +63,13 @@ public class CodeSnipitLocation {
    */
   public int getLastIndex() {
     return end - 1;
+  }
+
+  /**
+   * @return {@code true} if the end line is higher than the start line, {@code false} otherwise.
+   */
+  public boolean containsLines() {
+    return end > start;
   }
 
   public int size() {
@@ -137,6 +144,11 @@ public class CodeSnipitLocation {
     ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
     builder.append("start", start).append("end", end);
     return builder.toString();
+  }
+
+  @Override
+  public int compareTo(CodeSnipitLocation that) {
+    return this.start - that.start;
   }
 
 }

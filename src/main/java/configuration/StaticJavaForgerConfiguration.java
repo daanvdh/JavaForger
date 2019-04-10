@@ -28,6 +28,7 @@ import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import generator.JavaForger;
+import initialization.InitializationService;
 import merger.CodeSnipitMerger;
 import merger.LineMerger;
 import reader.ClassContainerReader;
@@ -40,6 +41,7 @@ import reader.ClassContainerReader;
 public class StaticJavaForgerConfiguration {
 
   private ClassContainerReader reader = new ClassContainerReader();
+  private InitializationService initializer = new InitializationService();
   private CodeSnipitMerger merger = new LineMerger();
   private Configuration freeMarkerConfiguration;
 
@@ -61,6 +63,18 @@ public class StaticJavaForgerConfiguration {
     return getConfig().reader;
   }
 
+  public void setReader(ClassContainerReader classReader) {
+    config.reader = classReader;
+  }
+
+  public static InitializationService getInitializer() {
+    return getConfig().initializer;
+  }
+
+  public void setInitializer(InitializationService initializer) {
+    config.initializer = initializer;
+  }
+
   /**
    * Resets the {@link StaticJavaForgerConfiguration} default values.
    */
@@ -69,10 +83,6 @@ public class StaticJavaForgerConfiguration {
     conf.setReader(new ClassContainerReader());
     conf.setMerger(new LineMerger());
     conf.setFreeMarkerConfiguration(FreeMarkerConfiguration.getDefaultConfig());
-  }
-
-  public void setReader(ClassContainerReader classReader) {
-    config.reader = classReader;
   }
 
   public static CodeSnipitMerger getMerger() {

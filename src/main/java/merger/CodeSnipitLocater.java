@@ -19,6 +19,7 @@ package merger;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -46,10 +47,17 @@ public class CodeSnipitLocater {
    * @param existingCode {@link CompilationUnit} representing the existing class
    * @param newCode {@link CompilationUnit} representing the code to be added
    * @return An {@link LinkedHashMap} with as keys a {@link CodeSnipitLocation} of code to be added and as value a {@link CodeSnipitLocation} where in the
-   *         existing class the code should be added. The map is ordered on lines where the code should be added.
+   *         existing class the code should be added. The map is ordered on increasing insert locations (map values).
    */
   public LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locate(CompilationUnit existingCode, Node newCode) {
-    return recursiveLocator(existingCode.getChildNodes(), newCode.getChildNodes());
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = recursiveLocator(existingCode.getChildNodes(), newCode.getChildNodes());
+
+    // locations may not be sorted on increasing insertLocation if an existing code block will be overridden and occurs before the last determined insert
+    // location. So we need to sort them here.
+    locations = locations.entrySet().stream().sorted(Map.Entry.comparingByValue())
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+
+    return locations;
   }
 
   /**
@@ -92,8 +100,8 @@ public class CodeSnipitLocater {
       List<Node> existingNodes = getChildNodes(existingNode);
       if (!insertNodes.isEmpty()) {
         if (existingNodes.isEmpty()) {
-          loc = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode),
-              (a, b) -> a, LinkedHashMap::new));
+          CodeSnipitLocation firstInsertLocation = getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode);
+          loc = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> firstInsertLocation, (a, b) -> a, LinkedHashMap::new));
         } else {
           // Recursive call
           loc = recursiveLocator(existingNodes, insertNodes);
