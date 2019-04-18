@@ -37,17 +37,24 @@ import generator.CodeSnipit;
 import reader.Parser;
 
 /**
- * TODO javadoc
+ * Reads a {@link CodeSnipit} and turns it into a {@link CompilationUnit} by using {@link JavaParser}.
  *
  * @author Daan
  */
-// TODO this should never extend CodeSnipitMerger, all code this class uses from the merger should be moved here.
 public class CodeSnipitReader {
 
-  public CompilationUnit read(CodeSnipit codeSnipit, String mergeClassPath) {
+  /**
+   * Reads a {@link CodeSnipit} and turns it into a {@link CompilationUnit} by using {@link JavaParser}.
+   *
+   * @param codeSnipit The {@link CodeSnipit} to be read.
+   * @param classPath The path to the class to which this is going to be merged. Needed to append the class name if the {@link CodeSnipit} has no class name
+   *          defined.
+   * @return A {@link CompilationUnit} of the input code
+   */
+  public CompilationUnit read(CodeSnipit codeSnipit, String classPath) {
     CompilationUnit n;
     if (hasClassCodeDefined(codeSnipit)) {
-      String completeClass = toCompleteClass(codeSnipit, mergeClassPath);
+      String completeClass = toCompleteClass(codeSnipit, classPath);
       n = readClass(completeClass);
     } else {
       // TODO handle it if there is javadoc defined above the package
@@ -98,6 +105,15 @@ public class CodeSnipitReader {
     return n;
   }
 
+  /**
+   * Converts a {@link CodeSnipit} to a String representing a full class. If the codeSnipit does not have a class defined, the code is wrapped into a class
+   * taking into account possible imports or package definition.
+   *
+   * @param codeSnipit The {@link CodeSnipit} to convert.
+   * @param mergeClassPath The path to the class to which this will eventually be merged. Needed to determine the class name if the codeSnipit does not contain
+   *          one.
+   * @return A String representing a full class.
+   */
   public String toCompleteClass(CodeSnipit codeSnipit, String mergeClassPath) {
     String string = codeSnipit.toString();
     int index = firstIndexAfterImports(string);
@@ -106,10 +122,6 @@ public class CodeSnipitReader {
     code.append(string.substring(0, index));
     boolean hasClassDefined = hasClassDefined(string.substring(index));
     if (!hasClassDefined) {
-
-      // TODO this was the old code, check if we really don't need this anymore
-      // code.append("\n\npublic class " + PathConverter.toClassName(mergeClassPath) + " {\n");
-
       // Don't add any lines otherwise the CodeSnipitInserter cannot know the line number anymore
       code.append("public class " + PathConverter.toClassName(mergeClassPath) + " {");
     }
@@ -132,8 +144,6 @@ public class CodeSnipitReader {
   }
 
   protected CompilationUnit readClass(String completeClass) {
-    // TODO make this flexible so that we only add the class if needed
-
     CompilationUnit cu = Parser.parse(completeClass);
     // Needed to preserve the original formatting
     LexicalPreservingPrinter.setup(cu);
@@ -151,14 +161,6 @@ public class CodeSnipitReader {
     // Needed to preserve the original formatting
     LexicalPreservingPrinter.setup(cu);
     return cu;
-  }
-
-  // TODO probably remove this thing
-  protected boolean hasClassDefined(CodeSnipit codeSnipit) {
-    String string = codeSnipit.toString();
-    int index = firstIndexAfterImports(string);
-    boolean hasClassDefined = hasClassDefined(string.substring(index));
-    return hasClassDefined;
   }
 
   protected int firstIndexAfterImports(String string) {
