@@ -1,0 +1,20 @@
+<#list fields as field>
+  /**
+   * Gets the ${field.name.lowerSpace} of the {@link ${class.name}}.
+   *
+   * @return {@link ${field.type}} 
+   */
+  public ${field.type} ${field.getter}() {
+    return ${field.name};
+  }
+
+  /**
+   * Sets the ${field.name.lowerSpace} of the {@link ${class.name}}.
+   *
+   * @param ${field.name} The input {@link ${field.type}}. 
+   */
+  public void ${field.setter}(${field.type} ${field.name}) {
+    this.${field.name} = ${field.name};
+  }
+  
+</#list>

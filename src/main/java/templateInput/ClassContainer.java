@@ -20,6 +20,10 @@ package templateInput;
 import java.util.ArrayList;
 import java.util.List;
 
+import templateInput.definition.ClassDefinition;
+import templateInput.definition.MethodDefinition;
+import templateInput.definition.VariableDefinition;
+
 /**
  * Container class for everything defined within a class.
  *
@@ -27,11 +31,16 @@ import java.util.List;
  */
 public class ClassContainer extends ClassDefinition {
 
-  List<? extends VariableDefinition> fields = new ArrayList<>();
-  List<? extends MethodDefinition> methods = new ArrayList<>();
+  private List<? extends VariableDefinition> fields = new ArrayList<>();
+  private List<? extends MethodDefinition> methods = new ArrayList<>();
+  private List<? extends MethodDefinition> constructors = new ArrayList<>();
 
   public ClassContainer(ClassDefinition def) {
     super(builder(def));
+  }
+
+  public ClassContainer() {
+    // empty constructor so that everything can be filled in later.
   }
 
   public List<? extends VariableDefinition> getFields() {
@@ -48,6 +57,14 @@ public class ClassContainer extends ClassDefinition {
 
   public void setMethods(List<? extends MethodDefinition> methods) {
     this.methods = methods;
+  }
+
+  public List<? extends MethodDefinition> getConstructors() {
+    return constructors;
+  }
+
+  public void setConstructors(List<MethodDefinition> constructors) {
+    this.constructors = constructors;
   }
 
 }

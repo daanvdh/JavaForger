@@ -15,40 +15,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package inputClassesForTests;import org.apache.commons.lang3.builder.ToStringBuilder;
+package inputClassesForTests;
+
+import java.util.Set;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-
 
 /**
  * Input class for unit tests.
  *
  * @author Daan
  */
-public class CLassWithEverything {
+public class ClassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Set<Product> prod;
   public int i = 0;
+  protected ClassWithEverything c;
   private String s;
 
-  public CLassWithEverything(int j) {
+  public ClassWithEverything(int j) {
     this();
     i = j;
   }
 
-  private CLassWithEverything() {
+  private ClassWithEverything() {
     // Do nothing
   }
 
   public void method1() {
     method2(i, s);
   }
-
-@Override
+  @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+      .append("prod", prod)
       .append("i", i)
+      .append("c", c)
       .append("s", s)
       .build();
   }
@@ -58,7 +62,7 @@ public class CLassWithEverything {
     return j + 1;
   }
 
-  public class innerClass {
+  public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
 

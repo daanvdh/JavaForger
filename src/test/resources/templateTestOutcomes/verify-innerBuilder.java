@@ -17,29 +17,34 @@
  */
 package inputClassesForTests;
 
+import java.util.Set;
+
 /**
  * Input class for unit tests.
  *
  * @author Daan
  */
-public class CLassWithEverything {
+public class ClassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Set<Product> prod;
   public int i = 0;
+  protected ClassWithEverything c;
   private String s;
 
-  public CLassWithEverything(int j) {
+  public ClassWithEverything(int j) {
     this();
     i = j;
   }
 
-  private CLassWithEverything() {
+  private ClassWithEverything() {
     // Do nothing
   }
-
-private CLassWithEverything(Builder builder) {
+  private ClassWithEverything(Builder builder) {
+    this.prod = builder.prod == null ? this.prod : builder.prod;
     this.i = builder.i == null ? this.i : builder.i;
+    this.c = builder.c == null ? this.c : builder.c;
     this.s = builder.s == null ? this.s : builder.s;
   }
 
@@ -47,7 +52,11 @@ private CLassWithEverything(Builder builder) {
     method2(i, s);
   }
 
-public static Builder builder() {
+  /**
+   * Creates builder to build {@link ClassWithEverything}.
+   * @return created builder
+   */
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -56,7 +65,7 @@ public static Builder builder() {
     return j + 1;
   }
 
-  public class innerClass {
+  public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
 
@@ -70,17 +79,32 @@ public static Builder builder() {
     }
 
   }
-  
+  /**
+   * Builder to build {@link ClassWithEverything}.
+   */
   public static final class Builder {
+    private Set<Product> prod = new HashSet<>();
     private Integer i;
+    private ClassWithEverything c;
     private String s;
 
     private Builder() {
       // Builder should only be used via the parent class
     }
 
+    public Builder prod(Set<Product> prod) {
+      this.prod.clear();
+      this.prod.addAll(prod);
+      return this;
+    }
+    
     public Builder i(Integer i) {
       this.i = i;
+      return this;
+    }
+    
+    public Builder c(ClassWithEverything c) {
+      this.c = c;
       return this;
     }
     
@@ -90,8 +114,8 @@ public static Builder builder() {
     }
     
 
-    public CLassWithEverything build() {
-      return new CLassWithEverything(this);
+    public ClassWithEverything build() {
+      return new ClassWithEverything(this);
     }
   }
 

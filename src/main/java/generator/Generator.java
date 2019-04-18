@@ -17,22 +17,23 @@
  */
 package generator;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import configuration.ClassProvider;
+import configuration.JavaForgerConfiguration;
+import configuration.StaticJavaForgerConfiguration;
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
-import generator.JavaForgerConfiguration.Builder;
 import merger.CodeSnipitMerger;
-import parameters.TemplateInputDefaults;
-import parameters.TemplateInputParameters;
-import reader.ClassContainerReader;
-import templateInput.ClassContainer;
+import templateInput.TemplateInputParameters;
 
 /**
  * Class for generating code given a template and already existing java class files.
@@ -41,8 +42,9 @@ import templateInput.ClassContainer;
  */
 public class Generator {
 
-  private ClassContainerReader classReader = new ClassContainerReader();
-  private CodeSnipitMerger merger = new CodeSnipitMerger();
+  private CodeSnipitMerger merger = StaticJavaForgerConfiguration.getMerger();
+  private TemplateInputParametersService inputService = new TemplateInputParametersService();
+  private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
   public CodeSnipit execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
@@ -65,53 +67,72 @@ public class Generator {
   }
 
   private CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
-    TemplateInputParameters inputParameters = getInputParameters(config, inputClass);
+    String mergeClassPath = getMergeClass(inputClass, parentMergeClass, config);
+
+    TemplateInputParameters inputParameters = inputService.getInputParameters(config, inputClass, mergeClassPath);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
-    String mergedClass = merge(config, codeSnipit, inputClass, parentMergeClass);
-    executeChildren(config, inputClass, codeSnipit, mergedClass);
+    merge(config, codeSnipit, mergeClassPath, inputParameters);
+    executeChildren(config, inputClass, codeSnipit, mergeClassPath);
     return codeSnipit;
   }
 
-  private String merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String inputClass, String parentMergeClass) throws IOException {
-    String mergeClassPath = null;
-    MergeClassProvider mergeClassProvider = config.getMergeClassProvider();
-    if (mergeClassProvider != null) {
-      switch (mergeClassProvider.provideFrom()) {
-      case SELF:
-        mergeClassPath = mergeClassProvider.provide("");
-        break;
-      case INPUT_CLASS:
-        mergeClassPath = mergeClassProvider.provide(inputClass);
-        break;
-      case PARENT_CONFIG_MERGE_CLASS:
-        mergeClassPath = mergeClassProvider.provide(parentMergeClass);
-        break;
-      default:
-      }
-      if (config.isMerge()) {
-        // TODO check if file exists, create otherwise
-
-        boolean success = false;
-        try {
-          merger.merge(config, codeSnipit, mergeClassPath);
-          success = true;
-        } finally {
-          if (!success) {
-            codeSnipit.printWithLineNumbers();
-          }
+  private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, TemplateInputParameters inputParameters)
+      throws IOException, TemplateException {
+    if (mergeClassPath != null && config.isMerge()) {
+      boolean exists = new File(mergeClassPath).exists();
+      if (!exists) {
+        if (!config.isCreateFileIfNotExists()) {
+          throw new JavaForgerException("Merge file '" + mergeClassPath + "' does not exist and JavaForgerConfiguration for template "
+              + config.getTemplateName() + " is not setup to create it. ");
         }
+        if (config.getConfigIfFileDoesNotExist() == null) {
+          createAndFillFile(mergeClassPath, codeSnipit);
+        } else {
+          CodeSnipit codeSnipitInit = processTemplate(config.getConfigIfFileDoesNotExist(), inputParameters);
+          createAndFillFile(mergeClassPath, codeSnipitInit);
+          executeMerge(config, codeSnipit, mergeClassPath);
+        }
+      } else {
+        executeMerge(config, codeSnipit, mergeClassPath);
       }
     }
-    return mergeClassPath;
   }
 
-  private void executeChildren(JavaForgerConfiguration config, String inputClass, CodeSnipit codeSnipit, String parentMergeClass)
+  private void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+    boolean success = false;
+    try {
+      merger.merge(config, codeSnipit, mergeClassPath);
+      success = true;
+    } finally {
+      if (!success) {
+        codeSnipit.printWithLineNumbers();
+      }
+    }
+  }
+
+  private String getMergeClass(String inputClass, String parentMergeClass, JavaForgerConfiguration config) {
+    ClassProvider provider = config.getMergeClassProvider();
+    return (provider == null) ? null : provider.provide(inputClass, parentMergeClass);
+  }
+
+  private void createAndFillFile(String mergeClassPath, CodeSnipit codeSnipit) throws IOException {
+    File f = new File(mergeClassPath);
+    if (!f.exists()) {
+      f.getParentFile().mkdirs();
+    }
+    try (PrintWriter writer = new PrintWriter(mergeClassPath, "UTF-8")) {
+      writer.write(codeSnipit.toString());
+    }
+  }
+
+  private void executeChildren(JavaForgerConfiguration config, String parentInputClass, CodeSnipit codeSnipit, String parentMergeClass)
       throws IOException, TemplateException {
     // forloop needed because we cannot throw exceptions from within a stream
     // TODO let execute only throw our own unchecked exception and replace the forloop with stream below.
     // config.getChildConfigs().stream().map(conf -> execute(conf, inputClass, parentMergeClass)).collect(Collectors.toList());
     List<CodeSnipit> codeSnipits = new ArrayList<>();
     for (JavaForgerConfiguration conf : config.getChildConfigs()) {
+      String inputClass = conf.getInputClassProvider().provide(parentInputClass, parentMergeClass);
       codeSnipits.add(execute(conf, inputClass, parentMergeClass));
     }
     codeSnipits.forEach(s -> {
@@ -123,35 +144,9 @@ public class Generator {
   private CodeSnipit processTemplate(JavaForgerConfiguration config, TemplateInputParameters inputParameters)
       throws IOException, TemplateNotFoundException, MalformedTemplateNameException, ParseException, TemplateException {
     Writer writer = new StringWriter();
-    config.getTemplate().process(inputParameters, writer);
+
+    staticConfig.getFreeMarkerConfiguration().getTemplate(config.getTemplate()).process(inputParameters, writer);
     return new CodeSnipit(writer.toString());
-  }
-
-  private TemplateInputParameters getInputParameters(JavaForgerConfiguration config, String inputClass) throws IOException {
-    TemplateInputParameters inputParameters = config.getInputParameters();
-
-    if (inputClass != null && !inputClass.isEmpty()) {
-      ClassContainer claz = classReader.read(inputClass);
-      config.getAdjuster().accept(claz);
-      inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
-      inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
-      inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
-    }
-    return inputParameters;
-  }
-
-  public static void main(String[] args) throws IOException, TemplateException {
-    String inputClass = "src/test/java/inputClassesForTests/Product.java";
-    String template = "innerBuilder.javat";
-    String testMergeClass = "src/test/java/inputClassesForTests/Product.java";
-    String testTemplate = "innerBuilderUnitTest.javat";
-
-    Builder builder = JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(template); // .withMergeClass(inputClass);
-    builder.withChildConfig(JavaForgerConfiguration.builder().withParameterAdjusters(DefaultAdjusters.removeStaticFields()).withTemplate(testTemplate) // .withMergeClass(testMergeClass)
-        .build());
-
-    String code = new Generator().execute(builder.build(), inputClass).toString();
-    System.out.println(code);
   }
 
 }

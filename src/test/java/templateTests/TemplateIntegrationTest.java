@@ -23,10 +23,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import common.AbstractFileChangingTest;
+import configuration.DefaultConfigurations;
+import configuration.JavaForgerConfiguration;
 import freemarker.template.TemplateException;
-import generator.DefaultConfigurations;
 import generator.JavaForger;
-import generator.JavaForgerConfiguration;
 
 /**
  * Integration test testing the whole flow of inserting code into a class. If this test fails, comment out deleting the created file in the tearDown method.
@@ -96,13 +96,13 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
   public static void main(String[] args) throws IOException {
 
     // This statement prevents the main method from accidently being executed.
-    Assert.fail();
+    // Assert.fail();
 
     TemplateIntegrationTest test = new TemplateIntegrationTest() {
       @Override
       protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
-        System.out.println("hi");
-        super.copyClass(actualPath, EXPECTED_RESULTS_PATH + expectedPath);
+        System.out.println("Copying:\n" + actualPath + " to:\n" + expectedPath);
+        super.copyClass(actualPath, expectedPath);
       }
     };
 
@@ -115,6 +115,8 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
     test.setup();
     test.testToString();
     test.tearDown();
+
+    Assert.fail();
   }
 
 }

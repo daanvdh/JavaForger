@@ -15,44 +15,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package inputClassesForTests;import org.apache.commons.lang3.builder.EqualsBuilder;
+package inputClassesForTests;
 
-
+import java.util.Set;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Input class for unit tests.
  *
  * @author Daan
  */
-public class CLassWithEverything {
+public class ClassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
+  public Set<Product> prod;
   public int i = 0;
+  protected ClassWithEverything c;
   private String s;
 
-  public CLassWithEverything(int j) {
+  public ClassWithEverything(int j) {
     this();
     i = j;
   }
 
-  private CLassWithEverything() {
+  private ClassWithEverything() {
     // Do nothing
   }
 
   public void method1() {
     method2(i, s);
   }
-
-@Override
+  @Override
   public boolean equals(Object obj) {
     boolean equals = false;
     if (this == obj) {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
-      CLassWithEverything other = (CLassWithEverything) obj;
+      ClassWithEverything other = (ClassWithEverything) obj;
       equals = new EqualsBuilder()
+        .append(prod, other.prod)
         .append(i, other.i)
+        .append(c, other.c)
         .append(s, other.s)
         .isEquals();
       }
@@ -64,7 +68,7 @@ public class CLassWithEverything {
     return j + 1;
   }
 
-  public class innerClass {
+  public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
 

@@ -19,6 +19,7 @@ package generator;
 
 import java.io.IOException;
 
+import configuration.JavaForgerConfiguration;
 import freemarker.template.TemplateException;
 
 /**

@@ -33,6 +33,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import configuration.StaticJavaForgerConfiguration;
+
 /**
  * This abstract class creates a new file before each test which the extending test class can change within the test, so that the original file is not changed.
  * The newly created file is removed after the test is run.
@@ -41,13 +43,15 @@ import org.junit.Before;
  */
 public abstract class AbstractFileChangingTest {
 
-  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/CLassWithEverything.java";
-  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/CLassWithEverythingTest.java";
-  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/InputClass.java";
-  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/InputClassTest.java";
+  private static final String ORIGINAL_CLASS = "src/test/java/inputClassesForTests/ClassWithEverything.java";
+  private static final String ORIGINAL_TEST_CLASS = "src/test/java/inputClassesForTests/ClassWithEverythingTest.java";
+  protected static final String INPUT_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverything.java";
+  protected static final String INPUT_TEST_CLASS = "src/test/resources/temporaryTestResults/ClassWithEverythingTest.java";
 
   @Before
   public void setup() throws IOException {
+    StaticJavaForgerConfiguration.reset();
+    SymbolSolverSetup.setup();
     tearDown();
     copyClass(getOriginalClass(), INPUT_CLASS);
     copyClass(getOriginalTestClass(), INPUT_TEST_CLASS);
@@ -55,6 +59,7 @@ public abstract class AbstractFileChangingTest {
 
   @After
   public void tearDown() {
+    StaticJavaForgerConfiguration.reset();
     removeTestClassIfExists(INPUT_CLASS);
     removeTestClassIfExists(INPUT_TEST_CLASS);
   }
@@ -77,6 +82,13 @@ public abstract class AbstractFileChangingTest {
     return new String(encoded, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Writes the content to the file given by path.
+   *
+   * @param path The path to the file to write to
+   * @param content The content to fill the file with
+   * @throws IOException
+   */
   protected void stringToFile(String path, String content) throws IOException {
     try (PrintWriter writer = new PrintWriter(path, "UTF-8")) {
       writer.write(content);
