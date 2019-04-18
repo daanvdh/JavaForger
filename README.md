@@ -41,7 +41,7 @@ The DefaultConfigurations class contains default configurations for all template
 A JavaForgerConfiguration can also contain child configurations, for instance DefaultConfigurations.forBuilderAndTest() has a child configuration for creating a unit test for the builder. 
 That child configuration will be executed after the root configuration. 
 By default the generated code for the test will be merged to the class: 'src/test/java/<custom-path>/<input-class-name>Test.java'. 
-If that file does not exist, an FileNotFoundException will be thrown. 
+If that file does not exist, a FileNotFoundException will be thrown. 
 
 ## Setup 
 
@@ -51,7 +51,7 @@ Then add the dependency below to the pom of your project.
 	<dependency>
 	  <groupId>com.github.javaforger</groupId>
 	  <artifactId>JavaForger</artifactId>
-	  <version>0.0.1-SNAPSHOT</version>
+	  <version>1.0.0</version>
 	</dependency>
 
 ## Settings and Dependencies 
@@ -77,13 +77,9 @@ An example of a merge class provider can be found in MergeClassProvider::forMave
 
 ## Custom Templates
 
-For writing custom templates you first have to set a custom template location. 
-Note that with that settting it is not possible anymore to access the custom templates, this will be possible in a future version. 
-Setting the custom template location can be done as follows: 
+For writing custom templates you first have to set a custom template location, which can be done as follows: 
 	
-	Configuration freeMarkerConfig = FreeMarkerConfiguration.getDefaultConfig();
-	freeMarkerConfig.setDirectoryForTemplateLoading(new File("src\\main\\resources\\templates"));
-	JavaForgerConfiguration.builder().withFreeMarkerConfiguration(freeMarkerConfig).withTemplate("equals.javat").withMergeClassProvider(new MergeClassProvider()).build(); 
+	StaticJavaForgerConfiguration.getConfig().addTemplateLocation("project/relative/path/to/templates");
 
 We can define a template called "equals.javat" as given below. 
 We can see that we access the fields parsed from an input class in a loop, where we use the name of each field to construct the EqualsBuilder. 
@@ -97,12 +93,24 @@ The currently supported variables are described in [TemplateVariables.md](Templa
 	</#list>
 	    .isEquals();
 	}
-    
+
+## Features
+
+- Generated class code will be merged recursively. 
+- By default existing code (fields, constructors, methods) will not be overridden, setting via JavaForgerConfiguration::setOverride. 
+- By default code will be inserted in the following order; a) fields, constructors, methods, classes b) public, 'no access modifier', protected, private. This can be overridden via StaticJavaForgerConfiguration::setMerger. 
+- Required imports for any field f in a template can be added by: 
+
+	<#list f.typeImports as import>
+	import ${import};
+	</#list>
+	
+- Initialization values for a field f are unique per type and can used by: 
+
+	${field.type} ${field.name} = ${field.init1};
+
 ## Roadmap
 
-- Improving the code merger so that a user can configure where and how code will be inserted. 
-- Automatically determining required imports for types coming from the input class so that these can be added to the merge class. 
-- Improve generation of test input data so that every value is unique for the whole test. 
 - Create eclipse plugin to execute customly created templates without having to specify the input class manually. 
 - Automatically format java classes after inserting code.
 - Create data flow graph for simple methods to be able to generate unit test code. 
