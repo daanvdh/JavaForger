@@ -33,7 +33,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class MethodDefinition extends InitializedTypeDefinition {
 
-  // TODO should probably be something else then variableDefinition.
   private List<VariableDefinition> parameters;
 
   private MethodDefinition(Builder builder) {

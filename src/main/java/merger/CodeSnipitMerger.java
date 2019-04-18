@@ -21,11 +21,13 @@ import java.io.File;
 import java.io.IOException;
 
 import configuration.JavaForgerConfiguration;
+import configuration.StaticJavaForgerConfiguration;
 import generator.CodeSnipit;
 import generator.JavaForgerException;
 
 /**
- * TODO javadoc
+ * Responsible for merging {@link CodeSnipit}s into java classes. The current default implementation is {@link LineMerger}. The default can be changed within
+ * {@link StaticJavaForgerConfiguration}.
  *
  * @author Daan
  */
@@ -59,12 +61,13 @@ public abstract class CodeSnipitMerger {
   }
 
   protected void format(JavaForgerConfiguration config, String mergeClassPath) {
+    // TODO implement formatting
     System.err.println("formatting is not yet supported and should be done manually for class " + mergeClassPath);
-    // TODO Probably best to call the formatter via the cmd:
+    // Probably best to call the formatter via the cmd:
     // https://stackoverflow.com/questions/15464111/run-cmd-commands-through-java
     // https://www.beyondjava.net/run-eclipse-formatter-command-line
 
-    // TODO Probably we have to let the user set the path to the desired java-formatter in the config
+    // Probably we have to let the user set the path to the desired java-formatter in the config
   }
 
 }
