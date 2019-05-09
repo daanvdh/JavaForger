@@ -205,7 +205,7 @@ public class InitDefaultValues {
 
     // Special ones
 
-    parameterizedVariables.put("DecimalMeasure", new InitValue("DecimalMeasure.valueOf(BigDecimal.ZERO, ", "java.math.BigDecimal"));
+    parameterizedVariables.put("DecimalMeasure", new InitValue("DecimalMeasure.valueOf(BigDecimal.TEN, ", "java.math.BigDecimal"));
 
   }
 
