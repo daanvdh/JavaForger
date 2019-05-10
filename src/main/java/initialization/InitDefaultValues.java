@@ -131,17 +131,17 @@ public class InitDefaultValues {
     defaultValue2.put("Object", new InitValue("new Object()"));
 
     // Special ones
-    defaultValue1.put("LocalDateTime", new InitValue("LocalDateTime.of(2017, 3, 25, 0, 0)"));
-    defaultValue2.put("LocalDateTime", new InitValue("LocalDateTime.of(2018, 4, 26, 1, 1)"));
+    defaultValue1.put("LocalDateTime", new InitValue("LocalDateTime.of(%d, 3, 25, 0, 0)"));
+    defaultValue2.put("LocalDateTime", new InitValue("LocalDateTime.of(%d, 4, 26, 1, 1)"));
     defaultValue1.put("BigDecimal", new InitValue("BigDecimal.valueOf(%d)", "java.math.BigDecimal"));
     defaultValue2.put("BigDecimal", new InitValue("BigDecimal.valueOf(%d)", "java.math.BigDecimal"));
     defaultValue1.put("ZonedDateTime",
-        new InitValue("ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
+        new InitValue("ZonedDateTime.of(%d, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
     defaultValue2.put("ZonedDateTime",
-        new InitValue("ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
-    defaultValue1.put("Date", new InitValue("Date.from(ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())",
+        new InitValue("ZonedDateTime.of(%d, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId())", "java.time.ZonedDateTime", "java.util.TimeZone"));
+    defaultValue1.put("Date", new InitValue("Date.from(ZonedDateTime.of(%d, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())",
         "java.time.ZonedDateTime", "java.util.TimeZone"));
-    defaultValue2.put("Date", new InitValue("Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())",
+    defaultValue2.put("Date", new InitValue("Date.from(ZonedDateTime.of(%d, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant())",
         "java.time.ZonedDateTime", "java.util.TimeZone"));
     defaultValue1.put("Length", new InitValue("SI.METER", "javax.measure.unit.SI"));
     defaultValue2.put("Length", new InitValue("SI.KILOMETER", "javax.measure.unit.SI"));
