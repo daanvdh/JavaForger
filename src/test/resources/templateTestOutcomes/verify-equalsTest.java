@@ -30,10 +30,10 @@ import inputClassesForTests.ClassWithEverything;
  * @author Daan
  */
 public class ClassWithEverythingTest {
-private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
-private static final int I = 1;
-private static final ClassWithEverything C = ClassWithEverything.builder().build();
-private static final String S = "a";
+  private static final Set<Product> PROD = Collections.singleton(Product.builder().build());
+  private static final int I = 1;
+  private static final ClassWithEverything C = ClassWithEverything.builder().build();
+  private static final String S = "a";
   @Test
   public void testEquals_Same() {
     ClassWithEverything.Builder builder = createAndFillBuilder();
