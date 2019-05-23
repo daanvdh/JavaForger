@@ -24,25 +24,25 @@ import org.junit.Test;
 import templateInput.definition.VariableDefinition;
 
 /**
- * Unit test for {@link VariableInitializer}.
+ * Unit test for {@link InitializationService}.
  *
  * @author Daan
  */
-public class VariableInitializerTest {
+public class InitializationServiceTest {
 
-  private VariableInitializer sut = new VariableInitializer();
+  private InitializationService sut = new InitializationService();
 
   @Test
-  public void testInit_parameterized() {
+  public void testInitialize_parameterized() {
     VariableDefinition var = VariableDefinition.builder().withType("HashMap<Date, BigDecimal>").build();
 
     sut.init(var);
 
     Assert.assertEquals(
-        "Collections.singletonMap(Date.from(ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(5))",
+        "Collections.singletonMap(Date.from(ZonedDateTime.of(1, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(3))",
         var.getInit1());
     Assert.assertEquals(
-        "Collections.singletonMap(Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(6))",
+        "Collections.singletonMap(Date.from(ZonedDateTime.of(2, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(4))",
         var.getInit2());
 
     Assert.assertTrue(var.getTypeImports().isEmpty());
@@ -51,25 +51,25 @@ public class VariableInitializerTest {
   }
 
   @Test
-  public void testInit_parameterizedInParameterized() {
+  public void testInitialize_parameterizedInParameterized() {
     VariableDefinition var = VariableDefinition.builder().withType("Map<HashMap<int, String>, HashMap<Object, double>>").build();
 
     sut.init(var);
 
-    Assert.assertEquals("Collections.singletonMap(Collections.singletonMap(1, \"a\"), Collections.singletonMap(new Object(), 1.0))", var.getInit1());
-    Assert.assertEquals("Collections.singletonMap(Collections.singletonMap(2, \"b\"), Collections.singletonMap(new Object(), 2.0))", var.getInit2());
+    Assert.assertEquals("Collections.singletonMap(Collections.singletonMap(1, \"a\"), Collections.singletonMap(new Object(), 3.4))", var.getInit1());
+    Assert.assertEquals("Collections.singletonMap(Collections.singletonMap(2, \"b\"), Collections.singletonMap(new Object(), 5.6))", var.getInit2());
     Assert.assertTrue(var.getTypeImports().isEmpty());
     Assert.assertThat(var.getInitImports(), Matchers.containsInAnyOrder("java.util.Collections"));
   }
 
   @Test
-  public void testInit_parameterizedExtends() {
+  public void testInitialize_parameterizedExtends() {
     VariableDefinition var = VariableDefinition.builder().withType("List<? extends BigDecimal>").build();
 
     sut.init(var);
 
-    Assert.assertEquals("Collections.singletonList(BigDecimal.valueOf(5))", var.getInit1());
-    Assert.assertEquals("Collections.singletonList(BigDecimal.valueOf(6))", var.getInit2());
+    Assert.assertEquals("Collections.singletonList(BigDecimal.valueOf(1))", var.getInit1());
+    Assert.assertEquals("Collections.singletonList(BigDecimal.valueOf(2))", var.getInit2());
     Assert.assertTrue(var.getTypeImports().isEmpty());
     Assert.assertThat(var.getInitImports(), Matchers.containsInAnyOrder("java.util.Collections", "java.math.BigDecimal"));
   }

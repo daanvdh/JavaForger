@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import initialization.VariableInitializer;
+import initialization.InitDefaultValues;
 import templateInput.StringConverter;
 
 /**
@@ -39,7 +39,7 @@ import templateInput.StringConverter;
 public class TypeDefinition implements Comparable<TypeDefinition> {
 
   protected StringConverter name;
-  protected String type;
+  protected StringConverter type;
   /** The imports required for this type. This list is sorted on insertion order so that template generation is consistent. */
   protected LinkedHashSet<String> typeImports = new LinkedHashSet<>();
   protected int lineNumber;
@@ -84,24 +84,20 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.name = new StringConverter(name);
   }
 
-  public String getType() {
+  public StringConverter getType() {
     return type;
   }
 
   public String getNonPrimitiveType() {
-    return VariableInitializer.getObjectForPrimitive(type);
+    return InitDefaultValues.getObjectForPrimitive(type.toString());
   }
 
   public boolean isPrimitive() {
-    return VariableInitializer.isPrimitive(type);
-  }
-
-  public StringConverter getType_() {
-    return new StringConverter(type);
+    return InitDefaultValues.isPrimitive(type.toString());
   }
 
   public void setType(String type) {
-    this.type = type;
+    this.type = new StringConverter(type);
   }
 
   public int getLineNumber() {

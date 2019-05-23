@@ -24,21 +24,21 @@ import java.util.Set;
  *
  * @author Daan
  */
-public class CLassWithEverything {
+public class ClassWithEverything {
 
   public static final Boolean PUB_STAT_FIN = false;
 
   public Set<Product> prod;
   public int i = 0;
-  protected CLassWithEverything c;
+  protected ClassWithEverything c;
   private String s;
 
-  public CLassWithEverything(int j) {
+  public ClassWithEverything(int j) {
     this();
     i = j;
   }
 
-  private CLassWithEverything() {
+  private ClassWithEverything() {
     // Do nothing
   }
 
@@ -51,13 +51,16 @@ public class CLassWithEverything {
     return j + 1;
   }
 
-  public class innerClass {
+  public class InnerClass {
     public double d = 0.3;
     private float f = 4.8F;
 
     public void method3() {
       method4(d, f);
     }
+ protected void methodBetween3and4() { 
+ // Do Nothing 
+ }
 
     private int method4(double e, float g) {
       d = e;

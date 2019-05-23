@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import initialization.VariableInitializer;
+import initialization.InitDefaultValues;
 import templateInput.ClassContainer;
 import templateInput.TemplateInputParameters;
 import templateInput.definition.MethodDefinition;
@@ -43,7 +43,7 @@ public class DefaultAdjusters {
   }
 
   public static ClassContainerAdjuster replaceFieldPrimitivesWithObjects() {
-    return p -> changeVariable(p, var -> var.setType(VariableInitializer.getObjectForPrimitive(var.getType())));
+    return p -> changeVariable(p, var -> var.setType(InitDefaultValues.getObjectForPrimitive(var.getType().toString())));
   }
 
   public static ClassContainerAdjuster removeVoidMethods() {

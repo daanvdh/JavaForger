@@ -46,7 +46,6 @@ import com.github.javaparser.resolution.types.ResolvedType;
 
 import configuration.StaticJavaForgerConfiguration;
 import generator.JavaForgerException;
-import initialization.VariableInitializer;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;
@@ -60,7 +59,6 @@ import templateInput.definition.VariableDefinition;
  */
 public class ClassContainerReader {
 
-  private VariableInitializer initializer = new VariableInitializer();
   private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
   public ClassContainer read(String inputClass) throws IOException {
@@ -108,23 +106,10 @@ public class ClassContainerReader {
       constructors.forEach(c -> c.addTypeImport(typeImport.get()));
     }
 
-    initVariables(fields);
-    initMethods(methods);
-    initMethods(constructors);
-
     claz.setFields(fields);
     claz.setMethods(methods);
     claz.setConstructors(constructors);
     return claz;
-  }
-
-  private void initMethods(List<MethodDefinition> methods) {
-    methods.stream().forEach(initializer::init);
-    methods.forEach(m -> initVariables(m.getParameters()));
-  }
-
-  private void initVariables(List<VariableDefinition> fields) {
-    fields.stream().forEach(initializer::init);
   }
 
   private ClassContainer parseClass(TypeDeclaration<?> type) {

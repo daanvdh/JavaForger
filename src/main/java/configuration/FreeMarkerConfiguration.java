@@ -45,8 +45,6 @@ public class FreeMarkerConfiguration {
 
     // Specify the source where the template files come from. Here I set a
     // plain directory for it, but non-file-system sources are possible too:
-    // TODO later we will use both lines below in a multiTemplateLoader with the relative path from a custom project and the class path from JavaForger
-    // config.setDirectoryForTemplateLoading(new File("src\\main\\resources\\templates"));
     config.setClassForTemplateLoading(Generator.class, TEMPLATE_LOCATION);
 
     // Set the preferred charset template files are stored in. UTF-8 is
