@@ -17,6 +17,7 @@
  */
 package dataflow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,8 +27,8 @@ import java.util.List;
  */
 public class TestDataFlowNode {
   private String name;
-  private List<TestDataFlowEdge> in;
-  private List<TestDataFlowEdge> out;
+  private List<TestDataFlowEdge> in = new ArrayList<>();
+  private List<TestDataFlowEdge> out = new ArrayList<>();
 
   public TestDataFlowNode(String name) {
     this.name = name;
@@ -64,11 +65,48 @@ public class TestDataFlowNode {
   }
 
   private void addIncoming(TestDataFlowEdge edge) {
-    this.out.add(edge);
+    this.in.add(edge);
   }
 
   private void addOutgoing(TestDataFlowEdge edge) {
-    this.in.add(edge);
+    this.out.add(edge);
+  }
+
+  public String toStringForward() {
+    return toStringForward(0);
+  }
+
+  public String toStringForward(int tabs) {
+    if (tabs > 10) {
+      return "TestDataFlowNode::toStringForward tabs>10";
+    }
+
+    return toStringForward(tabs, 0);
+  }
+
+  public String toStringForward(int tabs, int firstTabs) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(tabs(firstTabs) + this.getName());
+    boolean first = true;
+
+    for (TestDataFlowEdge e : out) {
+      if (first) {
+        first = false;
+        sb.append("\t-> " + e.getOut().toStringForward(tabs + 1));
+      } else {
+        sb.append(tabs(tabs + 1) + "-> " + e.getOut().toStringForward(tabs + 1, tabs + 1));
+      }
+    }
+
+    return sb.toString();
+  }
+
+  private String tabs(int tabs) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < tabs; i++) {
+      sb.append("\t");
+    }
+    return sb.toString();
   }
 
 }

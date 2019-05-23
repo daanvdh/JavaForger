@@ -108,4 +108,14 @@ public class TestDataFlowMethod {
     }
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("parameters{\n");
+    for (TestDataFlowNode p : parameters) {
+      sb.append(p.toStringForward(1, 1));
+    }
+    return sb.toString();
+  }
+
 }

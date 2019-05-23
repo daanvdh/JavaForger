@@ -54,4 +54,8 @@ public class DataFlowGraph {
     this.methods = methods;
   }
 
+  public void addMethod(DataFlowMethod parseMethod) {
+    this.methods.add(parseMethod);
+  }
+
 }

@@ -17,8 +17,14 @@
  */
 package dataflow;
 
+import java.util.List;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 
 /**
  * TODO javadoc
@@ -28,12 +34,25 @@ import com.github.javaparser.ast.Node;
 public class DataFlowGrapFactory {
 
   public DataFlowGraph createGraph(CompilationUnit cu) {
+    DataFlowGraph graph = new DataFlowGraph();
 
-    return null;
+    for (TypeDeclaration<?> type : cu.getTypes()) {
+      List<Node> childNodes = type.getChildNodes();
+      for (Node node : childNodes) {
+        if (node instanceof FieldDeclaration) {
+          // fields.add(parseField(node));
+        } else if (node instanceof MethodDeclaration) {
+          graph.addMethod(parseMethod(node));
+        } else if (node instanceof ConstructorDeclaration) {
+          // constructors.add(parseConstructor(node));
+        }
+      }
+    }
+
+    return graph;
   }
 
-  private DataFlowMethod createMethod(Node node) {
-
+  private DataFlowMethod parseMethod(Node node) {
     return null;
   }
 

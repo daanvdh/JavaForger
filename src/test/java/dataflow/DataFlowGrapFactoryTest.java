@@ -37,14 +37,16 @@ public class DataFlowGrapFactoryTest {
     String setter = //
         "public class Claz {\n" + //
             "  private String s;\n" + //
-            "  public void setN(String s) {\n" + //
-            "    this.s = s;\n" + //
+            "  public void setS(String a) {\n" + //
+            "    this.s = a;\n" + //
             "  }\n" + //
             "}"; //
     CompilationUnit cu = JavaParser.parse(setter);
 
-    TestDataFlowGraph expected = TestDataFlowGraph.builder().withField("n")
-        .withMethod(TestDataFlowMethod.builder().withParameter("n").withInputField("n").withChangedFieldEdge("n", "n").build()).build();
+    TestDataFlowGraph expected =
+        TestDataFlowGraph.builder().withField("s").withMethod(TestDataFlowMethod.builder().withParameter("a").withChangedFieldEdge("a", "s").build()).build();
+
+    System.out.println(expected.toString());
 
     DataFlowGraph graph = factory.createGraph(cu);
 

@@ -100,4 +100,15 @@ public class TestDataFlowGraph {
     return false;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("methods{\n");
+    for (TestDataFlowMethod m : methods) {
+      sb.append(m.toString());
+    }
+    sb.append("\n}");
+    return sb.toString();
+  }
+
 }

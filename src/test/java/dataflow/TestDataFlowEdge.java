@@ -47,4 +47,9 @@ public class TestDataFlowEdge {
     this.to = out;
   }
 
+  @Override
+  public String toString() {
+    return from.getName() + "->" + to.getName();
+  }
+
 }
