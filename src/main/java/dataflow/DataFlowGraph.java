@@ -17,6 +17,7 @@
  */
 package dataflow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,9 +27,9 @@ import java.util.List;
  */
 public class DataFlowGraph {
 
-  private List<DataFlowNode> fields;
-  private List<DataFlowMethod> constructors;
-  private List<DataFlowMethod> methods;
+  private List<DataFlowNode> fields = new ArrayList<>();
+  private List<DataFlowMethod> constructors = new ArrayList<>();
+  private List<DataFlowMethod> methods = new ArrayList<>();
 
   public List<DataFlowNode> getFields() {
     return fields;
@@ -56,6 +57,17 @@ public class DataFlowGraph {
 
   public void addMethod(DataFlowMethod parseMethod) {
     this.methods.add(parseMethod);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("methods{\n");
+    for (DataFlowMethod m : methods) {
+      sb.append(m.toString());
+    }
+    sb.append("\n}");
+    return sb.toString();
   }
 
 }

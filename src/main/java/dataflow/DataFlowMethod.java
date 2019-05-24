@@ -45,4 +45,14 @@ public class DataFlowMethod {
     this.changedFields = changedFields;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("parameters{\n");
+    for (DataFlowNode p : inputParameters) {
+      sb.append(p.toStringForward(1, 1));
+    }
+    return sb.toString();
+  }
+
 }

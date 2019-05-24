@@ -46,9 +46,11 @@ public class DataFlowGrapFactoryTest {
     TestDataFlowGraph expected =
         TestDataFlowGraph.builder().withField("s").withMethod(TestDataFlowMethod.builder().withParameter("a").withChangedFieldEdge("a", "s").build()).build();
 
-    System.out.println(expected.toString());
-
     DataFlowGraph graph = factory.createGraph(cu);
+
+    System.out.println(expected.toString());
+    System.out.println("================");
+    System.out.println(graph.toString());
 
     Assert.assertTrue(expected.equalsGraph(graph));
   }

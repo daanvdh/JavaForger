@@ -18,13 +18,18 @@
 package dataflow;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 
 /**
  * TODO javadoc
@@ -53,7 +58,34 @@ public class DataFlowGrapFactory {
   }
 
   private DataFlowMethod parseMethod(Node node) {
-    return null;
+    MethodDeclaration md = (MethodDeclaration) node;
+    DataFlowMethod method = parseCallable(md);
+    return method;
+  }
+
+  private DataFlowMethod parseCallable(CallableDeclaration<?> cd) {
+    DataFlowMethod m = new DataFlowMethod();
+    m.setInputParameters(parseParameters(cd));
+
+    Optional<Node> callableBody = cd.getChildNodes().stream().filter(n -> BlockStmt.class.isAssignableFrom(n.getClass())).findFirst();
+
+    if (callableBody.isPresent()) {
+      List<Node> bodyNodes = callableBody.get().getChildNodes();
+      for (Node n : bodyNodes) {
+        if (n instanceof ExpressionStmt) {
+          DataFlowNode flowNode = new DataFlowNode(n);
+          // TODO now couple this node with incoming parameter
+          // TODO also couple this node to the changedFields inside the DataFlowMethod
+          // TODO store this node in a HashMap somewhere so that in next iterations we will select this node if we access the field.
+        }
+      }
+    }
+
+    return m;
+  }
+
+  private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {
+    return cd.getParameters().stream().map(n -> DataFlowNode.builder().javaParserNode(n).name(n.getNameAsString()).build()).collect(Collectors.toList());
   }
 
 }

@@ -80,7 +80,6 @@ public class TestDataFlowNode {
     if (tabs > 10) {
       return "TestDataFlowNode::toStringForward tabs>10";
     }
-
     return toStringForward(tabs, 0);
   }
 

@@ -27,6 +27,15 @@ public class DataFlowEdge {
   private DataFlowNode from;
   private DataFlowNode to;
 
+  public DataFlowEdge() {
+    // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
+  }
+
+  private DataFlowEdge(Builder builder) {
+    this.from = builder.from == null ? this.from : builder.from;
+    this.to = builder.to == null ? this.to : builder.to;
+  }
+
   public DataFlowNode getFrom() {
     return from;
   }
@@ -41,6 +50,41 @@ public class DataFlowEdge {
 
   public void setTo(DataFlowNode to) {
     this.to = to;
+  }
+
+  /**
+   * Creates builder to build {@link DataFlowEdge}.
+   * 
+   * @return created builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder to build {@link DataFlowEdge}.
+   */
+  public static final class Builder {
+    private DataFlowNode from;
+    private DataFlowNode to;
+
+    private Builder() {
+      // Builder should only be constructed via the parent class
+    }
+
+    public Builder from(DataFlowNode from) {
+      this.from = from;
+      return this;
+    }
+
+    public Builder to(DataFlowNode to) {
+      this.to = to;
+      return this;
+    }
+
+    public DataFlowEdge build() {
+      return new DataFlowEdge(this);
+    }
   }
 
 }
