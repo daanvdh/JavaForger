@@ -103,6 +103,13 @@ public class TestDataFlowGraph {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+
+    sb.append("fields{\n");
+    for (TestDataFlowNode f : fields) {
+      sb.append(f.toStringForward());
+    }
+    sb.append("\n}\n");
+
     sb.append("methods{\n");
     for (TestDataFlowMethod m : methods) {
       sb.append(m.toString());

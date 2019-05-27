@@ -31,7 +31,7 @@ public class TestDataFlowEdge {
     this.to = to;
   }
 
-  public TestDataFlowNode getIn() {
+  public TestDataFlowNode getFrom() {
     return from;
   }
 
@@ -39,7 +39,7 @@ public class TestDataFlowEdge {
     this.from = in;
   }
 
-  public TestDataFlowNode getOut() {
+  public TestDataFlowNode getTo() {
     return to;
   }
 

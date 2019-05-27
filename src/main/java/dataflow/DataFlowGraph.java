@@ -59,9 +59,20 @@ public class DataFlowGraph {
     this.methods.add(parseMethod);
   }
 
+  public void addField(DataFlowNode node) {
+    this.fields.add(node);
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+
+    sb.append("fields{\n");
+    for (DataFlowNode f : fields) {
+      sb.append(f.toStringForward(1));
+    }
+    sb.append("\n}\n");
+
     sb.append("methods{\n");
     for (DataFlowMethod m : methods) {
       sb.append(m.toString());

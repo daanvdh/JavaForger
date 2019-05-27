@@ -19,12 +19,12 @@ package dataflow;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -40,21 +40,34 @@ public class DataFlowGrapFactory {
 
   public DataFlowGraph createGraph(CompilationUnit cu) {
     DataFlowGraph graph = new DataFlowGraph();
+    executeForEachChildNode(cu, (node) -> this.addField(graph, node));
+    executeForEachChildNode(cu, (node) -> this.addMethod(graph, node));
+    return graph;
+  }
 
+  private void executeForEachChildNode(CompilationUnit cu, Consumer<Node> consumer) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       List<Node> childNodes = type.getChildNodes();
       for (Node node : childNodes) {
-        if (node instanceof FieldDeclaration) {
-          // fields.add(parseField(node));
-        } else if (node instanceof MethodDeclaration) {
-          graph.addMethod(parseMethod(node));
-        } else if (node instanceof ConstructorDeclaration) {
-          // constructors.add(parseConstructor(node));
-        }
+        consumer.accept(node);
       }
     }
+  }
 
-    return graph;
+  private void addField(DataFlowGraph graph, Node node) {
+    if (node instanceof FieldDeclaration) {
+      graph.addField(parseField((FieldDeclaration) node));
+    }
+  }
+
+  private void addMethod(DataFlowGraph graph, Node node) {
+    if (node instanceof MethodDeclaration) {
+      graph.addMethod(parseMethod(node));
+    }
+  }
+
+  private DataFlowNode parseField(FieldDeclaration node) {
+    return DataFlowNode.builder().javaParserNode(node).name(node.getVariable(0).getNameAsString()).build();
   }
 
   private DataFlowMethod parseMethod(Node node) {

@@ -111,10 +111,19 @@ public class TestDataFlowMethod {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+
     sb.append("parameters{\n");
     for (TestDataFlowNode p : parameters) {
       sb.append(p.toStringForward(1, 1));
     }
+    sb.append("\n}\n");
+
+    sb.append("changedFields{\n");
+    for (TestDataFlowNode p : changedFields) {
+      sb.append(p.toStringForward(1, 1));
+    }
+    sb.append("\n}");
+
     return sb.toString();
   }
 

@@ -17,6 +17,7 @@
  */
 package dataflow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,8 +27,8 @@ import java.util.List;
  */
 public class DataFlowMethod {
 
-  private List<DataFlowNode> inputParameters;
-  private List<DataFlowNode> changedFields;
+  private List<DataFlowNode> inputParameters = new ArrayList<>();
+  private List<DataFlowNode> changedFields = new ArrayList<>();
 
   public List<DataFlowNode> getInputParameters() {
     return inputParameters;
@@ -52,6 +53,13 @@ public class DataFlowMethod {
     for (DataFlowNode p : inputParameters) {
       sb.append(p.toStringForward(1, 1));
     }
+    sb.append("\n}\n");
+
+    sb.append("changedFields{\n");
+    for (DataFlowNode p : changedFields) {
+      sb.append(p.toStringForward(1, 1));
+    }
+    sb.append("\n}");
     return sb.toString();
   }
 

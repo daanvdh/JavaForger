@@ -91,9 +91,9 @@ public class TestDataFlowNode {
     for (TestDataFlowEdge e : out) {
       if (first) {
         first = false;
-        sb.append("\t-> " + e.getOut().toStringForward(tabs + 1));
+        sb.append("\t-> " + e.getTo().toStringForward(tabs + 1));
       } else {
-        sb.append(tabs(tabs + 1) + "-> " + e.getOut().toStringForward(tabs + 1, tabs + 1));
+        sb.append(tabs(tabs + 1) + "-> " + e.getTo().toStringForward(tabs + 1, tabs + 1));
       }
     }
 
