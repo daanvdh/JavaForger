@@ -20,25 +20,34 @@ package dataflow;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Node;
 
 /**
- * TODO javadoc
+ * A node inside the {@link DataFlowGraph} containing a {@link JavaParser} {@link Node}. The incoming {@link DataFlowEdge}s are {@link DataFlowNode}s that
+ * influence the state of this node. The outgoing {@link DataFlowEdge}s point to {@link DataFlowNode}s which state is influenced by this {@link DataFlowNode}.
  *
  * @author Daan
  */
 public class DataFlowNode {
 
-  private Node javaParserNode;
-  private List<DataFlowEdge> in = new ArrayList<>();
-  private List<DataFlowEdge> out = new ArrayList<>();
-
-  // Should probably only be used for debugging purposes
+  /** The name of this node */
   private String name;
+  /** The {@link JavaParser} {@link Node} */
+  private Node javaParserNode;
+  /** The {@link DataFlowEdge}s from {@link DataFlowNode}s that influence the state of this node */
+  private List<DataFlowEdge> in = new ArrayList<>();
+  /** The {@link DataFlowEdge}s to {@link DataFlowNode}s who's state is influenced by this node */
+  private List<DataFlowEdge> out = new ArrayList<>();
 
   public DataFlowNode(Node n) {
     this.javaParserNode = n;
   }
+
+  public DataFlowNode(String name) {
+    this.name = name;
+  }
+
   private DataFlowNode(Builder builder) {
     this.javaParserNode = builder.javaParserNode == null ? this.javaParserNode : builder.javaParserNode;
     this.in.clear();
@@ -80,6 +89,20 @@ public class DataFlowNode {
     this.name = name;
   }
 
+  public void addEdgeTo(DataFlowNode to) {
+    DataFlowEdge edge = new DataFlowEdge(this, to);
+    this.addOutgoing(edge);
+    to.addIncoming(edge);
+  }
+
+  private void addIncoming(DataFlowEdge edge) {
+    this.in.add(edge);
+  }
+
+  private void addOutgoing(DataFlowEdge edge) {
+    this.out.add(edge);
+  }
+
   @Override
   public String toString() {
     return javaParserNode.toString();
@@ -111,6 +134,7 @@ public class DataFlowNode {
 
   /**
    * Creates builder to build {@link DataFlowNode}.
+   *
    * @return created builder
    */
   public static Builder builder() {
@@ -124,6 +148,7 @@ public class DataFlowNode {
     }
     return sb.toString();
   }
+
   /**
    * Builder to build {@link DataFlowNode}.
    */
@@ -141,24 +166,23 @@ public class DataFlowNode {
       this.javaParserNode = javaParserNode;
       return this;
     }
-    
+
     public Builder in(List<DataFlowEdge> in) {
       this.in.clear();
       this.in.addAll(in);
       return this;
     }
-    
+
     public Builder out(List<DataFlowEdge> out) {
       this.out.clear();
       this.out.addAll(out);
       return this;
     }
-    
+
     public Builder name(String name) {
       this.name = name;
       return this;
     }
-    
 
     public DataFlowNode build() {
       return new DataFlowNode(this);

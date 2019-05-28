@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,35 +51,53 @@ public class DataFlowGrapFactoryTest {
             "}"; //
     CompilationUnit cu = JavaParser.parse(setter);
 
-    TestDataFlowGraph expected =
-        TestDataFlowGraph.builder().withField("s").withMethod(TestDataFlowMethod.builder().withParameter("a").withChangedFieldEdge("a", "s").build()).build();
+    DataFlowGraph expected = DataFlowGraphBuilder.builder().withField("s")
+        .withMethod(DataFlowMethodBuilder.builder().withParameter("a").withChangedFieldEdge("a", "s").name("setS").build()).build();
 
     DataFlowGraph graph = factory.createGraph(cu);
 
+    System.out.println("========expected========");
     System.out.println(expected.toString());
-    System.out.println("================");
+    System.out.println("========result========");
     System.out.println(graph.toString());
 
     assertGraph(expected, graph);
   }
 
-  private void assertGraph(TestDataFlowGraph expected, DataFlowGraph graph) {
+  private void assertGraph(DataFlowGraph expected, DataFlowGraph graph) {
     assertNodesEqual(expected.getFields(), graph.getFields());
     assertMethodsEqual(expected.getMethods(), graph.getMethods());
     // TODO Auto-generated method stub
   }
 
-  private void assertMethodsEqual(List<TestDataFlowMethod> exp, List<DataFlowMethod> res) {
-    // TODO implement
+  @SuppressWarnings("unchecked")
+  private void assertMethodsEqual(List<DataFlowMethod> exp, List<DataFlowMethod> res) {
+    Assert.assertThat(res, Matchers.containsInAnyOrder(exp.stream().map(this::createMatcher).toArray(Matcher[]::new)));
+    for (DataFlowMethod expMethod : exp) {
+      DataFlowMethod resMethod = getEqualMethod(res, expMethod);
+      assertNodesEqual(expMethod.getInputParameters(), resMethod.getInputParameters());
+    }
   }
 
-  private void assertNodesEqual(List<TestDataFlowNode> expected, List<DataFlowNode> fields) {
-    Map<String, TestDataFlowNode> exp = expected.stream().collect(Collectors.toMap(TestDataFlowNode::getName, Function.identity()));
+  private DataFlowMethod getEqualMethod(List<DataFlowMethod> methods, DataFlowMethod lookup) {
+    return methods.stream().filter(m -> createMatcher(lookup).matches(m)).findFirst().get();
+  }
+
+  private Matcher<? extends DataFlowMethod> createMatcher(DataFlowMethod method) {
+    EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(DataFlowMethod::getName, method.getName(), "methodName");
+    EqualFeatureMatcher<DataFlowMethod, List<String>> parameterMatcher =
+        new EqualFeatureMatcher<>((m) -> m.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
+            method.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
+    return Matchers.allOf(methodNameMatcher, parameterMatcher);
+  }
+
+  private void assertNodesEqual(List<DataFlowNode> expected, List<DataFlowNode> fields) {
+    Map<String, DataFlowNode> exp = expected.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
     Map<String, DataFlowNode> res = fields.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
     Assert.assertEquals(exp.keySet(), res.keySet());
 
     for (String key : exp.keySet()) {
-      TestDataFlowNode expNode = exp.get(key);
+      DataFlowNode expNode = exp.get(key);
       DataFlowNode resNode = res.get(key);
       assertNodeEqual(expNode, resNode);
     }
@@ -88,8 +109,8 @@ public class DataFlowGrapFactoryTest {
    * @param exp expected
    * @param res result
    */
-  private void assertNodeEqual(TestDataFlowNode exp, DataFlowNode res) {
-    List<TestDataFlowEdge> expIn = exp.getIn();
+  private void assertNodeEqual(DataFlowNode exp, DataFlowNode res) {
+    List<DataFlowEdge> expIn = exp.getIn();
     List<DataFlowEdge> resIn = res.getIn();
     Assert.assertEquals("number of edges not equal for nodes", expIn.size(), resIn.size());
     for (int i = 0; i < expIn.size(); i++) {
@@ -98,7 +119,7 @@ public class DataFlowGrapFactoryTest {
         Assert.fail("Incoming edges not equal of expected node " + exp.getName() + " and node " + res.getName() + ": " + message);
       }
     }
-    List<TestDataFlowEdge> expOut = exp.getOut();
+    List<DataFlowEdge> expOut = exp.getOut();
     List<DataFlowEdge> resOut = res.getOut();
     Assert.assertEquals("number of edges not equal for nodes", expOut.size(), resOut.size());
     for (int i = 0; i < expOut.size(); i++) {
@@ -109,12 +130,26 @@ public class DataFlowGrapFactoryTest {
     }
   }
 
-  private String assertEdgeEqual(TestDataFlowEdge exp, DataFlowEdge res) {
+  private String assertEdgeEqual(DataFlowEdge exp, DataFlowEdge res) {
     String message = null;
     if (!exp.getFrom().getName().equals(res.getFrom().getName()) && !exp.getTo().getName().equals(res.getTo().getName())) {
       message = exp.toString() + " not equal to " + res.toString();
     }
     return message;
+  }
+
+  private class EqualFeatureMatcher<T, U> extends FeatureMatcher<T, U> {
+    private final Function<T, U> mapper;
+
+    public EqualFeatureMatcher(Function<T, U> mapper, U expected, String description) {
+      super(Matchers.equalTo(expected), description, description);
+      this.mapper = mapper;
+    }
+
+    @Override
+    protected U featureValueOf(T actual) {
+      return mapper.apply(actual);
+    }
   }
 
 }

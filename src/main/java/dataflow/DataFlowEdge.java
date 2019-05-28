@@ -18,7 +18,7 @@
 package dataflow;
 
 /**
- * TODO javadoc
+ * An edge inside a {@link DataFlowGraph} representing a {@link DataFlowNode} influencing the state of another {@link DataFlowNode}.
  *
  * @author Daan
  */
@@ -34,6 +34,11 @@ public class DataFlowEdge {
   private DataFlowEdge(Builder builder) {
     this.from = builder.from == null ? this.from : builder.from;
     this.to = builder.to == null ? this.to : builder.to;
+  }
+
+  public DataFlowEdge(DataFlowNode from, DataFlowNode to) {
+    this.from = from;
+    this.to = to;
   }
 
   public DataFlowNode getFrom() {
@@ -54,7 +59,7 @@ public class DataFlowEdge {
 
   /**
    * Creates builder to build {@link DataFlowEdge}.
-   * 
+   *
    * @return created builder
    */
   public static Builder builder() {

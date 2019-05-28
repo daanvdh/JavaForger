@@ -77,7 +77,7 @@ public class DataFlowGrapFactory {
   }
 
   private DataFlowMethod parseCallable(CallableDeclaration<?> cd) {
-    DataFlowMethod m = new DataFlowMethod();
+    DataFlowMethod m = new DataFlowMethod(cd.getNameAsString());
     m.setInputParameters(parseParameters(cd));
 
     Optional<Node> callableBody = cd.getChildNodes().stream().filter(n -> BlockStmt.class.isAssignableFrom(n.getClass())).findFirst();
