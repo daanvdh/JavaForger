@@ -18,7 +18,12 @@
 package dataflow;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.github.javaparser.ast.Node;
 
 /**
  * TODO javadoc
@@ -29,7 +34,8 @@ public class DataFlowGraph {
 
   private List<DataFlowNode> fields = new ArrayList<>();
   private List<DataFlowMethod> constructors = new ArrayList<>();
-  private List<DataFlowMethod> methods = new ArrayList<>();
+  private Map<Node, DataFlowMethod> methods = new HashMap<>();
+  private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
   public List<DataFlowNode> getFields() {
     return fields;
@@ -47,20 +53,38 @@ public class DataFlowGraph {
     this.constructors = constructors;
   }
 
-  public List<DataFlowMethod> getMethods() {
-    return methods;
+  public Collection<DataFlowMethod> getMethods() {
+    return methods.values();
   }
 
   public void setMethods(List<DataFlowMethod> methods) {
-    this.methods = methods;
+    this.methods.clear();
+    methods.forEach(this::addMethod);
   }
 
-  public void addMethod(DataFlowMethod parseMethod) {
-    this.methods.add(parseMethod);
+  public void addMethod(DataFlowMethod method) {
+    this.methods.put(method.getRepresentedNode(), method);
+  }
+
+  public DataFlowMethod getMethod(Node node) {
+    return methods.get(node);
   }
 
   public void addField(DataFlowNode node) {
     this.fields.add(node);
+    this.nodes.put(node.getJavaParserNode(), node);
+  }
+
+  public void addNodes(List<DataFlowNode> nodes) {
+    nodes.forEach(this::addNode);
+  }
+
+  public void addNode(DataFlowNode node) {
+    this.nodes.put(node.getJavaParserNode(), node);
+  }
+
+  public DataFlowNode getNode(Node node) {
+    return nodes.get(node);
   }
 
   @Override
@@ -74,7 +98,7 @@ public class DataFlowGraph {
     sb.append("\n}\n");
 
     sb.append("methods{\n");
-    for (DataFlowMethod m : methods) {
+    for (DataFlowMethod m : methods.values()) {
       sb.append(m.toString());
     }
     sb.append("\n}");

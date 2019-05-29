@@ -20,6 +20,8 @@ package dataflow;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.javaparser.ast.body.FieldDeclaration;
+
 /**
  * Builder for {@link DataFlowMethod} with some build method only ment for testing.
  *
@@ -28,6 +30,10 @@ import java.util.Map;
 public class DataFlowMethodBuilder extends DataFlowMethod.Builder {
 
   private Map<String, DataFlowNode> currentNodes = new HashMap<>();
+
+  private DataFlowMethodBuilder() {
+    this.representedNode = new FieldDeclaration();
+  }
 
   public static DataFlowMethodBuilder builder() {
     return new DataFlowMethodBuilder();

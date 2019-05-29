@@ -20,6 +20,9 @@ package dataflow;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Node;
 
@@ -105,7 +108,8 @@ public class DataFlowNode {
 
   @Override
   public String toString() {
-    return javaParserNode.toString();
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("in", in).append("out", out)
+        .append("javaParserNode", javaParserNode).build();
   }
 
   public String toStringForward(int tabs) {

@@ -20,6 +20,8 @@ package dataflow;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.javaparser.ast.Node;
+
 /**
  * DataFlow class representing a method inside a {@link DataFlowGraph}.
  *
@@ -29,6 +31,10 @@ public class DataFlowMethod {
 
   /** The name of the method */
   private String name;
+  /** The node which this method represents */
+  private Node representedNode;
+  /** The graph which this method is part of */
+  private DataFlowGraph graph;
   /** The input parameters of the method */
   private List<DataFlowNode> inputParameters = new ArrayList<>();
   /** The fields of the class that are read inside this method */
@@ -42,6 +48,13 @@ public class DataFlowMethod {
 
   public DataFlowMethod(String name) {
     this.name = name;
+  }
+
+  public DataFlowMethod(DataFlowGraph graph, Node node, String name) {
+    this(name);
+    this.representedNode = node;
+    this.graph = graph;
+    graph.addMethod(this);
   }
 
   protected DataFlowMethod(Builder builder) {
@@ -66,12 +79,21 @@ public class DataFlowMethod {
     this.name = name;
   }
 
+  public Node getRepresentedNode() {
+    return representedNode;
+  }
+
+  public void setRepresentedNode(Node representedNode) {
+    this.representedNode = representedNode;
+  }
+
   public List<DataFlowNode> getInputParameters() {
     return inputParameters;
   }
 
   public void setInputParameters(List<DataFlowNode> inputParameters) {
     this.inputParameters = inputParameters;
+    this.graph.addNodes(inputParameters);
   }
 
   public List<DataFlowNode> getInputFields() {
@@ -154,6 +176,7 @@ public class DataFlowMethod {
     protected List<DataFlowMethod> inputMethods = new ArrayList<>();
     protected List<DataFlowMethod> outputMethods = new ArrayList<>();
     protected String name;
+    protected Node representedNode;
 
     protected Builder() {
       // Builder should only be constructed via the parent class
@@ -161,6 +184,11 @@ public class DataFlowMethod {
 
     public Builder name(String name) {
       this.name = name;
+      return this;
+    }
+
+    public Builder representedNode(Node representedNode) {
+      this.representedNode = representedNode;
       return this;
     }
 
