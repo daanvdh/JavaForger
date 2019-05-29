@@ -123,7 +123,6 @@ public class DataFlowNode {
     StringBuilder sb = new StringBuilder();
     sb.append(tabs(firstTabs) + this.getName());
     boolean first = true;
-
     for (DataFlowEdge e : out) {
       if (first) {
         first = false;
@@ -132,7 +131,28 @@ public class DataFlowNode {
         sb.append(tabs(tabs + 1) + "-> " + e.getTo().toStringForward(tabs + 1, tabs + 1));
       }
     }
+    return sb.toString();
+  }
 
+  public String toStringBackward(int tabs) {
+    if (tabs > 10) {
+      return "TestDataFlowNode::toStringForward tabs>10";
+    }
+    return toStringBackward(tabs, 0);
+  }
+
+  private String toStringBackward(int tabs, int firstTabs) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(tabs(firstTabs) + this.getName());
+    boolean first = true;
+    for (DataFlowEdge e : in) {
+      if (first) {
+        first = false;
+        sb.append("\t<- " + e.getFrom().toStringBackward(tabs + 1));
+      } else {
+        sb.append(tabs(tabs + 1) + "-> " + e.getFrom().toStringBackward(tabs + 1, tabs + 1));
+      }
+    }
     return sb.toString();
   }
 
@@ -192,5 +212,6 @@ public class DataFlowNode {
       return new DataFlowNode(this);
     }
   }
+
 
 }

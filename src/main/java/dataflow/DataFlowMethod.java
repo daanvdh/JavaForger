@@ -128,6 +128,10 @@ public class DataFlowMethod {
     this.outputMethods = outputMethods;
   }
 
+  public void addParameter(DataFlowNode node) {
+    inputParameters.add(node);
+  }
+
   /**
    * @return List of {@link DataFlowMethod}s containing both the input and output methods.
    */

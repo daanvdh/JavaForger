@@ -61,8 +61,10 @@ public class DataFlowGrapFactoryTest {
             "  }\n" + //
             "}"; //
 
-    DataFlowGraph expected = DataFlowGraphBuilder.builder().withField("s")
-        .withMethod(DataFlowMethodBuilder.builder().withParameter("a").withChangedFieldEdge("a", "s").name("setS").build()).build();
+    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
+//        DataFlowGraphBuilder.builder().withField("s")
+//        .withMethod(DataFlowMethodBuilder.builder().withParameter("a").withChangedFieldEdge("a", "s").name("setS").build()).build();
+    
 
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.createGraph(cu);
@@ -76,9 +78,9 @@ public class DataFlowGrapFactoryTest {
   }
 
   private void assertGraph(DataFlowGraph expected, DataFlowGraph graph) {
-    assertNodesEqual(expected.getFields(), graph.getFields()).ifPresent(Assert::fail);
-    assertMethodsEqual(expected.getMethods(), graph.getMethods()).ifPresent(Assert::fail);
-    assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(Assert::fail);
+    assertNodesEqual(expected.getFields(), graph.getFields()).ifPresent(m -> Assert.fail("Fields not equal: " + m));
+    assertMethodsEqual(expected.getMethods(), graph.getMethods()).ifPresent(m -> Assert.fail("Methods not equal: " + m));
+    assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(m -> Assert.fail("Constructors not equal: " + m));
   }
 
   @SuppressWarnings("unchecked")

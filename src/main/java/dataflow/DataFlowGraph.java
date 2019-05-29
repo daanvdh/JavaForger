@@ -91,10 +91,10 @@ public class DataFlowGraph {
   public String toString() {
     StringBuilder sb = new StringBuilder();
 
-    sb.append("fields{\n");
-    for (DataFlowNode f : fields) {
-      sb.append(f.toStringForward(1));
-    }
+    sb.append("fields{\n->");
+    fields.forEach(f -> sb.append(f.toStringForward(1)));
+    sb.append("\n<-");
+    fields.forEach(f -> sb.append(f.toStringBackward(1)));
     sb.append("\n}\n");
 
     sb.append("methods{\n");

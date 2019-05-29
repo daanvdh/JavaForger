@@ -56,6 +56,11 @@ public class DataFlowEdge {
   public void setTo(DataFlowNode to) {
     this.to = to;
   }
+  
+  @Override
+  public String toString() {
+    return from.getName() + "->" + to.getName();
+  }
 
   /**
    * Creates builder to build {@link DataFlowEdge}.
