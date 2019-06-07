@@ -37,13 +37,13 @@ import com.github.javaparser.ast.CompilationUnit;
 import common.SymbolSolverSetup;
 
 /**
- * Unit test for {@link DataFlowGrapFactory}.
+ * Unit test for {@link DataFlowGraphFactory}.
  *
  * @author Daan
  */
-public class DataFlowGrapFactoryTest {
+public class DataFlowGraphFactoryTest {
 
-  private DataFlowGrapFactory factory = new DataFlowGrapFactory();
+  private DataFlowGraphFactory factory = new DataFlowGraphFactory();
 
   @Before
   public void setup() {
@@ -62,9 +62,8 @@ public class DataFlowGrapFactoryTest {
             "}"; //
 
     DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
-//        DataFlowGraphBuilder.builder().withField("s")
-//        .withMethod(DataFlowMethodBuilder.builder().withParameter("a").withChangedFieldEdge("a", "s").name("setS").build()).build();
-    
+    // DataFlowGraphBuilder.builder().withField("s")
+    // .withMethod(DataFlowMethodBuilder.builder().withParameter("a").withChangedFieldEdge("a", "s").name("setS").build()).build();
 
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.createGraph(cu);
@@ -83,9 +82,10 @@ public class DataFlowGrapFactoryTest {
     assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(m -> Assert.fail("Constructors not equal: " + m));
   }
 
-  @SuppressWarnings("unchecked")
+  // @SuppressWarnings("unchecked")
   private Optional<String> assertMethodsEqual(Collection<DataFlowMethod> exp, Collection<DataFlowMethod> res) {
-    Assert.assertThat(res, Matchers.containsInAnyOrder(exp.stream().map(this::createMatcher).toArray(Matcher[]::new)));
+    Matcher<Collection<DataFlowMethod>> containsInAnyOrder = Matchers.containsInAnyOrder(exp.stream().map(this::createMatcher).toArray(Matcher[]::new));
+    Assert.assertThat(res, containsInAnyOrder);
     return exp.stream().map(expMethod -> assertMethodEqual(expMethod, getEqualMethod(res, expMethod))).filter(Optional::isPresent).map(Optional::get)
         .findFirst();
   }
@@ -99,7 +99,13 @@ public class DataFlowGrapFactoryTest {
   }
 
   private Matcher<? extends DataFlowMethod> createMatcher(DataFlowMethod method) {
-    EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(DataFlowMethod::getName, method.getName(), "methodName");
+
+    // Matcher<String> methodNameMatcher = Matchers.equalTo(method.getName());
+    // TODO something in the code below blows up, don't know what
+    Function<DataFlowMethod, String> mapper = DataFlowMethod::getName;
+    String name = method.getName();
+    EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(mapper, name, "methodName");
+
     EqualFeatureMatcher<DataFlowMethod, List<String>> parameterMatcher =
         new EqualFeatureMatcher<>((m) -> m.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
             method.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
@@ -155,9 +161,16 @@ public class DataFlowGrapFactoryTest {
     return message;
   }
 
-  private class EqualFeatureMatcher<T, U> extends FeatureMatcher<T, U> {
+  public class EqualFeatureMatcher<T, U> extends FeatureMatcher<T, U> {
     private final Function<T, U> mapper;
 
+    /**
+     * Constructs an instance of {@link EqualFeatureMatcher}.
+     *
+     * @param mapper a {@link Function} to maps object to its feature
+     * @param expected the expected value
+     * @param description the description of the feature
+     */
     public EqualFeatureMatcher(Function<T, U> mapper, U expected, String description) {
       super(Matchers.equalTo(expected), description, description);
       this.mapper = mapper;

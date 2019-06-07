@@ -54,6 +54,10 @@ public class DefaultConfigurations {
     return config;
   }
 
+  public static JavaForgerConfiguration forStateFullClassTest() {
+    return defaultBuilder("test/generic/stateFullClassTest.javat").withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+  }
+
   public static JavaForgerConfiguration forToString() {
     return defaultConfig("toString/complete.javat");
   }

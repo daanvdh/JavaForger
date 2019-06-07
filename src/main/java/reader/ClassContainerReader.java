@@ -45,9 +45,15 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 
 import configuration.StaticJavaForgerConfiguration;
+import dataflow.DataFlowGraph;
+import dataflow.DataFlowGraphFactory;
+import dataflow.DataFlowMethod;
+import dataflow.DataFlowNode;
+import dataflow.GraphService;
 import generator.JavaForgerException;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
+import templateInput.definition.FlowReceiverDefnition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.TypeDefinition;
 import templateInput.definition.VariableDefinition;
@@ -60,10 +66,14 @@ import templateInput.definition.VariableDefinition;
 public class ClassContainerReader {
 
   private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
+  private DataFlowGraphFactory dfgFactory = new DataFlowGraphFactory();
+  private GraphService graphService = new GraphService();
 
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);
-    return readCompilationUnit(cu);
+    DataFlowGraph dfg = dfgFactory.createGraph(cu);
+    ClassContainer claz = readCompilationUnit(cu, dfg);
+    return claz;
   }
 
   private CompilationUnit getCompilationUnit(String inputClass) throws IOException {
@@ -77,7 +87,7 @@ public class ClassContainerReader {
     return cu;
   }
 
-  private ClassContainer readCompilationUnit(CompilationUnit cu) {
+  private ClassContainer readCompilationUnit(CompilationUnit cu, DataFlowGraph dfg) {
     ClassContainer claz = new ClassContainer();
     List<VariableDefinition> fields = new ArrayList<>();
     List<MethodDefinition> methods = new ArrayList<>();
@@ -93,7 +103,22 @@ public class ClassContainerReader {
         if (node instanceof FieldDeclaration) {
           fields.add(parseField(node));
         } else if (node instanceof MethodDeclaration) {
-          methods.add(parseMethod(node));
+          MethodDefinition newMethod = parseMethod(node);
+          methods.add(newMethod);
+
+          // TODO start
+          DataFlowMethod method = dfg.getMethod(node);
+          List<DataFlowNode> changedFieldsNodes = method.getChangedFields();
+          List<FlowReceiverDefnition> changedFields = new ArrayList<>();
+          for (DataFlowNode dfn : changedFieldsNodes) {
+            DataFlowNode firstValue = graphService.walkBackUntil(dfn, method);
+            FlowReceiverDefnition receiver = new FlowReceiverDefnition();
+            receiver.setReceivedValue(firstValue.toString());
+            changedFields.add(receiver);
+          }
+          newMethod.setChangedFields(changedFields);
+          // TODO end
+
         } else if (node instanceof ConstructorDeclaration) {
           constructors.add(parseConstructor(node));
         }

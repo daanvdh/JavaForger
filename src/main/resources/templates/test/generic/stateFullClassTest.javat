@@ -1,0 +1,34 @@
+// TODO none of the below shares stuff is under JavaForger
+<#--
+<#include "shared/header.javat">
+<#include "shared/package.javat">
+<#include "/test/common/imports.javat">
+-->
+
+import org.junit.Assert;
+import org.junit.Test;
+  
+  private ${class.type} sut = new ${class.type}(); 
+
+<#list methods as method>
+  @Test
+  public void test${method.name.upperFirst}() {
+
+<#list method.parameters as parameter>
+    ${parameter.type} ${parameter.name} = ${parameter.init1}; 
+</#list>
+
+    // TODO currently only works for void methods
+    sut.${method.name}(
+<#list method.parameters as parameter>
+      ${parameter.name}<#sep>, 
+</#list>
+        );
+    
+    // TODO field has to be a new class FlowReceiverDefnition extends VariableDefinition
+<#list method.changedFields as field>
+    Assert.assertEquals("Unexpected ${field.name}", ${field.receivedValue}, sut.${field.getter}());
+</#list>
+    
+  }
+</#list>

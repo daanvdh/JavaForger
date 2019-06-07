@@ -33,7 +33,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class MethodDefinition extends InitializedTypeDefinition {
 
-  private List<VariableDefinition> parameters;
+  private List<VariableDefinition> parameters = new ArrayList<>();
+  /** The fields that might be changed after this method call */
+  private List<FlowReceiverDefnition> changedFields = new ArrayList<>();
 
   private MethodDefinition(Builder builder) {
     super(builder);
@@ -46,6 +48,14 @@ public class MethodDefinition extends InitializedTypeDefinition {
 
   public void setParameters(List<VariableDefinition> parameters) {
     this.parameters = parameters;
+  }
+
+  public List<FlowReceiverDefnition> getChangedFields() {
+    return changedFields;
+  }
+
+  public void setChangedFields(List<FlowReceiverDefnition> changedFields) {
+    this.changedFields = changedFields;
   }
 
   @Override

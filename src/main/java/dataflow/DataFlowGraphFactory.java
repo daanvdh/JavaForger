@@ -46,7 +46,7 @@ import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParse
  *
  * @author Daan
  */
-public class DataFlowGrapFactory {
+public class DataFlowGraphFactory {
 
   public DataFlowGraph createGraph(CompilationUnit cu) {
     DataFlowGraph graph = new DataFlowGraph();
