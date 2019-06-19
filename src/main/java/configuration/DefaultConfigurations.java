@@ -54,6 +54,12 @@ public class DefaultConfigurations {
     return config;
   }
 
+  public static JavaForgerConfiguration forExtendableBuilderAndTest() {
+    JavaForgerConfiguration config = defaultConfiguration("extendableInnerBuilder.javat", "innerBuilderTest.javat");
+    config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
+    return config;
+  }
+
   public static JavaForgerConfiguration forToString() {
     return defaultConfig("toString/complete.javat");
   }
