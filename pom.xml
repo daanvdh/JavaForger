@@ -4,7 +4,7 @@
 
   <groupId>com.github.javaforger</groupId>
   <artifactId>JavaForger</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
 
   <name>JavaForger</name>
   <description>JavaForger can create source code from templates using existing java classes as input. </description>
