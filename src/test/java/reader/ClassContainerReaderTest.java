@@ -100,7 +100,7 @@ public class ClassContainerReaderTest {
     VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
         .withAccessModifiers(Collections.singleton("private")).build();
     VariableDefinition v2 = VariableDefinition.builder().withName("name").withType("String").withLineNumber(33).withColumn(3)
-        .withAccessModifiers(Collections.singleton("private")).build();
+        .withAccessModifiers(Collections.singleton("private")).originalInit("\"interesting\"").build();
     VariableDefinition v3 = VariableDefinition.builder().withName("prod").withType("Product").withLineNumber(34).withColumn(3)
         .withAccessModifiers(Collections.singleton("public")).withTypeImport("inputClassesForTests.Product").build();
 

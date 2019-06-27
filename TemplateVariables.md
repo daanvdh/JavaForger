@@ -10,7 +10,7 @@ More advanced expressions like conditionals can be found at [freemarker.apache.o
 
 ```
 |- class		ClassDefinition containing data defined by a class. 
-|- fields		list<TypeDefinition>, usage: <#list fields as field> ... </#list>
+|- fields		list<VariableDefinition>, usage: <#list fields as field> ... </#list>
 |- constructors		list<MethodDefinition>, usage: <#list constructors as constructor> ... </#list>
 |- methods		list<MethodDefinition>, usage: <#list methods as method> ... </#list>
 |- package		The package of the class to which the code will be merged
@@ -27,6 +27,10 @@ ClassDefinition
 |- fields		list<TypeDefinition>, usage: <#list class.fields as field> ... </#list>
 |- constructors		list<MethodDefinition>, usage: <#list class.constructors as constructor> ... </#list>
 |- methods		list<MethodDefinition>, usage: <#list class.methods as method> ... </#list>
+|- *TypeDefinition	The accessible Name and Type fields of the class are descibed under TypeDefinition. 
+
+VariableDefinition
+|- originalInit		The original assignment to a variable, can be null and should be checked first. 
 |- *TypeDefinition	The accessible Name and Type fields of the class are descibed under TypeDefinition. 
 
 MethodDefinition
