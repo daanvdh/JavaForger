@@ -2,7 +2,7 @@
   /**
    * Gets the ${field.name.lowerSpace} of the {@link ${class.name}}.
    *
-   * @return {@link ${field.type}} 
+   * @return {@link ${field.nonPrimitiveType}} 
    */
   public ${field.type} ${field.getter}() {
     return ${field.name};
@@ -11,7 +11,7 @@
   /**
    * Sets the ${field.name.lowerSpace} of the {@link ${class.name}}.
    *
-   * @param ${field.name} The input {@link ${field.type}}. 
+   * @param ${field.name} The input {@link ${field.nonPrimitiveType}}. 
    */
   public void ${field.setter}(${field.type} ${field.name}) {
     this.${field.name} = ${field.name};
