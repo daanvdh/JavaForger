@@ -34,33 +34,57 @@ import templateInput.definition.VariableDefinition;
  */
 public class DefaultAdjusters {
 
+  /**
+   * @return Returns an {@link ClassContainerAdjuster} to remove all depracated fields
+   */
   public static ClassContainerAdjuster removeDepracatedFields() {
     return p -> removeVariableIf(p, var -> var.getAnnotations().contains("Deprecated"));
   }
 
+  /**
+   * @return Returns an {@link ClassContainerAdjuster} to remove all static fields
+   */
   public static ClassContainerAdjuster removeStaticFields() {
     return p -> removeVariableIf(p, var -> var.getAccessModifiers().contains("static"));
   }
 
+  /**
+   * @return Returns an {@link ClassContainerAdjuster} to replace all primitive types with their object version (e.g. int to Integer).
+   */
   public static ClassContainerAdjuster replaceFieldPrimitivesWithObjects() {
     return p -> changeVariable(p, var -> var.setType(InitDefaultValues.getObjectForPrimitive(var.getType().toString())));
   }
 
+  /**
+   * @return Returns an {@link ClassContainerAdjuster} to remove all void methods
+   */
   public static ClassContainerAdjuster removeVoidMethods() {
-    return p -> removeMethodIf(p, met -> met.getType().equals("void"));
+    return p -> removeMethodIf(p, met -> met.getType().toString().equals("void"));
   }
 
-  public static void changeVariable(ClassContainer parameters, Consumer<VariableDefinition> f) {
+  /**
+   * Changes the fields inside the {@link ClassContainer} using the given parameterChanger.
+   *
+   * @param parameters The {@link ClassContainer} in which the fields are changed.
+   * @param parameterChanger a consumer changing an individual {@link VariableDefinition} inside the parameters.
+   */
+  public static void changeVariable(ClassContainer parameters, Consumer<VariableDefinition> parameterChanger) {
     List<? extends VariableDefinition> fields = parameters.getFields();
     for (int i = 0; i < fields.size(); i++) {
-      f.accept(fields.get(i));
+      parameterChanger.accept(fields.get(i));
     }
   }
 
-  public static void removeVariableIf(ClassContainer parameters, Function<VariableDefinition, Boolean> f) {
+  /**
+   * Removes all fields inside the {@link ClassContainer} for which the input function returns true.
+   *
+   * @param parameters The {@link ClassContainer} in which the fields are removed.
+   * @param removeIfTrue Function to determine if a variable should be removed.
+   */
+  public static void removeVariableIf(ClassContainer parameters, Function<VariableDefinition, Boolean> removeIfTrue) {
     List<? extends VariableDefinition> fields = parameters.getFields();
     for (int i = 0; i < fields.size();) {
-      if (f.apply(fields.get(i))) {
+      if (removeIfTrue.apply(fields.get(i))) {
         fields.remove(i);
       } else {
         i++;
@@ -68,10 +92,16 @@ public class DefaultAdjusters {
     }
   }
 
-  public static void removeMethodIf(ClassContainer parameters, Function<MethodDefinition, Boolean> f) {
+  /**
+   * Removes all methods inside the {@link ClassContainer} for which the input function returns true.
+   *
+   * @param parameters The {@link ClassContainer} in which the methods are removed.
+   * @param removeIfTrue Function to determine if a variable should be removed.
+   */
+  public static void removeMethodIf(ClassContainer parameters, Function<MethodDefinition, Boolean> removeIfTrue) {
     List<? extends MethodDefinition> methods = parameters.getMethods();
     for (int i = 0; i < methods.size();) {
-      if (f.apply(methods.get(i))) {
+      if (removeIfTrue.apply(methods.get(i))) {
         methods.remove(i);
       } else {
         i++;

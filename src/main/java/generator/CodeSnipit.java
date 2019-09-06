@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Contains a list of Stings, each string represents a line of code.
+ * Container for a string representing a code block, with methods for printing the code with line numbers.
  *
  * @author Daan
  */
