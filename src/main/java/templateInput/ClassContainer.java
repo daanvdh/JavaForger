@@ -31,8 +31,11 @@ import templateInput.definition.VariableDefinition;
  */
 public class ClassContainer extends ClassDefinition {
 
+  /** The fields defined within the class */
   private List<? extends VariableDefinition> fields = new ArrayList<>();
+  /** The methods defined within the class */
   private List<? extends MethodDefinition> methods = new ArrayList<>();
+  /** The constructors defined within the class */
   private List<? extends MethodDefinition> constructors = new ArrayList<>();
 
   public ClassContainer(ClassDefinition def) {

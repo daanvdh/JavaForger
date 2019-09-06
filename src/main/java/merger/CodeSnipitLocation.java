@@ -22,31 +22,42 @@ import java.util.Optional;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.javadoc.Javadoc;
 
 /**
- * Defines the location of code with an inclusive start line number and an exclusive end line number.
+ * Defines the location of a code block with an inclusive start line number and an exclusive end line number.
  *
  * @author Daan
  */
 public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
 
-  /** start of the code snipit (inclusive), first possible line number is '1' */
+  /** start of the {@link CodeSnipitLocation} (inclusive), first possible line number is '1' */
   private final int start;
-  /** end of the code snipit (exclusive) */
+  /** end of the {@link CodeSnipitLocation} (exclusive) */
   private final int end;
 
+  /**
+   * @param start {@link CodeSnipitLocation#start}
+   * @param end {@link CodeSnipitLocation#end}
+   */
   public CodeSnipitLocation(int start, int end) {
     this.start = start;
     this.end = end;
   }
 
+  /**
+   * @see CodeSnipitLocation#start
+   */
   public int getStart() {
     return start;
   }
 
+  /**
+   * @see CodeSnipitLocation#end
+   */
   public int getEnd() {
     return end;
   }
@@ -72,44 +83,62 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
     return end > start;
   }
 
+  /**
+   * @return The total number of lines represented by this {@link CodeSnipitLocation}.
+   */
   public int size() {
     return end - start;
   }
 
+  /**
+   * Creates a new {@link CodeSnipitLocation}.
+   *
+   * @param start The {@link CodeSnipitLocation#start}
+   * @param end The {@link CodeSnipitLocation#end}
+   * @return new {@link CodeSnipitLocation}
+   */
   public static CodeSnipitLocation of(int start, int end) {
     return new CodeSnipitLocation(start, end);
   }
 
+  /**
+   * Creates a new {@link CodeSnipitLocation} of a single line.
+   *
+   * @param startEnd The {@link CodeSnipitLocation#start} and {@link CodeSnipitLocation#end}
+   * @return new {@link CodeSnipitLocation}
+   */
   public static CodeSnipitLocation of(int startEnd) {
     return of(startEnd, startEnd);
   }
 
+  /**
+   * Creates a new {@link CodeSnipitLocation} for the given {@link Node}.
+   *
+   * @param node The {@link JavaParser} {@link Node} used to determine the beginning and end of the node. Javadoc is not taken into account.
+   * @return new {@link CodeSnipitLocation}.
+   */
   public static CodeSnipitLocation of(Node node) {
     int javaDocLines = countJavaDocLines(node);
     CodeSnipitLocation location = of(node.getBegin().get().line - javaDocLines, node.getEnd().get().line + 1);
     return location;
   }
 
-  private static int countJavaDocLines(Node node) {
-    int javaDocLines = 0;
-    if (NodeWithJavadoc.class.isAssignableFrom(node.getClass())) {
-      NodeWithJavadoc<?> javaDocNode = (NodeWithJavadoc<?>) node;
-      Optional<Javadoc> javadoc = javaDocNode.getJavadoc();
-      if (javadoc.isPresent()) {
-        String text = javadoc.get().toText();
-        String[] lines = text.split("\r\n|\r|\n");
-        javaDocLines = lines.length + 2; // The plus 2 is for the begin and end lines containing /** and */.
-
-        // TODO it is currently not supported to have only a single line of javadoc.
-      }
-    }
-    return javaDocLines;
-  }
-
+  /**
+   * Creates a new {@link CodeSnipitLocation} representing the line directly above the given {@link JavaParser} {@link Node}.
+   *
+   * @param node the {@link JavaParser} {@link Node}.
+   * @return a new {@link CodeSnipitLocation}.
+   */
   public static CodeSnipitLocation before(Node node) {
     return of(node.getBegin().get().line);
   }
 
+  /**
+   * Creates a new {@link CodeSnipitLocation} representing the line directly below the given {@link JavaParser} {@link Node}.
+   *
+   * @param node the {@link JavaParser} {@link Node}.
+   * @return a new {@link CodeSnipitLocation}.
+   */
   public static CodeSnipitLocation after(Node node) {
     return of(node.getEnd().get().line + 1);
   }
@@ -149,6 +178,22 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
   @Override
   public int compareTo(CodeSnipitLocation that) {
     return this.start - that.start;
+  }
+
+  private static int countJavaDocLines(Node node) {
+    int javaDocLines = 0;
+    if (NodeWithJavadoc.class.isAssignableFrom(node.getClass())) {
+      NodeWithJavadoc<?> javaDocNode = (NodeWithJavadoc<?>) node;
+      Optional<Javadoc> javadoc = javaDocNode.getJavadoc();
+      if (javadoc.isPresent()) {
+        String text = javadoc.get().toText();
+        String[] lines = text.split("\r\n|\r|\n");
+        javaDocLines = lines.length + 2; // The plus 2 is for the begin and end lines containing /** and */.
+
+        // TODO it is currently not supported to have only a single line of javadoc.
+      }
+    }
+    return javaDocLines;
   }
 
 }

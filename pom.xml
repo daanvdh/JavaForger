@@ -5,10 +5,60 @@
   <groupId>com.github.javaforger</groupId>
   <artifactId>JavaForger</artifactId>
   <version>1.0.1</version>
+  <packaging>jar</packaging>
 
   <name>JavaForger</name>
   <description>JavaForger can create source code from templates using existing java classes as input. </description>
   <url>https://github.com/daanvdh/JavaForger</url>
+
+  <scm>
+    <connection>scm:git:git://github.com/daanvdh/javaforger.git</connection>
+    <developerConnection>scm:git:git@github.com:daanvdh/javaforger.git</developerConnection>
+    <url>https://github.com/daanvdh/javaforger.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>true</downloadJavadocs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <licenses>
     <license>
@@ -76,25 +126,6 @@
       <version>3.8.1</version>
     </dependency>
 
-
   </dependencies>
-
-  <build>
-    <finalName>FileEditor</finalName>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <downloadSources>true</downloadSources>
-          <downloadJavadocs>true</downloadJavadocs>
-        </configuration>
-      </plugin>
-    </plugins>
-
-  </build>
 
 </project>

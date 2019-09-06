@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import templateInput.ClassContainer;
 
 /**
- * Interface to implement a consumer of {@link ClassContainer} so that the input parameters can be changed after parsing.
+ * Functional interface to implement a consumer of {@link ClassContainer} so that the input parameters can be changed after parsing.
  *
  * @author Daan
  */
