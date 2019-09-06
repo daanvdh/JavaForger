@@ -37,15 +37,15 @@ public class ClassWithEverything {
     this();
     i = j;
   }
-
-  private ClassWithEverything() {
-    // Do nothing
-  }
-  private ClassWithEverything(Builder builder) {
+  protected ClassWithEverything(ClassWithEverything.Builder<?> builder) {
     this.prod = builder.prod == null ? this.prod : builder.prod;
     this.i = builder.i == null ? this.i : builder.i;
     this.c = builder.c == null ? this.c : builder.c;
     this.s = builder.s == null ? this.s : builder.s;
+  }
+
+  private ClassWithEverything() {
+    // Do nothing
   }
 
   public void method1() {
@@ -82,39 +82,40 @@ public class ClassWithEverything {
   /**
    * Builder to build {@link ClassWithEverything}.
    */
-  public static final class Builder {
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends ClassWithEverything.Builder<?>> {
     private Set<Product> prod = new HashSet<>();
     private Integer i;
     private ClassWithEverything c;
     private String s;
 
-    private Builder() {
-      // Builder should only be constructed via the parent class
+    protected Builder() {
+      // Builder should only be used via the parent class or extending builder
     }
 
-    public Builder prod(Set<Product> prod) {
+    public T prod(Set<Product> prod) {
       this.prod.clear();
       this.prod.addAll(prod);
-      return this;
+      return (T) this;
     }
     
-    public Builder i(Integer i) {
+    public T i(Integer i) {
       this.i = i;
-      return this;
+      return (T) this;
     }
     
-    public Builder c(ClassWithEverything c) {
+    public T c(ClassWithEverything c) {
       this.c = c;
-      return this;
+      return (T) this;
     }
     
-    public Builder s(String s) {
+    public T s(String s) {
       this.s = s;
-      return this;
+      return (T) this;
     }
     
 
-    public ClassWithEverything build() {
+    public <A extends ClassWithEverything> ClassWithEverything build() {
       return new ClassWithEverything(this);
     }
   }

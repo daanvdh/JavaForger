@@ -32,7 +32,7 @@ import templateInput.StringConverter;
  */
 public class InitializedTypeDefinition extends TypeDefinition {
 
-  /** The default initialization for a field, especially used for initializing collections. Field will not be initialized when this is null. */
+  /** The default initialization for a field, especially used for initializing collections. */
   protected String defaultInit;
   /** init1 and init2 hold two distinct initialization values. */
   protected String init1;

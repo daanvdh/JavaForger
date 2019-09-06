@@ -39,10 +39,10 @@ public class InitializationServiceTest {
     sut.init(var);
 
     Assert.assertEquals(
-        "Collections.singletonMap(Date.from(ZonedDateTime.of(2017, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(1))",
+        "Collections.singletonMap(Date.from(ZonedDateTime.of(1, 4, 25, 10, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(3))",
         var.getInit1());
     Assert.assertEquals(
-        "Collections.singletonMap(Date.from(ZonedDateTime.of(2018, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(2))",
+        "Collections.singletonMap(Date.from(ZonedDateTime.of(2, 5, 26, 11, 0, 0, 0, TimeZone.getTimeZone(\"UTC\").toZoneId()).toInstant()), BigDecimal.valueOf(4))",
         var.getInit2());
 
     Assert.assertTrue(var.getTypeImports().isEmpty());

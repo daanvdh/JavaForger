@@ -25,7 +25,6 @@ import org.junit.Test;
 import common.AbstractFileChangingTest;
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
-import freemarker.template.TemplateException;
 import generator.JavaForger;
 
 /**
@@ -47,6 +46,13 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
     String expectedClass = "verify-innerBuilder.java";
     String expectedTestClass = "verify-innerBuilderTest.java";
     executeAndVerify(DefaultConfigurations.forBuilderAndTest(), expectedClass, expectedTestClass);
+  }
+
+  @Test
+  public void testExtendableInnerBuilder() throws IOException {
+    String expectedClass = "verify-extendableInnerBuilder.java";
+    String expectedTestClass = "verify-innerBuilderTest.java";
+    executeAndVerify(DefaultConfigurations.forExtendableBuilderAndTest(), expectedClass, expectedTestClass);
   }
 
   @Test
@@ -91,7 +97,6 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
    *
    * @param args
    * @throws IOException
-   * @throws TemplateException
    */
   public static void main(String[] args) throws IOException {
 
@@ -112,6 +117,8 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
     test.testHashCode();
     test.setup();
     test.testInnerBuilder();
+    test.setup();
+    test.testExtendableInnerBuilder();
     test.setup();
     test.testToString();
     test.tearDown();

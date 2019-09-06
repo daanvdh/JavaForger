@@ -5,7 +5,7 @@
   }
 </#if>
 
-  private ${class.name}(Builder builder) {
+  protected ${class.name}(${class.name}.Builder<?> builder) {
 <#list fields as field>
     this.${field.name} = builder.${field.name} == null ? this.${field.name} : builder.${field.name};
 </#list>
@@ -22,29 +22,30 @@
   /**
    * Builder to build {@link ${class.name}}.
    */
-  public static final class Builder {
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends ${class.name}.Builder<?>> {
 <#list fields as field>
     private ${field.type} ${field.name}<#if field.defaultInit??> = ${field.defaultInit}</#if>;
 </#list>
 
-    private Builder() {
-      // Builder should only be constructed via the parent class
+    protected Builder() {
+      // Builder should only be used via the parent class or extending builder
     }
 
 <#list fields as field>
-    public Builder ${field.name}(${field.type} ${field.name}) {
+    public T ${field.name}(${field.type} ${field.name}) {
 <#if field.collection>
       this.${field.name}.clear();
       this.${field.name}.addAll(${field.name});
 <#else>
       this.${field.name} = ${field.name};
 </#if>
-      return this;
+      return (T) this;
     }
     
 </#list>
 
-    public ${class.name} build() {
+    public <A extends ${class.name}> ${class.name} build() {
       return new ${class.name}(this);
     }
   }
