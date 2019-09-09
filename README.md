@@ -45,13 +45,12 @@ If that file does not exist, a FileNotFoundException will be thrown.
 
 ## Setup 
 
-The project is currently not yet in the maven repository, so for now you have to clone the project and run 'mvn clean install' from the command line in the project folder. 
-Then add the dependency below to the pom of your project. 
+Add the dependency below to the pom of your project. 
 
 	<dependency>
-	  <groupId>com.github.javaforger</groupId>
+	  <groupId>com.github.daanvdh.javaforger</groupId>
 	  <artifactId>JavaForger</artifactId>
-	  <version>1.0.0</version>
+	  <version>1.0.2</version>
 	</dependency>
 
 ## Settings and Dependencies 
