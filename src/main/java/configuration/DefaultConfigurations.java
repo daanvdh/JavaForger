@@ -17,6 +17,10 @@
  */
 package configuration;
 
+import configuration.ClassProvider;
+import configuration.DefaultAdjusters;
+import configuration.JavaForgerConfiguration;
+
 /**
  * Class containing default {@link JavaForgerConfiguration}s for a set of templates.
  *
@@ -75,7 +79,7 @@ public class DefaultConfigurations {
         .build();
   }
 
-  protected static Builder defaultBuilder(String template) {
+  protected static JavaForgerConfiguration.Builder defaultBuilder(String template) {
     return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new ClassProvider())
         .withParameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
   }
