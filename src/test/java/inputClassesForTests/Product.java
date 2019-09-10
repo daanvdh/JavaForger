@@ -30,7 +30,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class Product {
   private String url;
-  private String name;
+  private String name = "interesting";
   public Product prod;
 
   public Product(String name2, String url) {

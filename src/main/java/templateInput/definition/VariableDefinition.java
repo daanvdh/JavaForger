@@ -17,12 +17,19 @@
  */
 package templateInput.definition;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * This represents the definition of a variable inside a java class.
  *
  * @author Daan
  */
 public class VariableDefinition extends InitializedTypeDefinition {
+
+  /** The original assignment to this variable */
+  private String originalInit;
 
   public VariableDefinition() {
     // explicitly make constructor visible
@@ -39,6 +46,40 @@ public class VariableDefinition extends InitializedTypeDefinition {
 
   private VariableDefinition(Builder builder) {
     super(builder);
+    this.originalInit = builder.originalInit;
+  }
+
+  /**
+   * @return {@link VariableDefinition#originalInit}
+   */
+  public String getOriginalInit() {
+    return originalInit;
+  }
+
+  /**
+   * Sets the {@link VariableDefinition#originalInit}
+   *
+   * @param originalInit
+   */
+  public void setOriginalInit(String originalInit) {
+    this.originalInit = originalInit;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("originalInit", originalInit).build();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    boolean equals = false;
+    if (this == obj) {
+      equals = true;
+    } else if (obj != null && getClass() == obj.getClass()) {
+      VariableDefinition other = (VariableDefinition) obj;
+      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(originalInit, other.originalInit).isEquals();
+    }
+    return equals;
   }
 
   /**
@@ -54,9 +95,15 @@ public class VariableDefinition extends InitializedTypeDefinition {
    * Builder to build {@link VariableDefinition}.
    */
   public static final class Builder extends InitializedTypeDefinition.Builder<VariableDefinition.Builder> {
+    private String originalInit;
 
     private Builder() {
       super();
+    }
+
+    public Builder originalInit(String originalInit) {
+      this.originalInit = originalInit;
+      return this;
     }
 
     public VariableDefinition build() {

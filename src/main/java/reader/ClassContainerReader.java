@@ -39,6 +39,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
@@ -178,12 +179,20 @@ public class ClassContainerReader {
     FieldDeclaration fd = (FieldDeclaration) node;
     Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
+    Optional<String> originalInit = depthFirstSearch(fd, Expression.class);
     VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
         .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
-        .withAccessModifiers(accessModifiers).build();
+        .withAccessModifiers(accessModifiers).originalInit(originalInit.orElse(null)).build();
 
     resolveAndSetImport(fd.getElementType(), variable);
     return variable;
+  }
+
+  private Optional<String> depthFirstSearch(Node node, Class<Expression> claz) {
+    if (claz.isAssignableFrom(node.getClass())) {
+      return Optional.of(node.toString());
+    }
+    return node.getChildNodes().stream().map(n -> depthFirstSearch(n, claz)).filter(Optional::isPresent).map(Optional::get).map(Object::toString).findFirst();
   }
 
   private List<VariableDefinition> getParameters(CallableDeclaration<?> md) {

@@ -19,7 +19,6 @@ package generator;
 
 import java.io.IOException;
 
-import configuration.ClassProvider;
 import configuration.JavaForgerConfiguration;
 import configuration.PathConverter;
 import configuration.StaticJavaForgerConfiguration;
@@ -57,9 +56,7 @@ public class TemplateInputParametersService {
           || !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
 
-        String newInputClass = getInputClass(config, inputClass, mergeClassPath);
-
-        ClassContainer claz = reader.read(newInputClass);
+        ClassContainer claz = reader.read(inputClass);
         initializer.init(claz);
         config.getAdjuster().accept(claz);
         if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
@@ -89,22 +86,6 @@ public class TemplateInputParametersService {
     }
 
     return inputParameters;
-  }
-
-  private String getInputClass(JavaForgerConfiguration config, String inputClass, String mergeClassPath) {
-    String input = null;
-    ClassProvider provider = config.getInputClassProvider();
-    switch (provider.provideFrom()) {
-    case PARENT_CONFIG_MERGE_CLASS:
-      input = provider.provide(mergeClassPath);
-      break;
-    case INPUT_CLASS:
-    case SELF:
-    default:
-      input = provider.provide(inputClass);
-      break;
-    }
-    return input;
   }
 
 }

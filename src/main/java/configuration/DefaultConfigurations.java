@@ -17,8 +17,6 @@
  */
 package configuration;
 
-import configuration.JavaForgerConfiguration.Builder;
-
 /**
  * Class containing default {@link JavaForgerConfiguration}s for a set of templates.
  *
@@ -56,6 +54,12 @@ public class DefaultConfigurations {
 
   public static JavaForgerConfiguration forStateFullClassTest() {
     return defaultBuilder("test/generic/stateFullClassTest.javat").withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+  }
+
+  public static JavaForgerConfiguration forExtendableBuilderAndTest() {
+    JavaForgerConfiguration config = defaultConfiguration("extendableInnerBuilder.javat", "innerBuilderTest.javat");
+    config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
+    return config;
   }
 
   public static JavaForgerConfiguration forToString() {
