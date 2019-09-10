@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,11 +83,13 @@ public class DataFlowGraphFactoryTest {
     assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(m -> Assert.fail("Constructors not equal: " + m));
   }
 
-  // @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private Optional<String> assertMethodsEqual(Collection<DataFlowMethod> exp, Collection<DataFlowMethod> res) {
-    // TODO make this work
-    // Matcher<Collection<DataFlowMethod>> containsInAnyOrder = Matchers.containsInAnyOrder(exp.stream().map(this::createMatcher).toArray(Matcher[]::new));
-    // Assert.assertThat(res, containsInAnyOrder);
+    List<Matcher<DataFlowMethod>> collect = exp.stream().map(this::createMatcher).collect(Collectors.toList());
+    IsIterableContainingInAnyOrder<DataFlowMethod> containsInAnyOrder = new IsIterableContainingInAnyOrder(collect);
+
+    // TODO the assert and the return value seem to do the same thing, maybe remove one of them.
+    Assert.assertThat(res, containsInAnyOrder);
     return exp.stream().map(expMethod -> assertMethodEqual(expMethod, getEqualMethod(res, expMethod))).filter(Optional::isPresent).map(Optional::get)
         .findFirst();
   }
@@ -99,18 +102,18 @@ public class DataFlowGraphFactoryTest {
     return methods.stream().filter(m -> createMatcher(lookup).matches(m)).findFirst().get();
   }
 
-  private Matcher<? extends DataFlowMethod> createMatcher(DataFlowMethod method) {
-
-    // Matcher<String> methodNameMatcher = Matchers.equalTo(method.getName());
-    // TODO something in the code below blows up, don't know what
-    Function<DataFlowMethod, String> mapper = DataFlowMethod::getName;
-    String name = method.getName();
-    EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(mapper, name, "methodName");
+  private Matcher<DataFlowMethod> createMatcher(DataFlowMethod method) {
+    EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(DataFlowMethod::getName, method.getName(), "methodName");
 
     EqualFeatureMatcher<DataFlowMethod, List<String>> parameterMatcher =
         new EqualFeatureMatcher<>((m) -> m.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
             method.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
-    return Matchers.allOf(methodNameMatcher, parameterMatcher);
+
+    EqualFeatureMatcher<DataFlowMethod, List<String>> changedFieldsMatcher =
+        new EqualFeatureMatcher<>((m) -> m.getChangedFields().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
+            method.getChangedFields().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "changedFields");
+
+    return Matchers.allOf(methodNameMatcher, parameterMatcher, changedFieldsMatcher);
   }
 
   private Optional<String> assertNodesEqual(List<DataFlowNode> expected, List<DataFlowNode> fields) {

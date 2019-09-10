@@ -145,7 +145,11 @@ public class DataFlowGraphFactory {
     }
 
     // Each overwridden value has to receive the value that it was overwridden with
-    overwriddenValues.forEach((jpNode, dfNode) -> dfNode.addEdgeTo(graph.getNode(jpNode)));
+    overwriddenValues.forEach((javaParserNode, dataFlowNode) -> dataFlowNode.addEdgeTo(graph.getNode(javaParserNode)));
+
+    // Add changed fields
+    overwriddenValues.keySet().stream().filter(entry -> FieldDeclaration.class.isAssignableFrom(entry.getClass()))
+        .forEach(entry -> method.addChangedField(graph.getNode(entry)));
   }
 
   private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {

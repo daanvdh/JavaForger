@@ -129,7 +129,11 @@ public class DataFlowMethod {
   }
 
   public void addParameter(DataFlowNode node) {
-    inputParameters.add(node);
+    this.inputParameters.add(node);
+  }
+
+  public void addChangedField(DataFlowNode node) {
+    this.changedFields.add(node);
   }
 
   /**
@@ -146,17 +150,17 @@ public class DataFlowMethod {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("method " + name + "{\n");
-    sb.append("parameters{\n");
+    sb.append("\tparameters{\n");
     for (DataFlowNode p : inputParameters) {
-      sb.append(p.toStringForward(1, 1));
+      sb.append(p.toStringForward(1, 2));
     }
-    sb.append("\n}\n");
+    sb.append("\n\t}\n");
 
-    sb.append("changedFields{\n");
+    sb.append("\tchangedFields{\n");
     for (DataFlowNode p : changedFields) {
-      sb.append(p.toStringForward(1, 1));
+      sb.append(p.toStringForward(1, 2));
     }
-    sb.append("\n}");
+    sb.append("\n\t}");
     sb.append("\n}");
     return sb.toString();
   }

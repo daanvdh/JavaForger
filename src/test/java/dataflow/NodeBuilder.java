@@ -1,14 +1,14 @@
 /*
- * Copyright 2019 by Daan van den Heuvel. 
+ * Copyright 2019 by Daan van den Heuvel.
  *
  * This file is part of JavaForger.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,43 +22,53 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Builder for {@link DataFlowNode}. 
+ * Builder for {@link DataFlowNode}.
  *
  * @author User
  */
 public class NodeBuilder {
 
-  protected enum NodeType {IN_BETWEEN, METHOD_PARAMETER, CLASS_FIELD}; 
-  
+  protected enum NodeType {
+    IN_BETWEEN,
+    METHOD_PARAMETER,
+    CLASS_FIELD
+  }
+
   private String method;
   private String name;
   private List<NodeBuilder> out = new ArrayList<>();
   private final NodeType type;
   private NodeBuilder root;
-  
-  
+
   public NodeBuilder(String name, NodeType type) {
-    this.name = name; 
-    this.type = type; 
+    this.name = name;
+    this.type = type;
   }
 
+  /**
+   * Create a {@link NodeBuilder} for given method and parameter.
+   *
+   * @param method Name of the method
+   * @param name Name of the parameter
+   * @return {@link NodeBuilder}
+   */
   public static NodeBuilder ofParameter(String method, String name) {
-    NodeBuilder builder = new NodeBuilder(name, NodeType.METHOD_PARAMETER); 
-    builder.method = method; 
+    NodeBuilder builder = new NodeBuilder(name, NodeType.METHOD_PARAMETER);
+    builder.method = method;
     return builder;
   }
 
   public static NodeBuilder ofField(String name) {
     NodeBuilder builder = new NodeBuilder(name, NodeType.CLASS_FIELD);
-    
+
     return builder;
   }
 
   public NodeBuilder to(String name) {
     NodeBuilder next = new NodeBuilder(name, NodeType.IN_BETWEEN);
     next.setRoot(this);
-    out.add(next); 
-    return next; 
+    out.add(next);
+    return next;
   }
 
   public void to(String... names) {
@@ -68,7 +78,7 @@ public class NodeBuilder {
   public NodeBuilder to(NodeBuilder next) {
     out.add(next);
     next.setRoot(this);
-    return next; 
+    return next;
   }
 
   public void to(NodeBuilder... names) {
@@ -76,7 +86,7 @@ public class NodeBuilder {
   }
 
   private void setRoot(NodeBuilder root) {
-    this.root = root.getRoot(); 
+    this.root = root.getRoot();
   }
 
   public NodeBuilder getRoot() {
