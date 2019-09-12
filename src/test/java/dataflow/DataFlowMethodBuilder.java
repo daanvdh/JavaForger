@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.type.VarType;
 
 /**
  * Builder for {@link DataFlowMethod} with some build method only ment for testing.
@@ -45,7 +47,7 @@ public class DataFlowMethodBuilder extends DataFlowMethod.Builder {
   }
 
   public DataFlowMethodBuilder withInputField(String name) {
-    this.inputFields.add(new DataFlowNode(name));
+    this.inputFields.add(new DataFlowNode(name, new VariableDeclarator(new VarType(), name)));
     return this;
   }
 
@@ -59,7 +61,7 @@ public class DataFlowMethodBuilder extends DataFlowMethod.Builder {
 
   private DataFlowNode getNode(String name) {
     if (!this.currentNodes.containsKey(name)) {
-      DataFlowNode node = new DataFlowNode(name);
+      DataFlowNode node = new DataFlowNode(name, new VariableDeclarator(new VarType(), name));
       this.currentNodes.put(name, node);
     }
     return currentNodes.get(name);

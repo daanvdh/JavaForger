@@ -17,6 +17,10 @@
  */
 package dataflow;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Service for methods to be executed on a {@link DataFlowGraph}.
  *
@@ -25,17 +29,18 @@ package dataflow;
 public class GraphService {
 
   /**
-   * This method should probably return a list of DataFlowNode instead. Not sure yet. It is not
+   * Returns all {@link DataFlowNode}s that directly influence the state of the input {@link DataFlowNode}, within the {@link DataFlowMethod}. The nodes
+   * directly influencing the state of node 'd' are state are b and c: {@code method(a,b,c) { d = a ? b : c;}}
    *
-   * @param dfn
-   * @param method
-   * @return
+   * @param dfn The {@link DataFlowNode} to traverse the path from.
+   * @param method The method determining the scope for traversing the path.
+   * @return a list of {@link DataFlowNode}
    */
-  public DataFlowNode walkBackUntil(DataFlowNode dfn, DataFlowMethod method) {
-
-    DataFlowNode current = dfn;
-
-    return dfn.getIn().get(0).getFrom();
+  public List<DataFlowNode> walkBackUntil(DataFlowNode dfn, DataFlowMethod method) {
+    if (method.isInputBoundaryNode(dfn)) {
+      return Collections.singletonList(dfn);
+    }
+    return dfn.getIn().stream().map(edge -> walkBackUntil(edge.getFrom(), method)).flatMap(List::stream).collect(Collectors.toList());
   }
 
 }

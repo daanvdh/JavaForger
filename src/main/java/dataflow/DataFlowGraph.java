@@ -63,6 +63,9 @@ public class DataFlowGraph {
   }
 
   public void addMethod(DataFlowMethod method) {
+    if (method.getRepresentedNode() == null) {
+      throw new NullPointerException("The representedNode may not be null, this risks overriding existing fields.");
+    }
     this.methods.put(method.getRepresentedNode(), method);
   }
 
@@ -72,7 +75,10 @@ public class DataFlowGraph {
 
   public void addField(DataFlowNode node) {
     this.fields.add(node);
-    this.nodes.put(node.getJavaParserNode(), node);
+    if (node.getRepresentedNode() == null) {
+      throw new NullPointerException("The representedNode may not be null, this risks overriding existing fields.");
+    }
+    this.nodes.put(node.getRepresentedNode(), node);
   }
 
   public void addNodes(List<DataFlowNode> nodes) {
@@ -80,7 +86,7 @@ public class DataFlowGraph {
   }
 
   public void addNode(DataFlowNode node) {
-    this.nodes.put(node.getJavaParserNode(), node);
+    this.nodes.put(node.getRepresentedNode(), node);
   }
 
   public DataFlowNode getNode(Node node) {
@@ -91,10 +97,10 @@ public class DataFlowGraph {
   public String toString() {
     StringBuilder sb = new StringBuilder();
 
-    sb.append("fields{\n->");
-    fields.forEach(f -> sb.append(f.toStringForward(1)));
-    sb.append("\n<-");
-    fields.forEach(f -> sb.append(f.toStringBackward(1)));
+    sb.append("fields{");
+    fields.forEach(f -> sb.append("\n->").append(f.toStringForward(1)));
+    sb.append("\n");
+    fields.forEach(f -> sb.append("\n<-").append(f.toStringBackward(1)));
     sb.append("\n}\n");
 
     sb.append("methods{\n");

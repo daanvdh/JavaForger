@@ -19,7 +19,9 @@ package dataflow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -37,35 +39,35 @@ public class DataFlowNode {
   /** The name of this node */
   private String name;
   /** The {@link JavaParser} {@link Node} */
-  private Node javaParserNode;
+  private Node representedNode;
   /** The {@link DataFlowEdge}s from {@link DataFlowNode}s that influence the state of this node */
   private List<DataFlowEdge> in = new ArrayList<>();
   /** The {@link DataFlowEdge}s to {@link DataFlowNode}s who's state is influenced by this node */
   private List<DataFlowEdge> out = new ArrayList<>();
 
-  public DataFlowNode(Node n) {
-    this.javaParserNode = n;
+  public DataFlowNode(String name, Node representedNode) {
+    this.name = name;
+    this.representedNode = representedNode;
   }
 
-  public DataFlowNode(String name) {
-    this.name = name;
+  public DataFlowNode(Node n) {
+    this.representedNode = n;
   }
 
   private DataFlowNode(Builder builder) {
-    this.javaParserNode = builder.javaParserNode == null ? this.javaParserNode : builder.javaParserNode;
+    this(builder.name, builder.representedNode);
     this.in.clear();
     this.in.addAll(builder.in);
     this.out.clear();
     this.out.addAll(builder.out);
-    this.name = builder.name == null ? this.name : builder.name;
   }
 
-  public Node getJavaParserNode() {
-    return javaParserNode;
+  public Node getRepresentedNode() {
+    return representedNode;
   }
 
-  public void setJavaParserNode(Node javaParserNode) {
-    this.javaParserNode = javaParserNode;
+  public void setRepresentedNode(Node representedNode) {
+    this.representedNode = representedNode;
   }
 
   public List<DataFlowEdge> getIn() {
@@ -98,6 +100,24 @@ public class DataFlowNode {
     to.addIncoming(edge);
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, representedNode, in, out);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    boolean equals = false;
+    if (this == obj) {
+      equals = true;
+    } else if (obj != null && getClass() == obj.getClass()) {
+      DataFlowNode other = (DataFlowNode) obj;
+      equals =
+          new EqualsBuilder().append(name, other.name).append(representedNode, other.representedNode).append(in, other.in).append(out, other.out).isEquals();
+    }
+    return equals;
+  }
+
   private void addIncoming(DataFlowEdge edge) {
     this.in.add(edge);
   }
@@ -109,7 +129,7 @@ public class DataFlowNode {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("in", in).append("out", out)
-        .append("javaParserNode", javaParserNode).build();
+        .append("representedNode", representedNode).build();
   }
 
   public String toStringForward(int tabs) {
@@ -128,7 +148,7 @@ public class DataFlowNode {
         first = false;
         sb.append("\t-> " + e.getTo().toStringForward(tabs + 1));
       } else {
-        sb.append(tabs(tabs + 1) + "-> " + e.getTo().toStringForward(tabs + 1, tabs + 1));
+        sb.append("\n" + tabs(tabs + 1) + "-> " + e.getTo().toStringForward(tabs + 1, tabs + 1));
       }
     }
     return sb.toString();
@@ -143,14 +163,14 @@ public class DataFlowNode {
 
   private String toStringBackward(int tabs, int firstTabs) {
     StringBuilder sb = new StringBuilder();
-    sb.append(tabs(firstTabs) + this.getName());
+    sb.append(this.getName());
     boolean first = true;
     for (DataFlowEdge e : in) {
       if (first) {
         first = false;
         sb.append("\t<- " + e.getFrom().toStringBackward(tabs + 1));
       } else {
-        sb.append(tabs(tabs + 1) + "-> " + e.getFrom().toStringBackward(tabs + 1, tabs + 1));
+        sb.append("\n" + tabs(tabs) + "<- " + e.getFrom().toStringBackward(tabs + 1, tabs + 1));
       }
     }
     return sb.toString();
@@ -177,7 +197,7 @@ public class DataFlowNode {
    * Builder to build {@link DataFlowNode}.
    */
   public static final class Builder {
-    private Node javaParserNode;
+    private Node representedNode;
     private List<DataFlowEdge> in = new ArrayList<>();
     private List<DataFlowEdge> out = new ArrayList<>();
     private String name;
@@ -186,8 +206,8 @@ public class DataFlowNode {
       // Builder should only be constructed via the parent class
     }
 
-    public Builder javaParserNode(Node javaParserNode) {
-      this.javaParserNode = javaParserNode;
+    public Builder representedNode(Node representedNode) {
+      this.representedNode = representedNode;
       return this;
     }
 
@@ -212,6 +232,5 @@ public class DataFlowNode {
       return new DataFlowNode(this);
     }
   }
-
 
 }

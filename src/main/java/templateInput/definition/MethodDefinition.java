@@ -35,7 +35,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
 
   private List<VariableDefinition> parameters = new ArrayList<>();
   /** The fields that might be changed after this method call */
-  private List<FlowReceiverDefnition> changedFields = new ArrayList<>();
+  private List<FlowReceiverDefinition> changedFields = new ArrayList<>();
 
   private MethodDefinition(Builder builder) {
     super(builder);
@@ -50,11 +50,11 @@ public class MethodDefinition extends InitializedTypeDefinition {
     this.parameters = parameters;
   }
 
-  public List<FlowReceiverDefnition> getChangedFields() {
+  public List<FlowReceiverDefinition> getChangedFields() {
     return changedFields;
   }
 
-  public void setChangedFields(List<FlowReceiverDefnition> changedFields) {
+  public void setChangedFields(List<FlowReceiverDefinition> changedFields) {
     this.changedFields = changedFields;
   }
 

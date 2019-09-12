@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import common.AbstractFileChangingTest;
 import configuration.DefaultConfigurations;
-import freemarker.template.TemplateException;
 import generator.JavaForger;
 
 /**
@@ -63,12 +62,11 @@ public class StateFullClassTestTemplateIntegrationTest extends AbstractFileChang
    *
    * @param args
    * @throws IOException
-   * @throws TemplateException
    */
   public static void main(String[] args) throws IOException {
 
     // This statement prevents the main method from accidently being executed.
-    // Assert.fail();
+    Assert.fail();
 
     StateFullClassTestTemplateIntegrationTest test = new StateFullClassTestTemplateIntegrationTest() {
       @Override

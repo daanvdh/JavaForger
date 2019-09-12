@@ -19,10 +19,11 @@ package dataflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Builder for {@link DataFlowNode}.
+ * Builder for {@link DataFlowNode}, only to be used for test purposes.
  *
  * @author User
  */
@@ -38,7 +39,8 @@ public class NodeBuilder {
   private String name;
   private List<NodeBuilder> out = new ArrayList<>();
   private final NodeType type;
-  private NodeBuilder root;
+  private List<NodeBuilder> roots = new ArrayList<>();
+  private DataFlowNode build;
 
   public NodeBuilder(String name, NodeType type) {
     this.name = name;
@@ -66,7 +68,7 @@ public class NodeBuilder {
 
   public NodeBuilder to(String name) {
     NodeBuilder next = new NodeBuilder(name, NodeType.IN_BETWEEN);
-    next.setRoot(this);
+    next.addRoots(this);
     out.add(next);
     return next;
   }
@@ -77,7 +79,7 @@ public class NodeBuilder {
 
   public NodeBuilder to(NodeBuilder next) {
     out.add(next);
-    next.setRoot(this);
+    next.addRoots(this);
     return next;
   }
 
@@ -85,12 +87,12 @@ public class NodeBuilder {
     Arrays.stream(names).forEach(this::to);
   }
 
-  private void setRoot(NodeBuilder root) {
-    this.root = root.getRoot();
+  private void addRoots(NodeBuilder root) {
+    this.roots.addAll(root.getRoots());
   }
 
-  public NodeBuilder getRoot() {
-    return this.root == null ? this : root;
+  public List<NodeBuilder> getRoots() {
+    return this.roots.isEmpty() ? Collections.singletonList(this) : roots;
   }
 
   public String getMethod() {
@@ -125,4 +127,15 @@ public class NodeBuilder {
     return DataFlowNode.builder().name(name).build();
   }
 
+  public DataFlowNode getOrBuild() {
+    if (build == null) {
+      build = build();
+    }
+    return build;
+  }
+
+  @Override
+  public String toString() {
+    return getName();
+  }
 }

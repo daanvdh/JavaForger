@@ -54,7 +54,7 @@ import dataflow.GraphService;
 import generator.JavaForgerException;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
-import templateInput.definition.FlowReceiverDefnition;
+import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.TypeDefinition;
 import templateInput.definition.VariableDefinition;
@@ -110,10 +110,10 @@ public class ClassContainerReader {
           // TODO start
           DataFlowMethod method = dfg.getMethod(node);
           List<DataFlowNode> changedFieldsNodes = method.getChangedFields();
-          List<FlowReceiverDefnition> changedFields = new ArrayList<>();
+          List<FlowReceiverDefinition> changedFields = new ArrayList<>();
           for (DataFlowNode dfn : changedFieldsNodes) {
-            DataFlowNode firstValue = graphService.walkBackUntil(dfn, method);
-            FlowReceiverDefnition receiver = new FlowReceiverDefnition();
+            List<DataFlowNode> firstValue = graphService.walkBackUntil(dfn, method);
+            FlowReceiverDefinition receiver = new FlowReceiverDefinition();
             receiver.setReceivedValue(firstValue.toString());
             changedFields.add(receiver);
           }

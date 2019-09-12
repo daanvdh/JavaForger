@@ -23,8 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+
 /**
- * Builder for {@link DataFlowGraph}.
+ * Builder for {@link DataFlowGraph}, only to be used for test puposes.
  *
  * @author User
  */
@@ -34,7 +37,7 @@ public class GraphBuilder {
 
   public static GraphBuilder withStartingNodes(NodeBuilder... nodes) {
     GraphBuilder graphBuilder = new GraphBuilder();
-    Arrays.stream(nodes).map(NodeBuilder::getRoot).forEach(graphBuilder.startNodes::add);
+    Arrays.stream(nodes).map(NodeBuilder::getRoots).flatMap(List::stream).distinct().forEach(graphBuilder.startNodes::add);
     return graphBuilder;
   }
 
@@ -42,16 +45,18 @@ public class GraphBuilder {
     DataFlowGraph graph = new DataFlowGraph();
     Map<String, DataFlowNode> nodes = new HashMap<>();
     Map<String, DataFlowMethod> methods = new HashMap<>();
-    startNodes.forEach(node -> this.addNode(graph, node, nodes, methods));
+    List<DataFlowNode> addedNodes = new ArrayList<>();
+    startNodes.forEach(node -> this.addNode(graph, node, nodes, methods, addedNodes));
     return graph;
   }
 
-  private void addNode(DataFlowGraph graph, NodeBuilder nodeBuilder, Map<String, DataFlowNode> nodes, Map<String, DataFlowMethod> methods) {
-    addNode(graph, nodeBuilder, nodes, methods, null, null);
+  private void addNode(DataFlowGraph graph, NodeBuilder nodeBuilder, Map<String, DataFlowNode> nodes, Map<String, DataFlowMethod> methods,
+      List<DataFlowNode> addedNodes) {
+    addNode(graph, nodeBuilder, nodes, methods, null, null, addedNodes);
   }
 
   /**
-   * Recursively adds a new nodes to the given {@link DataFlowGraph}.
+   * Recursively adds a new nodes to the given {@link DataFlowGraph}. This method should only be called for nodes not already added.
    *
    * @param graph The {@link DataFlowGraph} to add Nodes to.
    * @param nodeBuilder The next Node to add.
@@ -59,13 +64,20 @@ public class GraphBuilder {
    * @param methods previously added methods.
    * @param previousNode The node that was added right before the given input node, can be null.
    * @param currentMethod The current method that is being added.
+   * @param addNodes The nodes added in previous iterations. If a node is present, it will not be added to the graph again. Note that this has to be a list,
+   *          because the hash value might change in multiple iterations.
    */
   private void addNode(DataFlowGraph graph, NodeBuilder nodeBuilder, Map<String, DataFlowNode> nodes, Map<String, DataFlowMethod> methods,
-      DataFlowNode previousNode, DataFlowMethod currentMethod) {
+      DataFlowNode previousNode, DataFlowMethod currentMethod, List<DataFlowNode> addedNodes) {
 
-    DataFlowNode node = nodeBuilder.build();
+    DataFlowNode node = nodeBuilder.getOrBuild();
     if (previousNode != null) {
+      // Always add the node to the previous node
       previousNode.addEdgeTo(node);
+    }
+    if (addedNodes.contains(node)) {
+      // Don't add a node that was already added.
+      return;
     }
 
     DataFlowMethod method = null;
@@ -88,18 +100,17 @@ public class GraphBuilder {
     }
 
     DataFlowMethod nextMethod = method == null ? currentMethod : method;
-    nodeBuilder.getOut().forEach(nb -> addNode(graph, nb, nodes, methods, node, nextMethod));
+    addedNodes.add(node);
+    nodeBuilder.getOut().forEach(nb -> addNode(graph, nb, nodes, methods, node, nextMethod, addedNodes));
   }
 
   private DataFlowMethod getOrCreateMethod(DataFlowGraph graph, Map<String, DataFlowMethod> methods, String methodName) {
-    DataFlowMethod method;
-    if (methods.containsKey(methodName)) {
-      method = methods.get(methodName);
-    } else {
-      method = new DataFlowMethod(methodName);
+    if (!methods.containsKey(methodName)) {
+      DataFlowMethod method = new DataFlowMethod(methodName, new VariableDeclarator(new ClassOrInterfaceType(), methodName));
       graph.addMethod(method);
+      methods.put(methodName, method);
     }
-    return method;
+    return methods.get(methodName);
   }
 
 }

@@ -22,7 +22,8 @@ package templateInput.definition;
  *
  * @author Daan
  */
-public class FlowReceiverDefnition extends VariableDefinition {
+public class FlowReceiverDefinition extends VariableDefinition {
+  // TODO this should be a list of possibilities
   private String receivedValue;
 
   public String getReceivedValue() {

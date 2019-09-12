@@ -61,18 +61,10 @@ public class DataFlowGraphFactoryTest {
             "    this.s = a;\n" + //
             "  }\n" + //
             "}"; //
-
     DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
-    // DataFlowGraphBuilder.builder().withField("s")
-    // .withMethod(DataFlowMethodBuilder.builder().withParameter("a").withChangedFieldEdge("a", "s").name("setS").build()).build();
 
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.createGraph(cu);
-
-    System.out.println("========expected========");
-    System.out.println(expected.toString());
-    System.out.println("========result========");
-    System.out.println(graph.toString());
 
     assertGraph(expected, graph);
   }
@@ -116,7 +108,7 @@ public class DataFlowGraphFactoryTest {
     return Matchers.allOf(methodNameMatcher, parameterMatcher, changedFieldsMatcher);
   }
 
-  private Optional<String> assertNodesEqual(List<DataFlowNode> expected, List<DataFlowNode> fields) {
+  private Optional<String> assertNodesEqual(Collection<DataFlowNode> expected, Collection<DataFlowNode> fields) {
     Map<String, DataFlowNode> exp = expected.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
     Map<String, DataFlowNode> res = fields.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
     Assert.assertEquals(exp.keySet(), res.keySet());

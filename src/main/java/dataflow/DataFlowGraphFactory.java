@@ -89,7 +89,7 @@ public class DataFlowGraphFactory {
   }
 
   private DataFlowNode parseField(FieldDeclaration node) {
-    return DataFlowNode.builder().javaParserNode(node).name(node.getVariable(0).getNameAsString()).build();
+    return DataFlowNode.builder().representedNode(node).name(node.getVariable(0).getNameAsString()).build();
   }
 
   private void parseCallable(DataFlowGraph graph, CallableDeclaration<?> cd) {
@@ -153,7 +153,7 @@ public class DataFlowGraphFactory {
   }
 
   private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {
-    return cd.getParameters().stream().map(n -> DataFlowNode.builder().javaParserNode(n).name(n.getNameAsString()).build()).collect(Collectors.toList());
+    return cd.getParameters().stream().map(n -> DataFlowNode.builder().representedNode(n).name(n.getNameAsString()).build()).collect(Collectors.toList());
   }
 
 }
