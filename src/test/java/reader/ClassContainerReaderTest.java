@@ -50,6 +50,11 @@ public class ClassContainerReaderTest {
   }
 
   @Test
+  public void testRead_dataFlowGraph() {
+    Assert.fail("Further implement this and right a test for it");
+  }
+
+  @Test
   public void testRead_Class() throws IOException {
     String input = "src/test/java/inputClassesForTests/ExtendedProduct.java";
     ClassContainer cc = sut.read(input);

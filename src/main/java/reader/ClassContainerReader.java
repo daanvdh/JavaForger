@@ -114,7 +114,12 @@ public class ClassContainerReader {
           for (DataFlowNode dfn : changedFieldsNodes) {
             List<DataFlowNode> firstValue = graphService.walkBackUntil(dfn, method);
             FlowReceiverDefinition receiver = new FlowReceiverDefinition();
-            receiver.setReceivedValue(firstValue.toString());
+
+            // TODO fixing integration test very wrong:
+            receiver.setReceivedValue(firstValue.get(0).getName());
+            receiver.setType("FIND_THIS_UGLY_FIX_AND_FIX_IT");
+            receiver.setName(dfn.getName());
+
             changedFields.add(receiver);
           }
           newMethod.setChangedFields(changedFields);

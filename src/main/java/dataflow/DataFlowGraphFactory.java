@@ -114,7 +114,6 @@ public class DataFlowGraphFactory {
               DataFlowNode assigner = null;
               Node assignedNode = assignExpr.get(0);
 
-              // if (Resolvable.class.isAssignableFrom(assignedNode.getClass())) {
               if (assignedNode instanceof FieldAccessExpr) {
                 ResolvedValueDeclaration resolve = ((FieldAccessExpr) assignedNode).resolve();
                 if (resolve instanceof JavaParserFieldDeclaration) {
@@ -125,6 +124,7 @@ public class DataFlowGraphFactory {
               }
 
               flowNode.setName(method.getName() + "." + assigned.getName());
+              // TODO fill other fields of the flow node
 
               Node assignerNode = assignExpr.get(1);
               if (assignerNode instanceof NameExpr) {
@@ -148,8 +148,8 @@ public class DataFlowGraphFactory {
     overwriddenValues.forEach((javaParserNode, dataFlowNode) -> dataFlowNode.addEdgeTo(graph.getNode(javaParserNode)));
 
     // Add changed fields
-    overwriddenValues.keySet().stream().filter(entry -> FieldDeclaration.class.isAssignableFrom(entry.getClass()))
-        .forEach(entry -> method.addChangedField(graph.getNode(entry)));
+    overwriddenValues.keySet().stream().filter(javaParserNode -> FieldDeclaration.class.isAssignableFrom(javaParserNode.getClass())).map(graph::getNode)
+        .filter(n -> n != null).forEach(method::addChangedField);
   }
 
   private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {

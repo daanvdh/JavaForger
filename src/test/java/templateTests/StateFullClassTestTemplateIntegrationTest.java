@@ -37,6 +37,9 @@ public class StateFullClassTestTemplateIntegrationTest extends AbstractFileChang
 
   @Test
   public void testStateFullClassTest_setter() throws IOException {
+
+    Assert.fail("remove this if ClassContainerReader is further implemented");
+
     String claz = //
         "public class Claz {\n" + //
             "  private String s;\n" + //
