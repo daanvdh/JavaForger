@@ -17,21 +17,81 @@
  */
 package templateInput.definition;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * VariableDefinition receiving a flow
  *
  * @author Daan
  */
 public class FlowReceiverDefinition extends VariableDefinition {
-  // TODO this should be a list of possibilities
-  private String receivedValue;
 
-  public String getReceivedValue() {
-    return receivedValue;
+  private List<String> receivedValues = new ArrayList<>();
+
+  public FlowReceiverDefinition() {
+    // explicitly make constructor visible
   }
 
-  public void setReceivedValue(String receivedValue) {
-    this.receivedValue = receivedValue;
+  protected FlowReceiverDefinition(Builder builder) {
+    super(builder);
+    this.receivedValues = builder.receivedValues;
+  }
+
+  public List<String> getReceivedValues() {
+    return receivedValues;
+  }
+
+  /**
+   * @return If the list of received values is not empty, get the first received value, otherwise get null as string.
+   */
+  public String getReceivedValue() {
+    return receivedValues.isEmpty() ? "null" : receivedValues.get(0);
+  }
+
+  public String getAllReceivedValues() {
+    return String.join("_", receivedValues);
+  }
+
+  public void setReceivedValues(List<String> receivedValues) {
+    this.receivedValues = receivedValues;
+  }
+
+  /**
+   * Creates builder to build {@link VariableDefinition}.
+   *
+   * @return created builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder to build {@link VariableDefinition}.
+   */
+  public static class Builder extends VariableDefinition.Builder<FlowReceiverDefinition.Builder> {
+    private List<String> receivedValues;
+
+    protected Builder() {
+      super();
+    }
+
+    public Builder receivedValues(List<String> receivedValues) {
+      this.receivedValues = receivedValues;
+      return this;
+    }
+
+    public Builder copy(FlowReceiverDefinition field) {
+      super.copy(field);
+      this.receivedValues = field.getReceivedValues();
+      return this;
+    }
+
+    @Override
+    public FlowReceiverDefinition build() {
+      return new FlowReceiverDefinition(this);
+    }
+
   }
 
 }

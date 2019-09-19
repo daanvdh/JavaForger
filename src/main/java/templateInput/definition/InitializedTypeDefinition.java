@@ -170,6 +170,20 @@ public class InitializedTypeDefinition extends TypeDefinition {
     protected Builder() {
     }
 
+    public T copy(InitializedTypeDefinition copy) {
+      this.name = copy.name;
+      this.type = copy.getType().toString();
+      this.lineNumber = copy.getLineNumber();
+      this.column = copy.getColumn();
+      this.annotations = copy.getAnnotations();
+      this.accessModifiers = copy.getAccessModifiers();
+      this.init1 = copy.getInit1();
+      this.init2 = copy.getInit2();
+      this.noInit = copy.getNoInit();
+      this.typeImports = copy.getTypeImports();
+      return (T) this;
+    }
+
     public T withName(String name) {
       this.name = new StringConverter(name);
       return (T) this;
