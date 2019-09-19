@@ -11,6 +11,7 @@
 package reader;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,11 +33,26 @@ public class ImportResolver {
 
   private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
+  @Deprecated
+  /**
+   * Use resolveImports instead.
+   *
+   * @param type
+   * @param variable
+   */
   public void resolveAndSetImport(Type type, TypeDefinition variable) {
+    resolveImport(type).forEach(variable::addTypeImport);
+  }
+
+  /**
+   * Resolve the imports for the given type.
+   *
+   * @param type The {@link JavaParser} {@link Type}.
+   * @return A {@link List} of {@link String} representing the imports.
+   */
+  public List<String> resolveImport(Type type) {
     List<String> imports = resolve(type);
-    if (!imports.isEmpty()) {
-      imports.stream().filter(s -> !s.contains("?")).forEach(variable::addTypeImport);
-    }
+    return !imports.isEmpty() ? imports.stream().filter(s -> !s.contains("?")).collect(Collectors.toList()) : Collections.emptyList();
   }
 
   private List<String> resolve(Type type) {

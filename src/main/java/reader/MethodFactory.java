@@ -48,9 +48,9 @@ public class MethodFactory {
     MethodDeclaration md = (MethodDeclaration) node;
     MethodDefinition method = parseCallable(md);
     method.setType(md.getTypeAsString());
-    importResolver.resolveAndSetImport(md.getType(), method);
+    importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
 
-    addChangedFields(method, dfg.getMethod(node));
+    addChangedFields(method, dfg.getMethod(md));
 
     return method;
   }
@@ -80,7 +80,6 @@ public class MethodFactory {
   }
 
   private void addChangedFields(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
-    // TODO unit test this
     List<DataFlowNode> changedFieldsNodes = dataFlowMethod.getChangedFields();
     List<FlowReceiverDefinition> changedFields = new ArrayList<>();
     for (DataFlowNode dfn : changedFieldsNodes) {

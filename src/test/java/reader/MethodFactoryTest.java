@@ -10,6 +10,8 @@
  */
 package reader;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -18,8 +20,21 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 
 import common.SymbolSolverSetup;
+import dataflow.DataFlowGraph;
+import dataflow.DataFlowMethod;
+import dataflow.GraphBuilder;
+import dataflow.NodeBuilder;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
 import templateInput.definition.VariableDefinition;
@@ -29,7 +44,16 @@ import templateInput.definition.VariableDefinition;
  *
  * @author Daan
  */
+@RunWith(MockitoJUnitRunner.class)
 public class MethodFactoryTest {
+
+  @Mock
+  private FieldFactory fieldFactory;
+  @Mock
+  private DataFlowGraph dfg;
+
+  @InjectMocks
+  private MethodFactory methodFactory = new MethodFactory();
 
   private ClassContainerReader sut = new ClassContainerReader();
 
@@ -39,8 +63,22 @@ public class MethodFactoryTest {
   }
 
   @Test
-  public void testRead_dataFlowGraph() {
-    Assert.fail("Further implement this and right a test for it");
+  public void testAddChangedFields() {
+    DataFlowGraph setterDfg = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
+    Node inputMethod = new MethodDeclaration();
+    DataFlowMethod methodDfn = setterDfg.getMethods().iterator().next();
+    Mockito.when(dfg.getMethod(inputMethod)).thenReturn(methodDfn);
+
+    FieldDeclaration javaParserNode = new FieldDeclaration();
+    setterDfg.getFields().get(0).setRepresentedNode(javaParserNode);
+    String name = "unique";
+    VariableDefinition fieldVariDef = VariableDefinition.builder().withName(name).build();
+    Mockito.when(fieldFactory.create(javaParserNode)).thenReturn(fieldVariDef);
+
+    MethodDefinition method = methodFactory.createMethod(inputMethod, dfg);
+
+    assertEquals(1, method.getChangedFields().size());
+    assertEquals(name, method.getChangedFields().get(0).getName().toString());
   }
 
   @Test
