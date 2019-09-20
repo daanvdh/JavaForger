@@ -48,7 +48,14 @@ import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParse
  */
 public class DataFlowGraphFactory {
 
-  public DataFlowGraph createGraph(CompilationUnit cu) {
+  /**
+   * Creates a {@link DataFlowGraph} for the given {@link CompilationUnit}.
+   *
+   * @param cu The {@link CompilationUnit} containing the parsed class.
+   * @return A {@link DataFlowGraph}
+   * @throws DataFlowException If types inside the {@link CompilationUnit} are not supported yet.
+   */
+  public DataFlowGraph create(CompilationUnit cu) throws DataFlowException {
     DataFlowGraph graph = new DataFlowGraph();
     executeForEachChildNode(cu, (node) -> this.addField(graph, node));
     executeForEachChildNode(cu, (node) -> this.createMethod(graph, node));
@@ -109,9 +116,8 @@ public class DataFlowGraphFactory {
             if (c instanceof AssignExpr) {
               DataFlowNode flowNode = new DataFlowNode(c);
               List<Node> assignExpr = c.getChildNodes();
-              // TODO this is not used, which is fine for now, this has to be extracted at some point and in different cases we might need it
+              // TODO This has to be extracted at some point and in different cases we might need it
               DataFlowNode assigned = null;
-              DataFlowNode assigner = null;
               Node assignedNode = assignExpr.get(0);
 
               if (assignedNode instanceof FieldAccessExpr) {
@@ -122,10 +128,14 @@ public class DataFlowGraphFactory {
                   overwriddenValues.put(resolvedNode, flowNode);
                 }
               }
-
+              if (assigned == null) {
+                throw new DataFlowException("In method %s, did not resolve the type for assignedNode for expression %s of type %s", method.getName(),
+                    assignedNode, assignedNode.getClass());
+              }
               flowNode.setName(method.getName() + "." + assigned.getName());
-              // TODO fill other fields of the flow node
+              flowNode.setRepresentedNode(assignedNode);
 
+              DataFlowNode assigner = null;
               Node assignerNode = assignExpr.get(1);
               if (assignerNode instanceof NameExpr) {
                 ResolvedValueDeclaration resolve = ((NameExpr) assignerNode).resolve();
@@ -134,8 +144,12 @@ public class DataFlowGraphFactory {
                   assigner = graph.getNode(resolvedNode);
                 }
               }
-              // TODO make this null safe
+              if (assigner == null) {
+                throw new DataFlowException("In method %s, did not resolve the type for assignerNode for expression %s of type %s", method.getName(),
+                    assignerNode, assignerNode.getClass());
+              }
               assigner.addEdgeTo(flowNode);
+
               // TODO this code should be located somewhere else, because there might be something else happening in between two assignments.
               // flowNode.addEdgeTo(assigned);
             }

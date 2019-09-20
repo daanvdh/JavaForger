@@ -50,7 +50,9 @@ public class MethodFactory {
     method.setType(md.getTypeAsString());
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
 
-    addChangedFields(method, dfg.getMethod(md));
+    if (dfg != null) {
+      addChangedFields(method, dfg.getMethod(md));
+    }
 
     return method;
   }

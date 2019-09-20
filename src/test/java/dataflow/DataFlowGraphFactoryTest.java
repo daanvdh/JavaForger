@@ -53,21 +53,21 @@ public class DataFlowGraphFactoryTest {
   }
 
   @Test
-  public void testCreateGraph_setter() {
-    String setter = //
-        "public class Claz {\n" + //
-            "  private String s;\n" + //
-            "  public void setS(String a) {\n" + //
-            "    this.s = a;\n" + //
-            "  }\n" + //
-            "}"; //
-    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
-
-    CompilationUnit cu = JavaParser.parse(setter);
-    DataFlowGraph graph = factory.createGraph(cu);
-
-    assertGraph(expected, graph);
-  }
+    public void testCreate_setter() {
+      String setter = //
+          "public class Claz {\n" + //
+              "  private String s;\n" + //
+              "  public void setS(String a) {\n" + //
+              "    this.s = a;\n" + //
+              "  }\n" + //
+              "}"; //
+      DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
+  
+      CompilationUnit cu = JavaParser.parse(setter);
+      DataFlowGraph graph = factory.create(cu);
+  
+      assertGraph(expected, graph);
+    }
 
   private void assertGraph(DataFlowGraph expected, DataFlowGraph graph) {
     assertNodesEqual(expected.getFields(), graph.getFields()).ifPresent(m -> Assert.fail("Fields not equal: " + m));

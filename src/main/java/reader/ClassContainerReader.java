@@ -35,6 +35,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 
+import dataflow.DataFlowException;
 import dataflow.DataFlowGraph;
 import dataflow.DataFlowGraphFactory;
 import generator.JavaForgerException;
@@ -56,7 +57,13 @@ public class ClassContainerReader {
 
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);
-    DataFlowGraph dfg = dfgFactory.createGraph(cu);
+    DataFlowGraph dfg = null;
+    try {
+      dfg = dfgFactory.create(cu);
+    } catch (DataFlowException e) {
+      // Continue the normal flow until the DataFlowGraph is fully implemented
+      e.printStackTrace();
+    }
     ClassContainer claz = readCompilationUnit(cu, dfg);
     return claz;
   }
