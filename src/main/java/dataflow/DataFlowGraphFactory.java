@@ -32,6 +32,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -74,7 +75,7 @@ public class DataFlowGraphFactory {
 
   private void addField(DataFlowGraph graph, Node node) {
     if (node instanceof FieldDeclaration) {
-      graph.addField(parseField((FieldDeclaration) node));
+      parseField((FieldDeclaration) node).forEach(graph::addField);
     }
   }
 
@@ -95,8 +96,15 @@ public class DataFlowGraphFactory {
     }
   }
 
-  private DataFlowNode parseField(FieldDeclaration node) {
-    return DataFlowNode.builder().representedNode(node).name(node.getVariable(0).getNameAsString()).build();
+  /**
+   * Returns a list of DataFlowNodes that represent all fields defined with this fieldDeclaration. (With the syntax <code>int i,j; </code> one FieldDeclaration
+   * can define multiple fields.
+   *
+   * @param node
+   * @return
+   */
+  private List<DataFlowNode> parseField(FieldDeclaration node) {
+    return node.getVariables().stream().map(n -> DataFlowNode.builder().representedNode(n).name(n.getNameAsString()).build()).collect(Collectors.toList());
   }
 
   private void parseCallable(DataFlowGraph graph, CallableDeclaration<?> cd) {
@@ -123,7 +131,7 @@ public class DataFlowGraphFactory {
               if (assignedNode instanceof FieldAccessExpr) {
                 ResolvedValueDeclaration resolve = ((FieldAccessExpr) assignedNode).resolve();
                 if (resolve instanceof JavaParserFieldDeclaration) {
-                  FieldDeclaration resolvedNode = ((JavaParserFieldDeclaration) resolve).getWrappedNode();
+                  VariableDeclarator resolvedNode = ((JavaParserFieldDeclaration) resolve).getVariableDeclarator();
                   assigned = graph.getNode(resolvedNode);
                   overwriddenValues.put(resolvedNode, flowNode);
                 }
@@ -162,7 +170,7 @@ public class DataFlowGraphFactory {
     overwriddenValues.forEach((javaParserNode, dataFlowNode) -> dataFlowNode.addEdgeTo(graph.getNode(javaParserNode)));
 
     // Add changed fields
-    overwriddenValues.keySet().stream().filter(javaParserNode -> FieldDeclaration.class.isAssignableFrom(javaParserNode.getClass())).map(graph::getNode)
+    overwriddenValues.keySet().stream().filter(javaParserNode -> VariableDeclarator.class.isAssignableFrom(javaParserNode.getClass())).map(graph::getNode)
         .filter(n -> n != null).forEach(method::addChangedField);
   }
 

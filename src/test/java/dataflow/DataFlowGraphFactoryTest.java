@@ -53,26 +53,56 @@ public class DataFlowGraphFactoryTest {
   }
 
   @Test
-    public void testCreate_setter() {
-      String setter = //
-          "public class Claz {\n" + //
-              "  private String s;\n" + //
-              "  public void setS(String a) {\n" + //
-              "    this.s = a;\n" + //
-              "  }\n" + //
-              "}"; //
-      DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
-  
-      CompilationUnit cu = JavaParser.parse(setter);
-      DataFlowGraph graph = factory.create(cu);
-  
-      assertGraph(expected, graph);
-    }
+  public void testCreate_setter() {
+    String setter = //
+        "public class Claz {\n" + //
+            "  private String s;\n" + //
+            "  public void setS(String a) {\n" + //
+            "    this.s = a;\n" + //
+            "  }\n" + //
+            "}"; //
+    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s"))).build();
+
+    executeAndVerify(setter, expected);
+  }
+
+  @Test
+  public void testCreate_setterMultipleInput() {
+    String setter = //
+        "public class Claz {\n" + //
+            "  private String s,t;\n" + //
+            "  public void setS(String a, String b) {\n" + //
+            "    this.s = a;\n" + //
+            "    this.t = b;\n" + //
+            "  }\n" + //
+            "}"; //
+    DataFlowGraph expected = GraphBuilder.withStartingNodes( //
+        NodeBuilder.ofParameter("setS", "a").to("setS.s").to(NodeBuilder.ofField("s")), //
+        NodeBuilder.ofParameter("setS", "b").to("setS.t").to(NodeBuilder.ofField("t")) //
+    ).build();
+
+    executeAndVerify(setter, expected);
+  }
+
+  private void executeAndVerify(String setter, DataFlowGraph expected) {
+    CompilationUnit cu = JavaParser.parse(setter);
+    DataFlowGraph graph = factory.create(cu);
+
+    assertGraph(expected, graph);
+  }
 
   private void assertGraph(DataFlowGraph expected, DataFlowGraph graph) {
-    assertNodesEqual(expected.getFields(), graph.getFields()).ifPresent(m -> Assert.fail("Fields not equal: " + m));
-    assertMethodsEqual(expected.getMethods(), graph.getMethods()).ifPresent(m -> Assert.fail("Methods not equal: " + m));
-    assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(m -> Assert.fail("Constructors not equal: " + m));
+    assertNodesEqual(expected.getFields(), graph.getFields()).ifPresent(m -> fail(expected, graph, "Fields not equal: " + m));
+    assertMethodsEqual(expected.getMethods(), graph.getMethods()).ifPresent(m -> fail(expected, graph, "Methods not equal: " + m));
+    assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(m -> fail(expected, graph, "Constructors not equal: " + m));
+  }
+
+  private void fail(DataFlowGraph expected, DataFlowGraph graph, String message) {
+    System.out.println("============================== Expected ==============================");
+    System.out.println(expected);
+    System.out.println("=============================== Actual ===============================");
+    System.out.println(graph);
+    Assert.fail(message);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -111,9 +141,12 @@ public class DataFlowGraphFactoryTest {
   private Optional<String> assertNodesEqual(Collection<DataFlowNode> expected, Collection<DataFlowNode> fields) {
     Map<String, DataFlowNode> exp = expected.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
     Map<String, DataFlowNode> res = fields.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
-    Assert.assertEquals(exp.keySet(), res.keySet());
-
-    return exp.keySet().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
+    Optional<String> equal =
+        exp.keySet().equals(res.keySet()) ? Optional.empty() : Optional.of("Nodes not equal, expected: " + exp.keySet() + " but was: " + res.keySet());
+    if (!equal.isPresent()) {
+      equal = exp.keySet().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
+    }
+    return equal;
   }
 
   /**
