@@ -30,15 +30,13 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
+import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserFieldDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserParameterDeclaration;
 
@@ -108,7 +106,7 @@ public class DataFlowGraphFactory {
   }
 
   private void parseCallable(DataFlowGraph graph, CallableDeclaration<?> cd) {
-    // TODO we need this method later to add outgoing and incoming nodes to.
+    // TODO we need this method later to add outgoing and incoming nodes too.
     DataFlowMethod method = graph.getMethod(cd);
     // The values that are overwridden inside this method, for example assigning a field.
     Map<Node, DataFlowNode> overwriddenValues = new HashMap<>();
@@ -118,50 +116,9 @@ public class DataFlowGraphFactory {
     if (callableBody.isPresent()) {
       List<Node> bodyNodes = callableBody.get().getChildNodes();
       for (Node n : bodyNodes) {
+        // TODO handle defining a variable and add it to the graph
         if (n instanceof ExpressionStmt) {
-
-          for (Node c : n.getChildNodes()) {
-            if (c instanceof AssignExpr) {
-              DataFlowNode flowNode = new DataFlowNode(c);
-              List<Node> assignExpr = c.getChildNodes();
-              // TODO This has to be extracted at some point and in different cases we might need it
-              DataFlowNode assigned = null;
-              Node assignedNode = assignExpr.get(0);
-
-              if (assignedNode instanceof FieldAccessExpr) {
-                ResolvedValueDeclaration resolve = ((FieldAccessExpr) assignedNode).resolve();
-                if (resolve instanceof JavaParserFieldDeclaration) {
-                  VariableDeclarator resolvedNode = ((JavaParserFieldDeclaration) resolve).getVariableDeclarator();
-                  assigned = graph.getNode(resolvedNode);
-                  overwriddenValues.put(resolvedNode, flowNode);
-                }
-              }
-              if (assigned == null) {
-                throw new DataFlowException("In method %s, did not resolve the type for assignedNode for expression %s of type %s", method.getName(),
-                    assignedNode, assignedNode.getClass());
-              }
-              flowNode.setName(method.getName() + "." + assigned.getName());
-              flowNode.setRepresentedNode(assignedNode);
-
-              DataFlowNode assigner = null;
-              Node assignerNode = assignExpr.get(1);
-              if (assignerNode instanceof NameExpr) {
-                ResolvedValueDeclaration resolve = ((NameExpr) assignerNode).resolve();
-                if (resolve instanceof JavaParserParameterDeclaration) {
-                  Parameter resolvedNode = ((JavaParserParameterDeclaration) resolve).getWrappedNode();
-                  assigner = graph.getNode(resolvedNode);
-                }
-              }
-              if (assigner == null) {
-                throw new DataFlowException("In method %s, did not resolve the type for assignerNode for expression %s of type %s", method.getName(),
-                    assignerNode, assignerNode.getClass());
-              }
-              assigner.addEdgeTo(flowNode);
-
-              // TODO this code should be located somewhere else, because there might be something else happening in between two assignments.
-              // flowNode.addEdgeTo(assigned);
-            }
-          }
+          handleExpressionStmt(graph, method, overwriddenValues, n);
         }
       }
     }
@@ -172,6 +129,74 @@ public class DataFlowGraphFactory {
     // Add changed fields
     overwriddenValues.keySet().stream().filter(javaParserNode -> VariableDeclarator.class.isAssignableFrom(javaParserNode.getClass())).map(graph::getNode)
         .filter(n -> n != null).forEach(method::addChangedField);
+  }
+
+  private void handleExpressionStmt(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overwriddenValues, Node n) {
+    for (Node c : n.getChildNodes()) {
+      if (c instanceof AssignExpr) {
+        handleAssignExpr(graph, method, overwriddenValues, (AssignExpr) c);
+      }
+    }
+  }
+
+  private void handleAssignExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overwriddenValues, AssignExpr expr) {
+    Expression assignedJP = expr.getTarget();
+    Node assignerJP = expr.getValue();
+    // This is the original field
+    DataFlowNode assignedDF = getDataFlowNode(graph, overwriddenValues, method, assignedJP);
+    DataFlowNode assignerDF = getDataFlowNode(graph, overwriddenValues, method, assignerJP);
+
+    // This is the version of the field that will receive the assigner edge.
+    // If this is the last assignment to the field, an edge to the original field will be created.
+    DataFlowNode flowNode = new DataFlowNode(assignedJP);
+    if (isField(assignedDF)) {
+      overwriddenValues.put(assignedDF.getRepresentedNode(), flowNode);
+    }
+
+    flowNode.setName(method.getName() + "." + assignedDF.getName());
+
+    assignerDF.addEdgeTo(flowNode);
+  }
+
+  // TODO should not throw exceptions, return optional instead and log warnings.
+  private DataFlowNode getDataFlowNode(DataFlowGraph graph, Map<Node, DataFlowNode> overwriddenValues, DataFlowMethod method, Node node) {
+    Node resolvedNode = getJavaParserNode(method, node);
+    DataFlowNode flowNode = overwriddenValues.containsKey(resolvedNode) ? overwriddenValues.get(resolvedNode) : graph.getNode(resolvedNode);
+
+    if (flowNode == null) {
+      throw new DataFlowException("In method %s, did not resolve the type for assignedNode for expression %s of type %s", method.getName(), node,
+          node.getClass());
+    }
+    return flowNode;
+  }
+
+  private Node getJavaParserNode(DataFlowMethod method, Node node) {
+    if (!Resolvable.class.isAssignableFrom(node.getClass())) {
+      throw new DataFlowException("In method %s, node is not Resolvable for expression %s of type %s", method.getName(), node, node.getClass());
+    }
+
+    Object resolved = ((Resolvable<?>) node).resolve();
+    Node resolvedNode = null;
+    if (resolved instanceof JavaParserFieldDeclaration) {
+      resolvedNode = ((JavaParserFieldDeclaration) resolved).getVariableDeclarator();
+    } else if (resolved instanceof JavaParserParameterDeclaration) {
+      resolvedNode = ((JavaParserParameterDeclaration) resolved).getWrappedNode();
+    }
+    return resolvedNode;
+  }
+
+  private boolean isField(DataFlowNode assignedDF) {
+    // TODO handle the fact that this can represent a field in an in-between state, in that case we have to walk back to figure that out.
+    // The question is how far do we have to walk back...
+    Node representedNode = assignedDF.getRepresentedNode();
+    boolean isField = false;
+    if (representedNode instanceof VariableDeclarator) {
+      VariableDeclarator vd = (VariableDeclarator) representedNode;
+      if (vd.getParentNode().isPresent() && vd.getParentNode().get() instanceof FieldDeclaration) {
+        isField = true;
+      }
+    }
+    return isField;
   }
 
   private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {

@@ -148,7 +148,7 @@ public class DataFlowNode {
         first = false;
         sb.append("\t-> " + e.getTo().toStringForward(tabs + 1));
       } else {
-        sb.append("\n" + tabs(tabs + 1) + "-> " + e.getTo().toStringForward(tabs + 1, tabs + 1));
+        sb.append("\n" + tabs(firstTabs + tabs + 3) + "-> " + e.getTo().toStringForward(tabs + 1, firstTabs));
       }
     }
     return sb.toString();
@@ -170,7 +170,7 @@ public class DataFlowNode {
         first = false;
         sb.append("\t<- " + e.getFrom().toStringBackward(tabs + 1));
       } else {
-        sb.append("\n" + tabs(tabs) + "<- " + e.getFrom().toStringBackward(tabs + 1, tabs + 1));
+        sb.append("\n" + tabs(tabs + 1) + "<- " + e.getFrom().toStringBackward(tabs + 1, tabs + 1));
       }
     }
     return sb.toString();

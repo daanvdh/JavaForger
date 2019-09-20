@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 /**
@@ -71,7 +70,7 @@ public class GraphBuilder {
   private void addNode(DataFlowGraph graph, NodeBuilder nodeBuilder, Map<String, DataFlowNode> nodes, Map<String, DataFlowMethod> methods,
       DataFlowNode previousNode, DataFlowMethod currentMethod, List<DataFlowNode> addedNodes) {
 
-    DataFlowNode node = getNode(nodeBuilder);
+    DataFlowNode node = nodeBuilder.getOrBuild();
     if (previousNode != null) {
       // Always add the node to the previous node
       previousNode.addEdgeTo(node);
@@ -103,14 +102,6 @@ public class GraphBuilder {
     DataFlowMethod nextMethod = method == null ? currentMethod : method;
     addedNodes.add(node);
     nodeBuilder.getOut().forEach(nb -> addNode(graph, nb, nodes, methods, node, nextMethod, addedNodes));
-  }
-
-  private DataFlowNode getNode(NodeBuilder nodeBuilder) {
-    DataFlowNode node = nodeBuilder.getOrBuild();
-    if (node.getRepresentedNode() == null) {
-      node.setRepresentedNode(new SimpleName(node.getName()));
-    }
-    return node;
   }
 
   private DataFlowMethod getOrCreateMethod(DataFlowGraph graph, Map<String, DataFlowMethod> methods, String methodName) {

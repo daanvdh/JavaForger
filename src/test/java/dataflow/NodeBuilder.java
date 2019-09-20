@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.javaparser.ast.expr.SimpleName;
+
 /**
  * Builder for {@link DataFlowNode}, only to be used for test purposes.
  *
@@ -62,7 +64,11 @@ public class NodeBuilder {
 
   public static NodeBuilder ofField(String name) {
     NodeBuilder builder = new NodeBuilder(name, NodeType.CLASS_FIELD);
+    return builder;
+  }
 
+  public static NodeBuilder ofInBetween(String name) {
+    NodeBuilder builder = new NodeBuilder(name, NodeType.IN_BETWEEN);
     return builder;
   }
 
@@ -124,7 +130,7 @@ public class NodeBuilder {
   }
 
   public DataFlowNode build() {
-    return DataFlowNode.builder().name(name).build();
+    return DataFlowNode.builder().name(name).representedNode(new SimpleName(name)).build();
   }
 
   public DataFlowNode getOrBuild() {

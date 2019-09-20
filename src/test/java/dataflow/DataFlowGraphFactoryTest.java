@@ -27,13 +27,15 @@ import java.util.stream.Collectors;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.common.base.Functions;
 
 import common.SymbolSolverSetup;
 
@@ -84,10 +86,64 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(setter, expected);
   }
 
+  @Test
+  public void testCreate_setterAssignFieldTwice() {
+    String setter = //
+        "public class Claz {\n" + //
+            "  private String s;\n" + //
+            "  public void setS(String a, String b) {\n" + //
+            "    this.s = a;\n" + //
+            "    this.s = b;\n" + //
+            "  }\n" + //
+            "}"; //
+    DataFlowGraph expected = GraphBuilder.withStartingNodes( //
+        NodeBuilder.ofParameter("setS", "a").to("setS.s"), //
+        NodeBuilder.ofParameter("setS", "b").to("setS.s").to(NodeBuilder.ofField("s")) //
+    ).build();
+
+    executeAndVerify(setter, expected);
+  }
+
+  @Test
+  public void testCreate_setterAssignFieldToField() {
+    String setter = //
+        "public class Claz {\n" + //
+            "  private String s,t;\n" + //
+            "  public void setS(String a) {\n" + //
+            "    this.s = a;\n" + //
+            "    this.t = this.s;\n" + //
+            "  }\n" + //
+            "}"; //
+
+    // NodeBuilder inBetween = NodeBuilder.ofInBetween("setS.s");
+    // inBetween.to( //
+    // NodeBuilder.ofInBetween("setS.t").to(NodeBuilder.ofField("t")), //
+    // NodeBuilder.ofField("s") //
+    // ); //
+    // DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to(inBetween)).build();
+    DataFlowGraph expected = new DataFlowGraph();
+    DataFlowNode fieldS = NodeBuilder.ofField("s").build();
+    DataFlowNode fieldT = NodeBuilder.ofField("t").build();
+    DataFlowNode paramA = NodeBuilder.ofParameter("setS", "a").build();
+    DataFlowNode inBetweenS = NodeBuilder.ofInBetween("setS.s").build();
+    DataFlowNode inBetweenT = NodeBuilder.ofInBetween("setS.t").build();
+
+    paramA.addEdgeTo(inBetweenS);
+    inBetweenS.addEdgeTo(inBetweenT);
+    inBetweenS.addEdgeTo(fieldS);
+    inBetweenT.addEdgeTo(fieldT);
+
+    expected.addFields(fieldS, fieldT);
+    DataFlowMethod method = new DataFlowMethod(expected, new VariableDeclarator(new ClassOrInterfaceType(), "setS"), "setS");
+    method.addChangedFields(fieldS, fieldT);
+    method.addParameter(paramA);
+
+    executeAndVerify(setter, expected);
+  }
+
   private void executeAndVerify(String setter, DataFlowGraph expected) {
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.create(cu);
-
     assertGraph(expected, graph);
   }
 
@@ -101,27 +157,27 @@ public class DataFlowGraphFactoryTest {
     System.out.println("============================== Expected ==============================");
     System.out.println(expected);
     System.out.println("=============================== Actual ===============================");
-    System.out.println(graph);
+    System.out.println(graph.toString());
     Assert.fail(message);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
   private Optional<String> assertMethodsEqual(Collection<DataFlowMethod> exp, Collection<DataFlowMethod> res) {
-    List<Matcher<DataFlowMethod>> collect = exp.stream().map(this::createMatcher).collect(Collectors.toList());
-    IsIterableContainingInAnyOrder<DataFlowMethod> containsInAnyOrder = new IsIterableContainingInAnyOrder(collect);
-
-    // TODO the assert and the return value seem to do the same thing, maybe remove one of them.
-    Assert.assertThat(res, containsInAnyOrder);
-    return exp.stream().map(expMethod -> assertMethodEqual(expMethod, getEqualMethod(res, expMethod))).filter(Optional::isPresent).map(Optional::get)
-        .findFirst();
+    Map<DataFlowMethod, Optional<DataFlowMethod>> expToResMap = exp.stream().collect(Collectors.toMap(Functions.identity(), e -> getEqualMethod(res, e)));
+    Optional<String> notFound =
+        expToResMap.entrySet().stream().filter(e -> !e.getValue().isPresent()).map(Map.Entry::getKey).map(dfm -> "no method found for " + dfm).findFirst();
+    if (!notFound.isPresent()) {
+      notFound = expToResMap.entrySet().stream().map(e -> assertMethodEqual(e.getKey(), e.getValue().get())).filter(Optional::isPresent).map(Optional::get)
+          .findFirst();
+    }
+    return notFound;
   }
 
   private Optional<String> assertMethodEqual(DataFlowMethod expMethod, DataFlowMethod equalMethod) {
     return assertNodesEqual(expMethod.getInputParameters(), equalMethod.getInputParameters());
   }
 
-  private DataFlowMethod getEqualMethod(Collection<DataFlowMethod> methods, DataFlowMethod lookup) {
-    return methods.stream().filter(m -> createMatcher(lookup).matches(m)).findFirst().get();
+  private Optional<DataFlowMethod> getEqualMethod(Collection<DataFlowMethod> methods, DataFlowMethod lookup) {
+    return methods.stream().filter(m -> createMatcher(lookup).matches(m)).findFirst();
   }
 
   private Matcher<DataFlowMethod> createMatcher(DataFlowMethod method) {

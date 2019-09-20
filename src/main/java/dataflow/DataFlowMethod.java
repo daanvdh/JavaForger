@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
@@ -156,6 +157,10 @@ public class DataFlowMethod {
 
   public void addChangedField(DataFlowNode node) {
     this.changedFields.add(node);
+  }
+
+  public void addChangedFields(DataFlowNode... fields) {
+    Stream.of(fields).forEach(this::addChangedField);
   }
 
   /**

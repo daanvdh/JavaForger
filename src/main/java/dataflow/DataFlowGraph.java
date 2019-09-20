@@ -22,19 +22,25 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.Node;
 
 /**
- * TODO javadoc
+ * Graph representing the data flow within a class. The {@link DataFlowNode}s represent variables. An {@link DataFlowEdge} goes from node a to b iff a
+ * influences the state of b. Conditional statements are not supported in the current implementation.
  *
  * @author Daan
  */
 public class DataFlowGraph {
 
+  /** This fields within the represented class */
   private List<DataFlowNode> fields = new ArrayList<>();
+  /** This Constructors within the represented class */
   private List<DataFlowMethod> constructors = new ArrayList<>();
+  /** This Methods within the represented class */
   private Map<Node, DataFlowMethod> methods = new HashMap<>();
+  /** All nodes defined within the class: fields, method/constructor parameters, method/constructor return values, method/constructor in-between variables. */
   private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
   public List<DataFlowNode> getFields() {
@@ -79,6 +85,10 @@ public class DataFlowGraph {
       throw new NullPointerException("The representedNode may not be null, this risks overriding existing fields.");
     }
     this.nodes.put(node.getRepresentedNode(), node);
+  }
+
+  public void addFields(DataFlowNode... fields) {
+    Stream.of(fields).forEach(this::addField);
   }
 
   public void addNodes(List<DataFlowNode> nodes) {
