@@ -36,6 +36,7 @@ public class ClassWithEverythingTest {
       a        );
     
     // TODO field has to be a new class FlowReceiverDefnition extends VariableDefinition
+    Assert.assertEquals("Unexpected s", a, sut.getS());
     
   }
 
