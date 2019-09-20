@@ -20,9 +20,9 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
 import dataflow.DataFlowGraph;
@@ -49,11 +49,9 @@ public class MethodFactory {
     MethodDefinition method = parseCallable(md);
     method.setType(md.getTypeAsString());
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
-
     if (dfg != null) {
       addChangedFields(method, dfg.getMethod(md));
     }
-
     return method;
   }
 
@@ -86,13 +84,14 @@ public class MethodFactory {
     List<FlowReceiverDefinition> changedFields = new ArrayList<>();
     for (DataFlowNode dfn : changedFieldsNodes) {
       Node javaParserNode = dfn.getRepresentedNode();
-      if (javaParserNode instanceof FieldDeclaration) {
+      if (javaParserNode instanceof VariableDeclarator) {
         List<DataFlowNode> receivedNodes = graphService.walkBackUntil(dfn, dataFlowMethod);
         List<String> receivedNames = receivedNodes.stream().map(DataFlowNode::getName).collect(Collectors.toList());
-        FlowReceiverDefinition receiver = FlowReceiverDefinition.builder().copy(fieldFactory.create(javaParserNode)).receivedValues(receivedNames).build();
+        VariableDefinition field = fieldFactory.createSingle((VariableDeclarator) javaParserNode);
+        FlowReceiverDefinition receiver = FlowReceiverDefinition.builder().copy(field).receivedValues(receivedNames).build();
         changedFields.add(receiver);
       } else {
-        System.err.println("The javaParserNode " + javaParserNode + " for dfn " + dfn + " was not a FieldDeclaration");
+        System.err.println("The javaParserNode " + javaParserNode + " for dfn " + dfn + " was not a VariableDeclarator");
       }
     }
     newMethod.setChangedFields(changedFields);

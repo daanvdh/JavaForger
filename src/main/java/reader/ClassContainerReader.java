@@ -93,7 +93,7 @@ public class ClassContainerReader {
       List<Node> childNodes = type.getChildNodes();
       for (Node node : childNodes) {
         if (node instanceof FieldDeclaration) {
-          fields.add(fieldFactory.create(node));
+          fields.addAll(fieldFactory.create(node));
         } else if (node instanceof MethodDeclaration) {
           MethodDefinition newMethod = methodFactory.createMethod(node, dfg);
           methods.add(newMethod);

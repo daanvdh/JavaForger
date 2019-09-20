@@ -10,15 +10,22 @@
  */
 package reader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.Expression;
 
 import templateInput.definition.VariableDefinition;
+import templateInput.definition.VariableDefinition.Builder;
 
 /**
  * Class for creating {@link VariableDefinition} from parsed fields.
@@ -26,20 +33,56 @@ import templateInput.definition.VariableDefinition;
  * @author Daan
  */
 public class FieldFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(FieldFactory.class);
 
   private ImportResolver importResolver = new ImportResolver();
 
-  public VariableDefinition create(Node node) {
-    FieldDeclaration fd = (FieldDeclaration) node;
+  /**
+   * Creates a {@link VariableDefinition} from a {@link FieldDeclaration} or a {@link VariableDeclarator} with {@link FieldDeclaration} as a parent. Will return
+   * multiple {@link VariableDefinition}s in case multiple fields where defined within a single {@link FieldDeclaration} (<code>int i,j;</code>).
+   *
+   * @param node The input {@link Node}.
+   * @return A {@link List} of {@link VariableDefinition} representing the input node.
+   */
+  public List<VariableDefinition> create(Node node) {
+    List<VariableDefinition> fields = new ArrayList<>();
+    VariableDefinition field = null;
+
+    if (node instanceof FieldDeclaration) {
+      FieldDeclaration fd = (FieldDeclaration) node;
+      VariableDefinition.Builder<?> fieldBuilder = createField(fd);
+      fd.getVariables().stream().map(VariableDeclarator::getNameAsString).map(fieldBuilder::withName).map(VariableDefinition.Builder::build)
+          .forEach(fields::add);
+    } else if (node instanceof VariableDeclarator) {
+      field = createSingle((VariableDeclarator) node);
+      fields.add(field);
+    }
+
+    return fields;
+  }
+
+  public VariableDefinition createSingle(VariableDeclarator vd) {
+    Optional<Node> parentNode = vd.getParentNode();
+    VariableDefinition.Builder<?> fieldBuilder;
+    if (parentNode.isPresent() && parentNode.get() instanceof FieldDeclaration) {
+      fieldBuilder = createField((FieldDeclaration) parentNode.get());
+    } else {
+      LOG.warn("VariableDeclarator {} did not have a valid parent, resulting VariableDefinition will only have a name. Parent was {} of type {}", vd,
+          parentNode.orElse(null), parentNode.map(Node::getClass).orElse(null));
+      fieldBuilder = VariableDefinition.builder();
+    }
+    return fieldBuilder.withName(vd.getNameAsString()).build();
+  }
+
+  private Builder<?> createField(FieldDeclaration fd) {
     Set<String> annotations = fd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     Optional<String> originalInit = depthFirstSearch(fd, Expression.class);
-    VariableDefinition variable = VariableDefinition.builder().withName(fd.getVariable(0).getName().asString()).withType(fd.getElementType().asString())
-        .withAnnotations(annotations).withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1))
-        .withAccessModifiers(accessModifiers).originalInit(originalInit.orElse(null)).build();
-
-    importResolver.resolveAndSetImport(fd.getElementType(), variable);
-    return variable;
+    List<String> imports = importResolver.resolveImport(fd.getElementType());
+    VariableDefinition.Builder<?> fieldBuilder = VariableDefinition.builder().withType(fd.getElementType().asString()).withAnnotations(annotations)
+        .withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1)).withAccessModifiers(accessModifiers)
+        .originalInit(originalInit.orElse(null)).withTypeImports(imports);
+    return fieldBuilder;
   }
 
   private Optional<String> depthFirstSearch(Node node, Class<Expression> claz) {

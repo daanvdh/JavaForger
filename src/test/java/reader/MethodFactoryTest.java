@@ -27,8 +27,8 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 
 import common.SymbolSolverSetup;
 import dataflow.DataFlowGraph;
@@ -69,11 +69,11 @@ public class MethodFactoryTest {
     DataFlowMethod methodDfn = setterDfg.getMethods().iterator().next();
     Mockito.when(dfg.getMethod(inputMethod)).thenReturn(methodDfn);
 
-    FieldDeclaration javaParserNode = new FieldDeclaration();
+    VariableDeclarator javaParserNode = new VariableDeclarator();
     setterDfg.getFields().get(0).setRepresentedNode(javaParserNode);
     String name = "unique";
     VariableDefinition fieldVariDef = VariableDefinition.builder().withName(name).build();
-    Mockito.when(fieldFactory.create(javaParserNode)).thenReturn(fieldVariDef);
+    Mockito.when(fieldFactory.createSingle(javaParserNode)).thenReturn(fieldVariDef);
 
     MethodDefinition method = methodFactory.createMethod(inputMethod, dfg);
 

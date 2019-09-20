@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import templateInput.StringConverter;
@@ -118,7 +119,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
   }
 
   public String getGetter() {
-    String prefix = this.type.toString().equals("boolean") ? "is" : "get";
+    String prefix = Objects.equals(this.type == null ? "null" : this.type.toString(), "boolean") ? "is" : "get";
     return prefix + getName().getUpperFirst();
   }
 
@@ -236,6 +237,11 @@ public class InitializedTypeDefinition extends TypeDefinition {
 
     public T withTypeImports(String... imports) {
       this.typeImports.addAll(Arrays.asList(imports));
+      return (T) this;
+    }
+
+    public T withTypeImports(List<String> imports) {
+      this.typeImports.addAll(imports);
       return (T) this;
     }
 
