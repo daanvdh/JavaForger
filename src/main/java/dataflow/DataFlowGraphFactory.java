@@ -24,6 +24,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -46,15 +49,15 @@ import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParse
  * @author Daan
  */
 public class DataFlowGraphFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(DataFlowGraphFactory.class);
 
   /**
    * Creates a {@link DataFlowGraph} for the given {@link CompilationUnit}.
    *
    * @param cu The {@link CompilationUnit} containing the parsed class.
    * @return A {@link DataFlowGraph}
-   * @throws DataFlowException If types inside the {@link CompilationUnit} are not supported yet.
    */
-  public DataFlowGraph create(CompilationUnit cu) throws DataFlowException {
+  public DataFlowGraph create(CompilationUnit cu) {
     DataFlowGraph graph = new DataFlowGraph();
     executeForEachChildNode(cu, (node) -> this.addField(graph, node));
     executeForEachChildNode(cu, (node) -> this.createMethod(graph, node));
@@ -143,36 +146,39 @@ public class DataFlowGraphFactory {
     Expression assignedJP = expr.getTarget();
     Node assignerJP = expr.getValue();
     // This is the original field
-    DataFlowNode assignedDF = getDataFlowNode(graph, overwriddenValues, method, assignedJP);
-    DataFlowNode assignerDF = getDataFlowNode(graph, overwriddenValues, method, assignerJP);
+    Optional<DataFlowNode> assignedDF = getDataFlowNode(graph, overwriddenValues, method, assignedJP);
+    Optional<DataFlowNode> assignerDF = getDataFlowNode(graph, overwriddenValues, method, assignerJP);
+    if (assignedDF.isPresent() && assignerDF.isPresent()) {
+      // This is the version of the field that will receive the assigner edge.
+      // If this is the last assignment to the field, an edge to the original field will be created.
+      DataFlowNode flowNode = new DataFlowNode(assignedJP);
+      if (isField(assignedDF.get())) {
+        overwriddenValues.put(assignedDF.get().getRepresentedNode(), flowNode);
+      }
 
-    // This is the version of the field that will receive the assigner edge.
-    // If this is the last assignment to the field, an edge to the original field will be created.
-    DataFlowNode flowNode = new DataFlowNode(assignedJP);
-    if (isField(assignedDF)) {
-      overwriddenValues.put(assignedDF.getRepresentedNode(), flowNode);
+      flowNode.setName(method.getName() + "." + assignedDF.get().getName());
+
+      assignerDF.get().addEdgeTo(flowNode);
     }
-
-    flowNode.setName(method.getName() + "." + assignedDF.getName());
-
-    assignerDF.addEdgeTo(flowNode);
   }
 
-  // TODO should not throw exceptions, return optional instead and log warnings.
-  private DataFlowNode getDataFlowNode(DataFlowGraph graph, Map<Node, DataFlowNode> overwriddenValues, DataFlowMethod method, Node node) {
-    Node resolvedNode = getJavaParserNode(method, node);
-    DataFlowNode flowNode = overwriddenValues.containsKey(resolvedNode) ? overwriddenValues.get(resolvedNode) : graph.getNode(resolvedNode);
-
+  private Optional<DataFlowNode> getDataFlowNode(DataFlowGraph graph, Map<Node, DataFlowNode> overwriddenValues, DataFlowMethod method, Node node) {
+    Optional<Node> optionalResolvedNode = getJavaParserNode(method, node);
+    DataFlowNode flowNode = null;
+    if (optionalResolvedNode.isPresent()) {
+      Node resolvedNode = optionalResolvedNode.orElse(null);
+      flowNode = overwriddenValues.containsKey(resolvedNode) ? overwriddenValues.get(resolvedNode) : graph.getNode(resolvedNode);
+    }
     if (flowNode == null) {
-      throw new DataFlowException("In method %s, did not resolve the type for assignedNode for expression %s of type %s", method.getName(), node,
-          node.getClass());
+      LOG.warn("In method {}, did not resolve the type for assignedNode for expression {} of type {}", method.getName(), node, node.getClass());
     }
-    return flowNode;
+    return Optional.ofNullable(flowNode);
   }
 
-  private Node getJavaParserNode(DataFlowMethod method, Node node) {
+  private Optional<Node> getJavaParserNode(DataFlowMethod method, Node node) {
     if (!Resolvable.class.isAssignableFrom(node.getClass())) {
-      throw new DataFlowException("In method %s, node is not Resolvable for expression %s of type %s", method.getName(), node, node.getClass());
+      LOG.warn("In method {}, node is not Resolvable for expression {} of type {}", method.getName(), node, node.getClass());
+      return Optional.empty();
     }
 
     Object resolved = ((Resolvable<?>) node).resolve();
@@ -182,7 +188,7 @@ public class DataFlowGraphFactory {
     } else if (resolved instanceof JavaParserParameterDeclaration) {
       resolvedNode = ((JavaParserParameterDeclaration) resolved).getWrappedNode();
     }
-    return resolvedNode;
+    return Optional.ofNullable(resolvedNode);
   }
 
   private boolean isField(DataFlowNode assignedDF) {

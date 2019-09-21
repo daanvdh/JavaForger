@@ -58,12 +58,7 @@ public class ClassContainerReader {
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);
     DataFlowGraph dfg = null;
-    try {
-      dfg = dfgFactory.create(cu);
-    } catch (DataFlowException e) {
-      // Continue the normal flow until the DataFlowGraph is fully implemented
-      e.printStackTrace();
-    }
+    dfg = dfgFactory.create(cu);
     ClassContainer claz = readCompilationUnit(cu, dfg);
     return claz;
   }
