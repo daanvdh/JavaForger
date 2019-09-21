@@ -33,8 +33,6 @@ import org.junit.Test;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.common.base.Functions;
 
 import common.SymbolSolverSetup;
@@ -115,28 +113,12 @@ public class DataFlowGraphFactoryTest {
             "  }\n" + //
             "}"; //
 
-    // NodeBuilder inBetween = NodeBuilder.ofInBetween("setS.s");
-    // inBetween.to( //
-    // NodeBuilder.ofInBetween("setS.t").to(NodeBuilder.ofField("t")), //
-    // NodeBuilder.ofField("s") //
-    // ); //
-    // DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to(inBetween)).build();
-    DataFlowGraph expected = new DataFlowGraph();
-    DataFlowNode fieldS = NodeBuilder.ofField("s").build();
-    DataFlowNode fieldT = NodeBuilder.ofField("t").build();
-    DataFlowNode paramA = NodeBuilder.ofParameter("setS", "a").build();
-    DataFlowNode inBetweenS = NodeBuilder.ofInBetween("setS.s").build();
-    DataFlowNode inBetweenT = NodeBuilder.ofInBetween("setS.t").build();
-
-    paramA.addEdgeTo(inBetweenS);
-    inBetweenS.addEdgeTo(inBetweenT);
-    inBetweenS.addEdgeTo(fieldS);
-    inBetweenT.addEdgeTo(fieldT);
-
-    expected.addFields(fieldS, fieldT);
-    DataFlowMethod method = new DataFlowMethod(expected, new VariableDeclarator(new ClassOrInterfaceType(), "setS"), "setS");
-    method.addChangedFields(fieldS, fieldT);
-    method.addParameter(paramA);
+    NodeBuilder inBetween = NodeBuilder.ofInBetween("setS.s");
+    inBetween.to( //
+        NodeBuilder.ofField("s"), //
+        NodeBuilder.ofInBetween("setS.t").to(NodeBuilder.ofField("t")).getRoot() //
+    ); //
+    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to(inBetween)).build();
 
     executeAndVerify(setter, expected);
   }

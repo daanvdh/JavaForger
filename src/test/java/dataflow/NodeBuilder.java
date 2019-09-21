@@ -85,6 +85,7 @@ public class NodeBuilder {
 
   public NodeBuilder to(NodeBuilder next) {
     out.add(next);
+    // TODO don't think this is correct, it should be next.addRoots(this.roots)
     next.addRoots(this);
     return next;
   }
@@ -99,6 +100,10 @@ public class NodeBuilder {
 
   public List<NodeBuilder> getRoots() {
     return this.roots.isEmpty() ? Collections.singletonList(this) : roots;
+  }
+
+  public NodeBuilder getRoot() {
+    return this.roots.isEmpty() ? this : roots.get(0);
   }
 
   public String getMethod() {
@@ -144,4 +149,5 @@ public class NodeBuilder {
   public String toString() {
     return getName();
   }
+
 }
