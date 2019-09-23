@@ -42,7 +42,10 @@ public class DataFlowMethod {
   private Node representedNode;
   /** The graph which this method is part of */
   private DataFlowGraph graph;
-  /** The return value of this method, null if this is a void method */
+  /**
+   * The return value of this method, null if this is a void method. Note that a method can have multiple return statements, we model as if a method only has a
+   * single return type with as Node the Node of the whole method. Then all real return statements have an edge to the single return statement.
+   */
   private DataFlowNode returnNode;
   /** The input parameters of the method */
   private List<DataFlowNode> inputParameters = new ArrayList<>();

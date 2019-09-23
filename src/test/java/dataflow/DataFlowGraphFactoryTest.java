@@ -123,6 +123,38 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(setter, expected);
   }
 
+  @Test
+  public void testCreate_return() {
+    String claz = //
+        "public class Claz {\n" + //
+            "  public int called(int a) {\n" + //
+            "    return a;\n" + //
+            "  }\n" + //
+            "}"; //
+
+    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("called", "a").to(NodeBuilder.ofReturn("called"))).build();
+
+    executeAndVerify(claz, expected);
+  }
+
+  @Test
+  public void testCreate_methodCallingMethod() {
+    String claz = //
+        "public class Claz {\n" + //
+            "  public int caller(int a) {\n" + //
+            "    return called(a);\n" + //
+            "  }\n" + //
+            "  public int called(int b) {\n" + //
+            "    return b;\n" + //
+            "  }\n" + //
+            "}"; //
+
+    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("caller", "a").to(NodeBuilder.ofParameter("called", "b"))
+        .to("called.return(line 6,col 5)").to(NodeBuilder.ofReturn("called")).to("caller.return(line 3,col 5)").to(NodeBuilder.ofReturn("caller"))).build();
+
+    executeAndVerify(claz, expected);
+  }
+
   private void executeAndVerify(String setter, DataFlowGraph expected) {
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.create(cu);

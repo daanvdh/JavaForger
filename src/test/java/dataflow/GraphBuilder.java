@@ -27,7 +27,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 /**
- * Builder for {@link DataFlowGraph}, only to be used for test puposes.
+ * Builder for {@link DataFlowGraph}, only to be used for test purposes.
  *
  * @author User
  */
@@ -93,6 +93,10 @@ public class GraphBuilder {
       // TODO if we want to influence the order of the parameters,
       // we need to create a NodeBuilder.ofParameter method with a parameter index as input and handle it here.
       method.addParameter(node);
+      break;
+    case RETURN:
+      method = getOrCreateMethod(graph, methods, nodeBuilder.getMethod());
+      method.setReturnNode(node);
       break;
     case IN_BETWEEN:
     default:

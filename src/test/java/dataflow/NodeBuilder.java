@@ -34,7 +34,8 @@ public class NodeBuilder {
   protected enum NodeType {
     IN_BETWEEN,
     METHOD_PARAMETER,
-    CLASS_FIELD
+    CLASS_FIELD,
+    RETURN
   }
 
   private String method;
@@ -69,6 +70,12 @@ public class NodeBuilder {
 
   public static NodeBuilder ofInBetween(String name) {
     NodeBuilder builder = new NodeBuilder(name, NodeType.IN_BETWEEN);
+    return builder;
+  }
+
+  public static NodeBuilder ofReturn(String methodName) {
+    NodeBuilder builder = new NodeBuilder(methodName + ".return", NodeType.RETURN);
+    builder.method = methodName;
     return builder;
   }
 
