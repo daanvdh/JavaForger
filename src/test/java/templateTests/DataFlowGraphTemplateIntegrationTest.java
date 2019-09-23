@@ -24,14 +24,16 @@ import org.junit.Test;
 
 import common.AbstractFileChangingTest;
 import configuration.DefaultConfigurations;
+import configuration.JavaForgerConfiguration;
+import dataflow.DataFlowGraph;
 import generator.JavaForger;
 
 /**
- * Integration test for StateFullClassTest.javat
+ * Integration test for templates that require a {@link DataFlowGraph} to be constructed, such as stateFullClassTest.javat
  *
  * @author Daan
  */
-public class StateFullClassTestTemplateIntegrationTest extends AbstractFileChangingTest {
+public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTest {
 
   private static final String EXPECTED_RESULTS_PATH = "src/test/resources/stateFullClassTest/";
 
@@ -46,12 +48,26 @@ public class StateFullClassTestTemplateIntegrationTest extends AbstractFileChang
             "}"; //
 
     String expectedClass = "verify-stateFullClassTest.java";
-    executeAndVerify(claz, expectedClass);
+    executeAndVerify(DefaultConfigurations.forStateFullClassTest(), claz, expectedClass);
   }
 
-  private void executeAndVerify(String claz, String expectedClass) throws IOException {
+  @Test
+  public void testStatelessClassTest_facade() throws IOException {
+    String claz = //
+        "public class Claz {\n" + //
+            "  StringBuilder sb = new StringBuilder(); \n" + //
+            "  public StringBuilder setS(String a) {\n" + //
+            "    return sb.append(a);\n" + //
+            "  }\n" + //
+            "}"; //
+
+    String expectedClass = "verify-statelessClassTest-facade.java";
+    executeAndVerify(DefaultConfigurations.forStatelessClassTest(), claz, expectedClass);
+  }
+
+  private void executeAndVerify(JavaForgerConfiguration config, String claz, String expectedClass) throws IOException {
     stringToFile(INPUT_CLASS, claz);
-    JavaForger.execute(DefaultConfigurations.forStateFullClassTest(), INPUT_CLASS);
+    JavaForger.execute(config, INPUT_CLASS);
     verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_TEST_CLASS);
   }
 
@@ -68,7 +84,7 @@ public class StateFullClassTestTemplateIntegrationTest extends AbstractFileChang
     // This statement prevents the main method from accidently being executed.
     Assert.fail();
 
-    StateFullClassTestTemplateIntegrationTest test = new StateFullClassTestTemplateIntegrationTest() {
+    DataFlowGraphTemplateIntegrationTest test = new DataFlowGraphTemplateIntegrationTest() {
       @Override
       protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
         System.out.println("Copying:\n" + actualPath + " to:\n" + expectedPath);

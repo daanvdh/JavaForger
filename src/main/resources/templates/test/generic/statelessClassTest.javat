@@ -1,0 +1,51 @@
+// TODO none of the below shared stuff is under JavaForger
+<#--
+<#include "shared/header.javat">
+<#include "shared/package.javat">
+<#include "/test/common/imports.javat">
+-->
+
+import org.junit.Assert;
+import org.junit.Test;
+  
+<#list fields as field>
+  @Mock
+  private ${field.type} ${field.name}; 
+</#list>
+
+  @InjectMocks
+  private ${class.type} sut = new ${class.type}(); 
+
+<#list methods as method>
+  @Test
+  public void test${method.name.upperFirst}() {
+
+<#list method.parameters as parameter>
+    ${parameter.type} ${parameter.name} = ${parameter.init1}; 
+</#list>
+
+// TODO these are all the starting nodes inside a method, e.g. "23" is a starting node in "countService.countUntil(23)". 
+<#list method.definedVariables as var>
+    ${var.type} ${var.name} = ${var.defaultInit}; 
+</#list>
+
+// TODO inputMethods is currently never assigned. 
+<#list method.inputMethods as input>
+    // TODO the returnSignature is the name of the variable to which the return was assigned. 
+    ${input.type} ${input.returnSignature} = ${input.init1}
+    // TODO the callSignature is the complete call e.g. "myProductService.orderProduct(product, amount)"
+    Mockito.when(${input.callSignature}).thenReturn(${input.returnSignature});
+</#list>
+
+    ${method.type} ${method.returnSignature} = sut.${method.name}(
+<#list method.parameters as parameter>
+      ${parameter.name}<#sep>, 
+</#list>
+        );
+    
+    // TODO The expectedReturn is the name of the variable that was expected. 
+    // This should already have been defined earlier in the template by values returned by mocks, variables defined within the method or input parameters. 
+    Assert.assertEquals("Unexpected ${method.name}", ${method.expectedReturn}, ${method.returnSignature});
+    
+  }
+</#list>
