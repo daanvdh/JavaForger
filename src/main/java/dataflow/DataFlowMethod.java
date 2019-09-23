@@ -57,6 +57,8 @@ public class DataFlowMethod {
   private Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
   /** The methods that are called from within this method for which the return value is either void or ignored */
   private List<DataFlowMethod> outputMethods = new ArrayList<>();
+  /** All nodes defined within this method */
+  private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
   public DataFlowMethod(String name, Node representedNode) {
     this.name = name;
@@ -152,6 +154,28 @@ public class DataFlowMethod {
 
   public void setOutputMethods(List<DataFlowMethod> outputMethods) {
     this.outputMethods = outputMethods;
+  }
+
+  public Collection<DataFlowNode> getNodes() {
+    return nodes.values();
+  }
+
+  public void setNodes(Map<Node, DataFlowNode> nodes) {
+    this.nodes = nodes;
+  }
+
+  public void addNode(DataFlowNode created) {
+    this.nodes.put(created.getRepresentedNode(), created);
+  }
+
+  public DataFlowNode addNode(String name, Node n) {
+    DataFlowNode dfn = new DataFlowNode(name, n);
+    this.nodes.put(n, dfn);
+    return dfn;
+  }
+
+  public DataFlowNode getNode(Node node) {
+    return nodes.get(node);
   }
 
   public void addParameter(DataFlowNode node) {

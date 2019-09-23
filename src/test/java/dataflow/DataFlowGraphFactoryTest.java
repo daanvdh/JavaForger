@@ -155,6 +155,22 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(claz, expected);
   }
 
+  @Test
+  public void testCreate_createVar() {
+    String claz = //
+        "public class Claz {\n" + //
+            "  public int met(int a) {\n" + //
+            "    int b = a;\n" + //
+            "    return b;\n" + //
+            "  }\n" + //
+            "}"; //
+
+    DataFlowGraph expected =
+        GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("met", "a").to("b").to("met.return(line 4,col 5)").to(NodeBuilder.ofReturn("met"))).build();
+
+    executeAndVerify(claz, expected);
+  }
+
   private void executeAndVerify(String setter, DataFlowGraph expected) {
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.create(cu);
