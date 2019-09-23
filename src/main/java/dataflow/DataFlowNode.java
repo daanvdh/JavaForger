@@ -26,6 +26,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 
 /**
@@ -44,6 +45,11 @@ public class DataFlowNode {
   private List<DataFlowEdge> in = new ArrayList<>();
   /** The {@link DataFlowEdge}s to {@link DataFlowNode}s who's state is influenced by this node */
   private List<DataFlowEdge> out = new ArrayList<>();
+  /**
+   * The type of the represented node. This is needed in the case that we need to create a {@link DataFlowNode} without a representedNode, for instance when the
+   * {@link CompilationUnit} of a dependend graph is not available while constructing a {@link DataFlowGraph}.
+   */
+  private String type;
 
   public DataFlowNode(String name, Node representedNode) {
     this.name = name;
@@ -60,6 +66,7 @@ public class DataFlowNode {
     this.in.addAll(builder.in);
     this.out.clear();
     this.out.addAll(builder.out);
+    this.setType(builder.type);
   }
 
   public Node getRepresentedNode() {
@@ -98,6 +105,14 @@ public class DataFlowNode {
     DataFlowEdge edge = new DataFlowEdge(this, to);
     this.addOutgoing(edge);
     to.addIncoming(edge);
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 
   @Override
@@ -201,6 +216,7 @@ public class DataFlowNode {
     private List<DataFlowEdge> in = new ArrayList<>();
     private List<DataFlowEdge> out = new ArrayList<>();
     private String name;
+    private String type;
 
     private Builder() {
       // Builder should only be constructed via the parent class
@@ -228,9 +244,15 @@ public class DataFlowNode {
       return this;
     }
 
+    public Builder type(String type) {
+      this.type = type;
+      return this;
+    }
+
     public DataFlowNode build() {
       return new DataFlowNode(this);
     }
+
   }
 
 }

@@ -24,7 +24,7 @@ import org.junit.Test;
     ${parameter.type} ${parameter.name} = ${parameter.init1}; 
 </#list>
 
-// TODO these are all the starting nodes inside a method, e.g. "23" is a starting node in "countService.countUntil(23)". 
+// TODO these are all the starting nodes inside a method, e.g. "23" is a starting node in "countService.countUntil(23);". 
 <#list method.definedVariables as var>
     ${var.type} ${var.name} = ${var.defaultInit}; 
 </#list>

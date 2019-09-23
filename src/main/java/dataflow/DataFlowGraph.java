@@ -27,21 +27,48 @@ import java.util.stream.Stream;
 import com.github.javaparser.ast.Node;
 
 /**
- * Graph representing the data flow within a class. The {@link DataFlowNode}s represent variables. An {@link DataFlowEdge} goes from node a to b iff a
+ * Graph representing the data flow within a single class. The {@link DataFlowNode}s represent variables. An {@link DataFlowEdge} goes from node a to b iff a
  * influences the state of b. Conditional statements are not supported in the current implementation.
  *
  * @author Daan
  */
 public class DataFlowGraph {
 
+  /** The name of the class that this {@link DataFlowGraph} represents. */
+  private String name;
+  /** The package of the class that this {@link DataFlowGraph} represents. */
+  private String classPackage;
   /** This fields within the represented class */
   private List<DataFlowNode> fields = new ArrayList<>();
   /** This Constructors within the represented class */
   private List<DataFlowMethod> constructors = new ArrayList<>();
   /** This Methods within the represented class */
   private Map<Node, DataFlowMethod> methods = new HashMap<>();
-  /** All nodes defined within the class: fields, method/constructor parameters, method/constructor return values, method/constructor in-between variables. */
+  /**
+   * All nodes defined within the class: fields and method/constructor parameters and return values. Does not contain method/constructor in-between variables.
+   */
   private Map<Node, DataFlowNode> nodes = new HashMap<>();
+  /**
+   * List containing all external DataFlowGraphs that this {@link DataFlowGraph} depends on. The contained dfg's are not complete graphs they only contain the
+   * signatures of methods called from this class. The keys are the package and class name concatenated with a dot.
+   */
+  private Map<String, DataFlowGraph> dependedGraphs = new HashMap<>();
+
+  public DataFlowGraph() {
+    // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
+  }
+
+  private DataFlowGraph(Builder builder) {
+    this.name = builder.name == null ? this.name : builder.name;
+    this.classPackage = builder.classPackage == null ? this.classPackage : builder.classPackage;
+    this.fields.clear();
+    this.fields.addAll(builder.fields);
+    this.constructors.clear();
+    this.constructors.addAll(builder.constructors);
+    this.methods = builder.methods == null ? this.methods : builder.methods;
+    this.nodes = builder.nodes == null ? this.nodes : builder.nodes;
+    this.dependedGraphs = builder.dependedGraphs == null ? this.dependedGraphs : builder.dependedGraphs;
+  }
 
   public List<DataFlowNode> getFields() {
     return fields;
@@ -70,7 +97,7 @@ public class DataFlowGraph {
 
   public void addMethod(DataFlowMethod method) {
     if (method.getRepresentedNode() == null) {
-      throw new NullPointerException("The representedNode may not be null, this risks overriding existing fields.");
+      throw new NullPointerException("The representedNode may not be null, this risks overriding existing methods.");
     }
     this.methods.put(method.getRepresentedNode(), method);
   }
@@ -103,6 +130,42 @@ public class DataFlowGraph {
     return nodes.get(node);
   }
 
+  public Map<Node, DataFlowNode> getNodes() {
+    return this.nodes;
+  }
+
+  public Map<String, DataFlowGraph> getDependedGraphs() {
+    return dependedGraphs;
+  }
+
+  public DataFlowGraph getDependedGraph(String path) {
+    return this.dependedGraphs.get(path);
+  }
+
+  public void setDependedGraphs(Map<String, DataFlowGraph> dependedGraphs) {
+    this.dependedGraphs = dependedGraphs;
+  }
+
+  public void addDependedGraph(DataFlowGraph graph) {
+    this.dependedGraphs.put(graph.getClassPackage() + "." + graph.getName(), graph);
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getClassPackage() {
+    return classPackage;
+  }
+
+  public void setClassPackage(String classPackage) {
+    this.classPackage = classPackage;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -119,6 +182,73 @@ public class DataFlowGraph {
     }
     sb.append("\n}");
     return sb.toString();
+  }
+
+  /**
+   * Creates builder to build {@link DataFlowGraph}.
+   *
+   * @return created builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder to build {@link DataFlowGraph}.
+   */
+  public static final class Builder {
+    private String name;
+    private String classPackage;
+    private List<DataFlowNode> fields = new ArrayList<>();
+    private List<DataFlowMethod> constructors = new ArrayList<>();
+    private Map<Node, DataFlowMethod> methods;
+    private Map<Node, DataFlowNode> nodes;
+    private Map<String, DataFlowGraph> dependedGraphs;
+
+    private Builder() {
+      // Builder should only be constructed via the parent class
+    }
+
+    public Builder name(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public Builder classPackage(String classPackage) {
+      this.classPackage = classPackage;
+      return this;
+    }
+
+    public Builder fields(List<DataFlowNode> fields) {
+      this.fields.clear();
+      this.fields.addAll(fields);
+      return this;
+    }
+
+    public Builder constructors(List<DataFlowMethod> constructors) {
+      this.constructors.clear();
+      this.constructors.addAll(constructors);
+      return this;
+    }
+
+    public Builder methods(Map<Node, DataFlowMethod> methods) {
+      this.methods = methods;
+      return this;
+    }
+
+    public Builder nodes(Map<Node, DataFlowNode> nodes) {
+      this.nodes = nodes;
+      return this;
+    }
+
+    public Builder dependedGraphs(Map<String, DataFlowGraph> dependedGraphs) {
+      this.dependedGraphs = dependedGraphs;
+      return this;
+    }
+
+    public DataFlowGraph build() {
+      return new DataFlowGraph(this);
+    }
   }
 
 }

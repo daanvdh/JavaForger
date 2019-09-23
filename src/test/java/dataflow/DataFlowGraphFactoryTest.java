@@ -171,6 +171,46 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(claz, expected);
   }
 
+  @Test
+  public void testCreate_inputMethods() {
+    String claz = //
+        "public class Claz {\n" + //
+            "  StringBuilder sb = new StringBuilder(); \n" + //
+            "  public StringBuilder met(String a) {\n" + //
+            "    return sb.append(a);\n" + //
+            "  }\n" + //
+            "}"; //
+
+    DataFlowGraph expected = GraphBuilder.withStartingNodes( //
+        NodeBuilder.ofField("sb"), //
+        NodeBuilder.ofParameter("met", "a").to("b").to("met.return(line 4,col 5)").to(NodeBuilder.ofReturn("met")) //
+    ).build();
+
+    executeAndVerify(claz, expected);
+
+    Assert.fail("We do not check the input methods yet");
+  }
+
+  @Test
+  public void testCreate_outputMethods() {
+    String claz = //
+        "public class Claz {\n" + //
+            "  StringBuilder sb = new StringBuilder(); \n" + //
+            "  public void met(String a) {\n" + //
+            "    sb.append(a);\n" + //
+            "  }\n" + //
+            "}"; //
+
+    DataFlowGraph expected = GraphBuilder.withStartingNodes( //
+        NodeBuilder.ofField("sb"), //
+        NodeBuilder.ofParameter("met", "a").to("sb.append") //
+    ).build();
+
+    executeAndVerify(claz, expected);
+
+    Assert.fail("We do not check the output methods yet");
+  }
+
   private void executeAndVerify(String setter, DataFlowGraph expected) {
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.create(cu);
