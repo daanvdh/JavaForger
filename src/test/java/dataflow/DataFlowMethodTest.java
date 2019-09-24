@@ -33,7 +33,8 @@ public class DataFlowMethodTest {
   private static final List<DataFlowNode> CHANGED_FIELDS = Collections.singletonList(DataFlowNode.builder().name("a").build());
   private static final Map<DataFlowNode, DataFlowMethod> INPUT_METHODS =
       Collections.singletonMap(DataFlowNode.builder().name("g").build(), DataFlowMethod.builder().name("f").build());
-  private static final List<DataFlowMethod> OUTPUT_METHODS = Collections.singletonList(DataFlowMethod.builder().name("e").build());
+  private static final Map<DataFlowNode, DataFlowMethod> OUTPUT_METHODS =
+      Collections.singletonMap(DataFlowNode.builder().name("e").build(), DataFlowMethod.builder().name("q").build());
   private static final String NAME = "a";
   private static final Node REPRESENTED_NODE = new FieldDeclaration();
   private static final DataFlowNode RETURN_NODE = DataFlowNode.builder().name("d").build();
@@ -57,7 +58,7 @@ public class DataFlowMethodTest {
     Assert.assertEquals("Unexpected inputFields", INPUT_FIELDS, dataFlowMethod.getInputFields());
     Assert.assertEquals("Unexpected changedFields", CHANGED_FIELDS, dataFlowMethod.getChangedFields());
     Assert.assertThat(dataFlowMethod.getInputMethods(), org.hamcrest.Matchers.containsInAnyOrder(INPUT_METHODS.values().iterator().next()));
-    Assert.assertEquals("Unexpected outputMethods", OUTPUT_METHODS, dataFlowMethod.getOutputMethods());
+    Assert.assertThat(dataFlowMethod.getOutputMethods(), org.hamcrest.Matchers.containsInAnyOrder(OUTPUT_METHODS.values().iterator().next()));
   }
 
   @Test
@@ -77,7 +78,7 @@ public class DataFlowMethodTest {
     verifyHashCode_Different(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyHashCode_Different(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyHashCode_Different(DataFlowMethod.Builder::inputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
-    verifyHashCode_Different(DataFlowMethod.Builder::outputMethods, Collections.singletonList(DataFlowMethod.builder().build()));
+    verifyHashCode_Different(DataFlowMethod.Builder::outputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
   }
 
   @Test
@@ -97,7 +98,7 @@ public class DataFlowMethodTest {
     verifyEqualsDifferent(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyEqualsDifferent(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyEqualsDifferent(DataFlowMethod.Builder::inputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
-    verifyEqualsDifferent(DataFlowMethod.Builder::outputMethods, Collections.singletonList(DataFlowMethod.builder().build()));
+    verifyEqualsDifferent(DataFlowMethod.Builder::outputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
   }
 
   private DataFlowMethod.Builder createAndFillBuilder() {

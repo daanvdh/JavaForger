@@ -56,7 +56,7 @@ public class DataFlowMethod {
   /** The methods that are called from within this method for which the return value is read. Key is the return value, value is the method */
   private Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
   /** The methods that are called from within this method for which the return value is either void or ignored */
-  private List<DataFlowMethod> outputMethods = new ArrayList<>();
+  private Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
   /** All nodes defined within this method */
   private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
@@ -83,7 +83,7 @@ public class DataFlowMethod {
     this.inputMethods.clear();
     this.inputMethods.putAll(builder.inputMethods);
     this.outputMethods.clear();
-    this.outputMethods.addAll(builder.outputMethods);
+    this.outputMethods.putAll(builder.outputMethods);
     this.graph = builder.graph;
   }
 
@@ -145,15 +145,22 @@ public class DataFlowMethod {
   }
 
   public void addInputMethods(List<DataFlowMethod> inputMethods) {
-
-    inputMethods.forEach(m -> this.inputMethods.put(m.getReturnNode(), m));
+    inputMethods.forEach(this::addInputMethod);
   }
 
-  public List<DataFlowMethod> getOutputMethods() {
-    return outputMethods;
+  public void addInputMethod(DataFlowMethod m) {
+    this.inputMethods.put(m.getReturnNode(), m);
   }
 
-  public void setOutputMethods(List<DataFlowMethod> outputMethods) {
+  public void addOutputMethod(DataFlowMethod m) {
+    this.outputMethods.put(m.getReturnNode(), m);
+  }
+
+  public Collection<DataFlowMethod> getOutputMethods() {
+    return outputMethods.values();
+  }
+
+  public void setOutputMethods(Map<DataFlowNode, DataFlowMethod> outputMethods) {
     this.outputMethods = outputMethods;
   }
 
@@ -229,7 +236,7 @@ public class DataFlowMethod {
   public List<DataFlowMethod> getCalledMethods() {
     List<DataFlowMethod> methods = new ArrayList<>();
     methods.addAll(inputMethods.values());
-    methods.addAll(outputMethods);
+    methods.addAll(outputMethods.values());
     return methods;
   }
 
@@ -288,7 +295,7 @@ public class DataFlowMethod {
     protected List<DataFlowNode> inputFields = new ArrayList<>();
     protected List<DataFlowNode> changedFields = new ArrayList<>();
     protected Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
-    protected List<DataFlowMethod> outputMethods = new ArrayList<>();
+    protected Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
     protected String name;
     protected Node representedNode;
     private DataFlowNode returnNode;
@@ -337,9 +344,9 @@ public class DataFlowMethod {
       return this;
     }
 
-    public Builder outputMethods(List<DataFlowMethod> outputMethods) {
+    public Builder outputMethods(Map<DataFlowNode, DataFlowMethod> outputMethods) {
       this.outputMethods.clear();
-      this.outputMethods.addAll(outputMethods);
+      this.outputMethods.putAll(outputMethods);
       return this;
     }
 
