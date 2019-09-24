@@ -84,6 +84,7 @@ public class DataFlowMethod {
     this.inputMethods.putAll(builder.inputMethods);
     this.outputMethods.clear();
     this.outputMethods.addAll(builder.outputMethods);
+    this.graph = builder.graph;
   }
 
   public String getName() {
@@ -116,7 +117,7 @@ public class DataFlowMethod {
 
   public void setInputParameters(List<DataFlowNode> inputParameters) {
     this.inputParameters = inputParameters;
-    this.graph.addNodes(inputParameters);
+    this.getGraph().addNodes(inputParameters);
   }
 
   public List<DataFlowNode> getInputFields() {
@@ -154,6 +155,14 @@ public class DataFlowMethod {
 
   public void setOutputMethods(List<DataFlowMethod> outputMethods) {
     this.outputMethods = outputMethods;
+  }
+
+  public DataFlowGraph getGraph() {
+    return graph;
+  }
+
+  public void setGraph(DataFlowGraph graph) {
+    this.graph = graph;
   }
 
   public Collection<DataFlowNode> getNodes() {
@@ -266,7 +275,7 @@ public class DataFlowMethod {
       DataFlowMethod other = (DataFlowMethod) obj;
       equals = new EqualsBuilder().append(name, other.name).append(representedNode, other.representedNode).append(returnNode, other.returnNode)
           .append(inputParameters, other.inputParameters).append(inputFields, other.inputFields).append(changedFields, other.changedFields)
-          .append(inputMethods, other.inputMethods).append(outputMethods, other.outputMethods).isEquals();
+          .append(inputMethods, other.inputMethods).append(outputMethods, other.outputMethods).append(graph, other.graph).isEquals();
     }
     return equals;
   }
@@ -283,6 +292,7 @@ public class DataFlowMethod {
     protected String name;
     protected Node representedNode;
     private DataFlowNode returnNode;
+    private DataFlowGraph graph;
 
     protected Builder() {
       // Builder should only be constructed via the parent class
@@ -330,6 +340,11 @@ public class DataFlowMethod {
     public Builder outputMethods(List<DataFlowMethod> outputMethods) {
       this.outputMethods.clear();
       this.outputMethods.addAll(outputMethods);
+      return this;
+    }
+
+    public Builder graph(DataFlowGraph graph) {
+      this.graph = graph;
       return this;
     }
 

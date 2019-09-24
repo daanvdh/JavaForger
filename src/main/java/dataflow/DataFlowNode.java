@@ -127,8 +127,8 @@ public class DataFlowNode {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
       DataFlowNode other = (DataFlowNode) obj;
-      equals =
-          new EqualsBuilder().append(name, other.name).append(representedNode, other.representedNode).append(in, other.in).append(out, other.out).isEquals();
+      equals = new EqualsBuilder().append(name, other.name).append(representedNode, other.representedNode).append(in, other.in).append(out, other.out)
+          .append(type, other.type).isEquals();
     }
     return equals;
   }
@@ -144,7 +144,7 @@ public class DataFlowNode {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("in", in).append("out", out)
-        .append("representedNode", representedNode).build();
+        .append("representedNode", representedNode).append("type", type).build();
   }
 
   public String toStringForward(int tabs) {

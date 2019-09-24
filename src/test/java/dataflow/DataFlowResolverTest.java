@@ -10,15 +10,22 @@
  */
 package dataflow;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.internal.util.collections.Sets;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.SimpleName;
+
+import common.SymbolSolverSetup;
 
 /**
  * Unit test for {@link DataFlowResolver}.
@@ -28,6 +35,12 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 public class DataFlowResolverTest {
 
   DataFlowResolver sut = new DataFlowResolver();
+
+  @Before
+  public void setup() {
+    // TODO remove dependency to JavaForger
+    SymbolSolverSetup.setup();
+  }
 
   @Test
   public void testGetDataFlowMethod() {
@@ -48,10 +61,21 @@ public class DataFlowResolverTest {
     Optional<DataFlowMethod> resultMethod = sut.getDataFlowMethod(graph, method, node);
 
     Assert.assertTrue(resultMethod.isPresent());
+    Assert.assertEquals("append", resultMethod.get().getName());
+    Map<String, DataFlowGraph> dependedGraphs = graph.getDependedGraphs();
+    Assert.assertEquals(1, dependedGraphs.size());
+    String qualifiedPath = "java.lang.StringBuilder";
+    Assert.assertEquals(Sets.newSet(qualifiedPath), dependedGraphs.keySet());
+    DataFlowGraph newDfg = dependedGraphs.get(qualifiedPath);
+    Assert.assertEquals("StringBuilder", newDfg.getName());
+    Assert.assertEquals("java.lang", newDfg.getClassPackage());
+    Assert.assertEquals(1, newDfg.getMethods().size());
+    SimpleName expectedRepresentedNode = new SimpleName("java.lang.StringBuilder.append(java.lang.String)");
+    Assert.assertEquals("Only contained keys " + newDfg.getMethodMap().keySet(), resultMethod.get(), newDfg.getMethod(expectedRepresentedNode));
 
-    Assert.fail("Check method variables");
-    Assert.fail("Check if method is added to graph");
-
+    DataFlowMethod expectedDfm = DataFlowMethod.builder().name("append").representedNode(expectedRepresentedNode).graph(newDfg)
+        .inputParameters(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build();
+    Assert.assertEquals(expectedDfm, resultMethod.get());
   }
 
 }

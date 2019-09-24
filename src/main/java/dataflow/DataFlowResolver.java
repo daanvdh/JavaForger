@@ -76,7 +76,7 @@ public class DataFlowResolver {
     DataFlowMethod resolvedMethod = dependedGraph.getMethod(methodName);
     if (resolvedMethod == null) {
       resolvedMethod = createMethod(rmd, methodName);
-      graph.addMethod(resolvedMethod);
+      dependedGraph.addMethod(resolvedMethod);
     }
     return resolvedMethod;
   }
@@ -100,7 +100,7 @@ public class DataFlowResolver {
     newMethod = DataFlowMethod.builder().name(rmd.getName()).representedNode(methodName).build();
     for (int i = 0; i < rmd.getNumberOfParams(); i++) {
       ResolvedParameterDeclaration p = rmd.getParam(i);
-      DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().toString()).build();
+      DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).build();
       newMethod.addParameter(newNode);
     }
     return newMethod;

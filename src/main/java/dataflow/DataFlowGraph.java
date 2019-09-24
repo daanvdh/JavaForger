@@ -90,6 +90,10 @@ public class DataFlowGraph {
     return methods.values();
   }
 
+  public Map<Node, DataFlowMethod> getMethodMap() {
+    return this.methods;
+  }
+
   public void setMethods(List<DataFlowMethod> methods) {
     this.methods.clear();
     methods.forEach(this::addMethod);
@@ -100,6 +104,7 @@ public class DataFlowGraph {
       throw new NullPointerException("The representedNode may not be null, this risks overriding existing methods.");
     }
     this.methods.put(method.getRepresentedNode(), method);
+    method.setGraph(this);
   }
 
   public DataFlowMethod getMethod(Node node) {
