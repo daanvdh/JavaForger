@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.SimpleName;
 import com.google.common.base.Functions;
 
 import common.SymbolSolverSetup;
@@ -187,37 +186,7 @@ public class DataFlowGraphFactoryTest {
         NodeBuilder.ofParameter("met", "a").to("b").to("met.return(line 4,col 5)").to(NodeBuilder.ofReturn("met")) //
     ).build();
 
-    DataFlowGraph resultGraph = executeAndVerify(claz, expected);
-
-    DataFlowGraph dependedGraph = resultGraph.getDependedGraph("java.lang.StringBuilder");
-    Assert.assertNotNull(dependedGraph);
-    DataFlowMethod dependedMethod = dependedGraph.getMethod(new SimpleName("java.lang.StringBuilder.append(java.lang.String)"));
-    Assert.assertNotNull(dependedMethod);
-
-    Collection<DataFlowMethod> inputMethods = resultGraph.getMethods().iterator().next().getInputMethods();
-    Assert.assertEquals(1, inputMethods.size());
-    Assert.assertTrue(inputMethods.contains(dependedMethod));
-    Assert.fail("Most of this test is relocated to MethodNodeHandlerTest, check if this test is still needed");
-  }
-
-  @Test
-  public void testCreate_outputMethods() {
-    String claz = //
-        "public class Claz {\n" + //
-            "  StringBuilder sb = new StringBuilder(); \n" + //
-            "  public void met(String a) {\n" + //
-            "    sb.append(a);\n" + //
-            "  }\n" + //
-            "}"; //
-
-    DataFlowGraph expected = GraphBuilder.withStartingNodes( //
-        NodeBuilder.ofField("sb"), //
-        NodeBuilder.ofParameter("met", "a").to("sb.append") //
-    ).build();
-
-    DataFlowGraph resultGraph = executeAndVerify(claz, expected);
-
-    Assert.fail("We do not check the output methods yet, this must be done in MethodNodeHandlerTest");
+    executeAndVerify(claz, expected);
   }
 
   private DataFlowGraph executeAndVerify(String setter, DataFlowGraph expected) {

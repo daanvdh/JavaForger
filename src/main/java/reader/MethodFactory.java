@@ -11,10 +11,14 @@
 package reader;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
@@ -39,6 +43,7 @@ import templateInput.definition.VariableDefinition;
  * @author Daan
  */
 public class MethodFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(MethodFactory.class);
 
   private ImportResolver importResolver = new ImportResolver();
   private FieldFactory fieldFactory = new FieldFactory();
@@ -51,6 +56,7 @@ public class MethodFactory {
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
     if (dfg != null) {
       addChangedFields(method, dfg.getMethod(md));
+      addInputMethods(method, dfg.getMethod(md));
     }
     return method;
   }
@@ -66,14 +72,13 @@ public class MethodFactory {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
-    return MethodDefinition.builder().withName(md.getNameAsString()).withAccessModifiers(accessModifiers).withAnnotations(annotations)
-        .withLineNumber(md.getBegin().map(p -> p.line).orElse(-1)).withColumn(md.getBegin().map(p -> p.column).orElse(-1)).withParameters(getParameters(md))
-        .build();
+    return MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations)
+        .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)).column(md.getBegin().map(p -> p.column).orElse(-1)).parameters(getParameters(md)).build();
   }
 
   private List<VariableDefinition> getParameters(CallableDeclaration<?> md) {
     LinkedHashMap<Parameter, VariableDefinition> params = new LinkedHashMap<>();
-    md.getParameters().stream().forEach(p -> params.put(p, VariableDefinition.builder().withName(p.getNameAsString()).withType(p.getTypeAsString()).build()));
+    md.getParameters().stream().forEach(p -> params.put(p, VariableDefinition.builder().name(p.getNameAsString()).type(p.getTypeAsString()).build()));
     params.entrySet().forEach(p -> importResolver.resolveAndSetImport(p.getKey().getType(), p.getValue()));
     List<VariableDefinition> parameters = params.values().stream().collect(Collectors.toList());
     return parameters;
@@ -91,10 +96,24 @@ public class MethodFactory {
         FlowReceiverDefinition receiver = FlowReceiverDefinition.builder().copy(field).receivedValues(receivedNames).build();
         changedFields.add(receiver);
       } else {
-        System.err.println("The javaParserNode " + javaParserNode + " for dfn " + dfn + " was not a VariableDeclarator");
+        LOG.error("Cannot add changed field {} to method {} because represented node {} with type {} was not a VariableDeclarator", dfn.getName(),
+            newMethod.getName(), javaParserNode, javaParserNode.getClass());
       }
     }
     newMethod.setChangedFields(changedFields);
+  }
+
+  private void addInputMethods(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
+    Collection<DataFlowMethod> inputMethodNodes = dataFlowMethod.getInputMethods();
+    List<MethodDefinition> inputMethods = new ArrayList<>();
+    for (DataFlowMethod dfm : inputMethodNodes) {
+      // TODO make null safe
+      MethodDefinition.builder().name(dfm.getName()).type(dfm.getReturnNode().getType()).column(dfm.getRepresentedNode().getBegin().get().column);
+      // TODO Auto-generated method stub
+
+      // TODO initialize init values
+    }
+    newMethod.setInputMethods(inputMethods);
   }
 
 }

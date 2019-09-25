@@ -72,7 +72,7 @@ public class MethodFactoryTest {
     VariableDeclarator javaParserNode = new VariableDeclarator();
     setterDfg.getFields().get(0).setRepresentedNode(javaParserNode);
     String name = "unique";
-    VariableDefinition fieldVariDef = VariableDefinition.builder().withName(name).build();
+    VariableDefinition fieldVariDef = VariableDefinition.builder().name(name).build();
     Mockito.when(fieldFactory.createSingle(javaParserNode)).thenReturn(fieldVariDef);
 
     MethodDefinition method = methodFactory.createMethod(inputMethod, dfg);
@@ -86,14 +86,13 @@ public class MethodFactoryTest {
     String input = "src/test/java/inputClassesForTests/Product.java";
     List<? extends MethodDefinition> methods = sut.read(input).getMethods();
 
-    Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("String");
-    MethodDefinition m1 = build.withName("getUrl").withLineNumber(46).withColumn(3).build();
-    MethodDefinition m2 = build.withName("getName").withLineNumber(50).withColumn(3).build();
-    MethodDefinition m3 = build.withName("toString").withLineNumber(54).withColumn(3).withAnnotations(Collections.singleton("Override")).build();
-    MethodDefinition m4 =
-        build.withName("hashCode").withLineNumber(59).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("int").build();
-    MethodDefinition m5 = build.withName("equals").withLineNumber(64).withColumn(3).withAnnotations(Collections.singleton("Override")).withType("boolean")
-        .withParameters(VariableDefinition.builder().withType("Object").withName("obj").build()).build();
+    Builder build = MethodDefinition.builder().accessModifiers(Collections.singleton("public")).type("String");
+    MethodDefinition m1 = build.name("getUrl").lineNumber(46).column(3).build();
+    MethodDefinition m2 = build.name("getName").lineNumber(50).column(3).build();
+    MethodDefinition m3 = build.name("toString").lineNumber(54).column(3).annotations(Collections.singleton("Override")).build();
+    MethodDefinition m4 = build.name("hashCode").lineNumber(59).column(3).annotations(Collections.singleton("Override")).type("int").build();
+    MethodDefinition m5 = build.name("equals").lineNumber(64).column(3).annotations(Collections.singleton("Override")).type("boolean")
+        .parameters(VariableDefinition.builder().type("Object").name("obj").build()).build();
 
     Assert.assertThat(methods, Matchers.contains(m1, m2, m3, m4, m5));
   }
@@ -103,13 +102,19 @@ public class MethodFactoryTest {
     String input = "src/test/java/inputClassesForTests/Product.java";
     List<? extends MethodDefinition> constructors = sut.read(input).getConstructors();
 
-    Builder build = MethodDefinition.builder().withAccessModifiers(Collections.singleton("public")).withType("Product").withName("Product").withColumn(3)
-        .withTypeImports("inputClassesForTests");
-    MethodDefinition m1 = build.withLineNumber(36).withParameters(VariableDefinition.builder().withType("String").withName("name2").build(),
-        VariableDefinition.builder().withType("String").withName("url").build()).build();
-    MethodDefinition m2 = build.withLineNumber(42).withParameters().build();
+    Builder build = MethodDefinition.builder().accessModifiers(Collections.singleton("public")).type("Product").name("Product").column(3)
+        .typeImports("inputClassesForTests");
+    MethodDefinition m1 = build.lineNumber(36)
+        .parameters(VariableDefinition.builder().type("String").name("name2").build(), VariableDefinition.builder().type("String").name("url").build()).build();
+    MethodDefinition m2 = build.lineNumber(42).parameters().build();
 
     Assert.assertThat(constructors, Matchers.contains(m1, m2));
+  }
+
+  @Test
+  public void testAddInputMethods() {
+    Assert.fail("Finish test and implementation");
+
   }
 
 }

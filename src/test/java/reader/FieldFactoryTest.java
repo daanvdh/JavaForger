@@ -41,12 +41,12 @@ public class FieldFactoryTest {
     String input = "src/test/java/inputClassesForTests/Product.java";
     List<? extends VariableDefinition> variables = sut.read(input).getFields();
 
-    VariableDefinition v1 = VariableDefinition.builder().withName("url").withType("String").withLineNumber(32).withColumn(3)
-        .withAccessModifiers(Collections.singleton("private")).build();
-    VariableDefinition v2 = VariableDefinition.builder().withName("name").withType("String").withLineNumber(33).withColumn(3)
-        .withAccessModifiers(Collections.singleton("private")).originalInit("\"interesting\"").build();
-    VariableDefinition v3 = VariableDefinition.builder().withName("prod").withType("Product").withLineNumber(34).withColumn(3)
-        .withAccessModifiers(Collections.singleton("public")).withTypeImport("inputClassesForTests.Product").build();
+    VariableDefinition v1 = VariableDefinition.builder().name("url").type("String").lineNumber(32).column(3)
+        .accessModifiers(Collections.singleton("private")).build();
+    VariableDefinition v2 = VariableDefinition.builder().name("name").type("String").lineNumber(33).column(3)
+        .accessModifiers(Collections.singleton("private")).originalInit("\"interesting\"").build();
+    VariableDefinition v3 = VariableDefinition.builder().name("prod").type("Product").lineNumber(34).column(3)
+        .accessModifiers(Collections.singleton("public")).typeImport("inputClassesForTests.Product").build();
 
     Assert.assertThat(variables, Matchers.contains(v1, v2, v3));
   }

@@ -36,6 +36,10 @@ public class MethodDefinition extends InitializedTypeDefinition {
   private List<VariableDefinition> parameters = new ArrayList<>();
   /** The fields that might be changed after this method call */
   private List<FlowReceiverDefinition> changedFields = new ArrayList<>();
+  /** The methods called from this method, where the return value is not used. */
+  private List<MethodDefinition> inputMethods = new ArrayList<>();
+  /** The methods called from this method, where the return value is used. */
+  private List<MethodDefinition> outputMethods = new ArrayList<>();
 
   private MethodDefinition(Builder builder) {
     super(builder);
@@ -56,6 +60,22 @@ public class MethodDefinition extends InitializedTypeDefinition {
 
   public void setChangedFields(List<FlowReceiverDefinition> changedFields) {
     this.changedFields = changedFields;
+  }
+
+  public List<MethodDefinition> getInputMethods() {
+    return inputMethods;
+  }
+
+  public void setInputMethods(List<MethodDefinition> inputMethods) {
+    this.inputMethods = inputMethods;
+  }
+
+  public List<MethodDefinition> getOutputMethods() {
+    return outputMethods;
+  }
+
+  public void setOutputMethods(List<MethodDefinition> outputMethods) {
+    this.outputMethods = outputMethods;
   }
 
   @Override
@@ -98,12 +118,12 @@ public class MethodDefinition extends InitializedTypeDefinition {
       return new MethodDefinition(this);
     }
 
-    public Builder withParameters(List<VariableDefinition> parameters) {
+    public Builder parameters(List<VariableDefinition> parameters) {
       this.parameters = parameters;
       return this;
     }
 
-    public Builder withParameters(VariableDefinition... parameters) {
+    public Builder parameters(VariableDefinition... parameters) {
       this.parameters = Arrays.asList(parameters);
       return this;
     }

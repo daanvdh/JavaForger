@@ -118,9 +118,9 @@ public class ClassContainerReader {
     List<String> interfaces = cd.getImplementedTypes().stream().map(i -> i.getNameAsString()).collect(Collectors.toList());
     String extend = cd.getExtendedTypes().stream().findFirst().map(e -> e.getNameAsString()).orElse(null);
 
-    ClassDefinition def = ClassDefinition.builder().withName(cd.getNameAsString()).withType(cd.getNameAsString())
-        .withLineNumber(cd.getBegin().map(p -> p.line).orElse(-1)).withColumn(cd.getBegin().map(p -> p.column).orElse(-1)).withAnnotations(annotations)
-        .withAccessModifiers(accessModifiers).withExtend(extend).withInterfaces(interfaces).build();
+    ClassDefinition def = ClassDefinition.builder().name(cd.getNameAsString()).type(cd.getNameAsString())
+        .lineNumber(cd.getBegin().map(p -> p.line).orElse(-1)).column(cd.getBegin().map(p -> p.column).orElse(-1)).annotations(annotations)
+        .accessModifiers(accessModifiers).extend(extend).interfaces(interfaces).build();
     return new ClassContainer(def);
   }
 

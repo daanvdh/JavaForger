@@ -134,7 +134,7 @@ public class InitializationService {
     String subString = var.getType().toString().substring(indexOf + 1, var.getType().toString().length() - 1);
     List<String> subVariableTypes = splitSubTypes(subString);
     List<VariableDefinition> subTypes =
-        subVariableTypes.stream().map(subType -> VariableDefinition.builder().withType(subType).build()).collect(Collectors.toList());
+        subVariableTypes.stream().map(subType -> VariableDefinition.builder().type(subType).build()).collect(Collectors.toList());
     // This is a recursive call, to the caller
     subTypes.forEach(subVar -> initialize(subVar));
     return subTypes;

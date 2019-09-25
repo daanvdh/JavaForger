@@ -51,7 +51,7 @@ public class FieldFactory {
     if (node instanceof FieldDeclaration) {
       FieldDeclaration fd = (FieldDeclaration) node;
       VariableDefinition.Builder<?> fieldBuilder = createField(fd);
-      fd.getVariables().stream().map(VariableDeclarator::getNameAsString).map(fieldBuilder::withName).map(VariableDefinition.Builder::build)
+      fd.getVariables().stream().map(VariableDeclarator::getNameAsString).map(fieldBuilder::name).map(VariableDefinition.Builder::build)
           .forEach(fields::add);
     } else if (node instanceof VariableDeclarator) {
       field = createSingle((VariableDeclarator) node);
@@ -71,7 +71,7 @@ public class FieldFactory {
           parentNode.orElse(null), parentNode.map(Node::getClass).orElse(null));
       fieldBuilder = VariableDefinition.builder();
     }
-    return fieldBuilder.withName(vd.getNameAsString()).build();
+    return fieldBuilder.name(vd.getNameAsString()).build();
   }
 
   private Builder<?> createField(FieldDeclaration fd) {
@@ -79,9 +79,9 @@ public class FieldFactory {
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     Optional<String> originalInit = depthFirstSearch(fd, Expression.class);
     List<String> imports = importResolver.resolveImport(fd.getElementType());
-    VariableDefinition.Builder<?> fieldBuilder = VariableDefinition.builder().withType(fd.getElementType().asString()).withAnnotations(annotations)
-        .withLineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).withColumn(fd.getBegin().map(p -> p.column).orElse(-1)).withAccessModifiers(accessModifiers)
-        .originalInit(originalInit.orElse(null)).withTypeImports(imports);
+    VariableDefinition.Builder<?> fieldBuilder = VariableDefinition.builder().type(fd.getElementType().asString()).annotations(annotations)
+        .lineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).column(fd.getBegin().map(p -> p.column).orElse(-1)).accessModifiers(accessModifiers)
+        .originalInit(originalInit.orElse(null)).typeImports(imports);
     return fieldBuilder;
   }
 

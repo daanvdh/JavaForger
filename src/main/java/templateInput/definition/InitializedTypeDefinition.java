@@ -185,62 +185,62 @@ public class InitializedTypeDefinition extends TypeDefinition {
       return (T) this;
     }
 
-    public T withName(String name) {
+    public T name(String name) {
       this.name = new StringConverter(name);
       return (T) this;
     }
 
-    public T withType(String type) {
+    public T type(String type) {
       this.type = type;
       return (T) this;
     }
 
-    public T withLineNumber(int lineNumber) {
+    public T lineNumber(int lineNumber) {
       this.lineNumber = lineNumber;
       return (T) this;
     }
 
-    public T withColumn(int column) {
+    public T column(int column) {
       this.column = column;
       return (T) this;
     }
 
-    public T withAnnotations(Set<String> annotations) {
+    public T annotations(Set<String> annotations) {
       this.annotations = annotations;
       return (T) this;
     }
 
-    public T withAccessModifiers(Set<String> accessModifiers) {
+    public T accessModifiers(Set<String> accessModifiers) {
       this.accessModifiers = accessModifiers;
       return (T) this;
     }
 
-    public T withInit1(String init1) {
+    public T init1(String init1) {
       this.init1 = init1;
       return (T) this;
     }
 
-    public T withInit2(String init2) {
+    public T init2(String init2) {
       this.init2 = init2;
       return (T) this;
     }
 
-    public T withNoInit(String noInit) {
+    public T noInit(String noInit) {
       this.noInit = noInit;
       return (T) this;
     }
 
-    public T withTypeImport(String typeImport) {
+    public T typeImport(String typeImport) {
       this.typeImports.add(typeImport);
       return (T) this;
     }
 
-    public T withTypeImports(String... imports) {
+    public T typeImports(String... imports) {
       this.typeImports.addAll(Arrays.asList(imports));
       return (T) this;
     }
 
-    public T withTypeImports(List<String> imports) {
+    public T typeImports(List<String> imports) {
       this.typeImports.addAll(imports);
       return (T) this;
     }

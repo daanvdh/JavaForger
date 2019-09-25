@@ -49,8 +49,8 @@ public class ClassContainerReaderTest {
     ClassContainer cc = sut.read(input);
     ClassDefinition result = ClassDefinition.builder(cc).build();
 
-    ClassDefinition expected = ClassDefinition.builder().withName("ExtendedProduct").withType("ExtendedProduct").withLineNumber(25).withColumn(1)
-        .withAccessModifiers(Collections.singleton("public")).withExtend("Product").withInterfaces(Collections.singletonList("TestInterface")).build();
+    ClassDefinition expected = ClassDefinition.builder().name("ExtendedProduct").type("ExtendedProduct").lineNumber(25).column(1)
+        .accessModifiers(Collections.singleton("public")).extend("Product").interfaces(Collections.singletonList("TestInterface")).build();
 
     assertEquals(expected, result);
   }

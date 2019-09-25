@@ -25,9 +25,11 @@ import org.junit.Test;
 </#list>
 
 // TODO these are all the starting nodes inside a method, e.g. "23" is a starting node in "countService.countUntil(23);". 
+<#--
 <#list method.definedVariables as var>
     ${var.type} ${var.name} = ${var.defaultInit}; 
 </#list>
+-->
 
 // TODO inputMethods is currently never assigned. 
 <#list method.inputMethods as input>

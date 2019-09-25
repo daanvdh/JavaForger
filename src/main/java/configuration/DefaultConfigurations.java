@@ -53,11 +53,11 @@ public class DefaultConfigurations {
   }
 
   public static JavaForgerConfiguration forStateFullClassTest() {
-    return defaultBuilder("test/generic/stateFullClassTest.javat").withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+    return defaultBuilder("test/generic/stateFullClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
   }
 
   public static JavaForgerConfiguration forStatelessClassTest() {
-    return defaultBuilder("test/generic/statelessClassTest.javat").withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+    return defaultBuilder("test/generic/statelessClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
   }
 
   public static JavaForgerConfiguration forExtendableBuilderAndTest() {
@@ -75,13 +75,13 @@ public class DefaultConfigurations {
   }
 
   protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
-    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build())
+    return defaultBuilder(template).childConfig(defaultBuilder(testTemplate).mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build())
         .build();
   }
 
   protected static JavaForgerConfiguration.Builder defaultBuilder(String template) {
-    return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new ClassProvider())
-        .withParameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
+    return JavaForgerConfiguration.builder().template(template).mergeClassProvider(new ClassProvider())
+        .parameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
   }
 
 }

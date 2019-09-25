@@ -34,7 +34,7 @@ public class InitializationServiceTest {
 
   @Test
   public void testInitialize_parameterized() {
-    VariableDefinition var = VariableDefinition.builder().withType("HashMap<Date, BigDecimal>").build();
+    VariableDefinition var = VariableDefinition.builder().type("HashMap<Date, BigDecimal>").build();
 
     sut.init(var);
 
@@ -52,7 +52,7 @@ public class InitializationServiceTest {
 
   @Test
   public void testInitialize_parameterizedInParameterized() {
-    VariableDefinition var = VariableDefinition.builder().withType("Map<HashMap<int, String>, HashMap<Object, double>>").build();
+    VariableDefinition var = VariableDefinition.builder().type("Map<HashMap<int, String>, HashMap<Object, double>>").build();
 
     sut.init(var);
 
@@ -64,7 +64,7 @@ public class InitializationServiceTest {
 
   @Test
   public void testInitialize_parameterizedExtends() {
-    VariableDefinition var = VariableDefinition.builder().withType("List<? extends BigDecimal>").build();
+    VariableDefinition var = VariableDefinition.builder().type("List<? extends BigDecimal>").build();
 
     sut.init(var);
 
