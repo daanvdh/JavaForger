@@ -51,8 +51,7 @@ public class FieldFactory {
     if (node instanceof FieldDeclaration) {
       FieldDeclaration fd = (FieldDeclaration) node;
       VariableDefinition.Builder<?> fieldBuilder = createField(fd);
-      fd.getVariables().stream().map(VariableDeclarator::getNameAsString).map(fieldBuilder::name).map(VariableDefinition.Builder::build)
-          .forEach(fields::add);
+      fd.getVariables().stream().map(VariableDeclarator::getNameAsString).map(fieldBuilder::name).map(VariableDefinition.Builder::build).forEach(fields::add);
     } else if (node instanceof VariableDeclarator) {
       field = createSingle((VariableDeclarator) node);
       fields.add(field);
@@ -61,6 +60,13 @@ public class FieldFactory {
     return fields;
   }
 
+  /**
+   * Since a {@link FieldDeclaration} can define multiple variables with (<code>int i,j;</code>), you can use this method to create a single
+   * {@link VariableDefinition} from a single {@link VariableDeclarator}.
+   *
+   * @param vd The input {@link VariableDeclarator}
+   * @return a {@link VariableDefinition} representing the node.
+   */
   public VariableDefinition createSingle(VariableDeclarator vd) {
     Optional<Node> parentNode = vd.getParentNode();
     VariableDefinition.Builder<?> fieldBuilder;
@@ -79,9 +85,9 @@ public class FieldFactory {
     Set<String> accessModifiers = fd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
     Optional<String> originalInit = depthFirstSearch(fd, Expression.class);
     List<String> imports = importResolver.resolveImport(fd.getElementType());
-    VariableDefinition.Builder<?> fieldBuilder = VariableDefinition.builder().type(fd.getElementType().asString()).annotations(annotations)
-        .lineNumber(fd.getBegin().map(p -> p.line).orElse(-1)).column(fd.getBegin().map(p -> p.column).orElse(-1)).accessModifiers(accessModifiers)
-        .originalInit(originalInit.orElse(null)).typeImports(imports);
+    VariableDefinition.Builder<?> fieldBuilder =
+        VariableDefinition.builder().type(fd.getElementType().asString()).annotations(annotations).lineNumber(fd.getBegin().map(p -> p.line).orElse(-1))
+            .column(fd.getBegin().map(p -> p.column).orElse(-1)).accessModifiers(accessModifiers).originalInit(originalInit.orElse(null)).typeImports(imports);
     return fieldBuilder;
   }
 

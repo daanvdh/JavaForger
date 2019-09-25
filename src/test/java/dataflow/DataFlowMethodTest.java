@@ -18,8 +18,8 @@ import java.util.function.BiFunction;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
 /**
@@ -36,7 +36,7 @@ public class DataFlowMethodTest {
   private static final Map<DataFlowNode, DataFlowMethod> OUTPUT_METHODS =
       Collections.singletonMap(DataFlowNode.builder().name("e").build(), DataFlowMethod.builder().name("q").build());
   private static final String NAME = "a";
-  private static final Node REPRESENTED_NODE = new FieldDeclaration();
+  private static final CallableDeclaration<?> REPRESENTED_NODE = new ConstructorDeclaration();
   private static final DataFlowNode RETURN_NODE = DataFlowNode.builder().name("d").build();
 
   @Test

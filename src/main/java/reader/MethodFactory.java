@@ -51,7 +51,7 @@ public class MethodFactory {
 
   public MethodDefinition createMethod(Node node, DataFlowGraph dfg) {
     MethodDeclaration md = (MethodDeclaration) node;
-    MethodDefinition method = parseCallable(md);
+    MethodDefinition method = parseCallable(md).build();
     method.setType(md.getTypeAsString());
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
     if (dfg != null) {
@@ -63,17 +63,17 @@ public class MethodFactory {
 
   public MethodDefinition createConstructor(Node node) {
     ConstructorDeclaration md = (ConstructorDeclaration) node;
-    MethodDefinition method = parseCallable(md);
+    MethodDefinition method = parseCallable(md).build();
     method.setType(md.getNameAsString());
     return method;
   }
 
-  private MethodDefinition parseCallable(CallableDeclaration<?> md) {
+  private MethodDefinition.Builder parseCallable(CallableDeclaration<?> md) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
     return MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations)
-        .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)).column(md.getBegin().map(p -> p.column).orElse(-1)).parameters(getParameters(md)).build();
+        .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)).column(md.getBegin().map(p -> p.column).orElse(-1)).parameters(getParameters(md));
   }
 
   private List<VariableDefinition> getParameters(CallableDeclaration<?> md) {
@@ -105,15 +105,21 @@ public class MethodFactory {
 
   private void addInputMethods(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
     Collection<DataFlowMethod> inputMethodNodes = dataFlowMethod.getInputMethods();
-    List<MethodDefinition> inputMethods = new ArrayList<>();
     for (DataFlowMethod dfm : inputMethodNodes) {
-      // TODO make null safe
-      MethodDefinition.builder().name(dfm.getName()).type(dfm.getReturnNode().getType()).column(dfm.getRepresentedNode().getBegin().get().column);
-      // TODO Auto-generated method stub
 
-      // TODO initialize init values
+      MethodDefinition.Builder builder = parseCallable(dfm.getRepresentedNode());
+      String type = dfm.getReturnNode().getType();
+      builder.name(dfm.getName()).type(type);
+
+      // TODO we need to construct the signature here
+
+      // TODO where can we get the parameters from
+
+      List<DataFlowNode> inputParameters = dfm.getInputParameters();
+      // TODO walk back in the direction of the given dataFlowMethod
+
+      newMethod.addInputMethod(builder.build());
     }
-    newMethod.setInputMethods(inputMethods);
   }
 
 }

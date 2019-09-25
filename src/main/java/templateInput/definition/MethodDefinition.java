@@ -70,6 +70,10 @@ public class MethodDefinition extends InitializedTypeDefinition {
     this.inputMethods = inputMethods;
   }
 
+  public void addInputMethod(MethodDefinition inputMethod) {
+    this.inputMethods.add(inputMethod);
+  }
+
   public List<MethodDefinition> getOutputMethods() {
     return outputMethods;
   }

@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.CallableDeclaration;
 
 /**
  * DataFlow class representing a method inside a {@link DataFlowGraph}.
@@ -39,7 +40,7 @@ public class DataFlowMethod {
   /** The name of the method */
   private String name;
   /** The node which this method represents */
-  private Node representedNode;
+  private CallableDeclaration<?> representedNode;
   /** The graph which this method is part of */
   private DataFlowGraph graph;
   /**
@@ -60,12 +61,12 @@ public class DataFlowMethod {
   /** All nodes defined within this method */
   private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
-  public DataFlowMethod(String name, Node representedNode) {
+  public DataFlowMethod(String name, CallableDeclaration<?> representedNode) {
     this.name = name;
     this.representedNode = representedNode;
   }
 
-  public DataFlowMethod(DataFlowGraph graph, Node node, String name) {
+  public DataFlowMethod(DataFlowGraph graph, CallableDeclaration<?> node, String name) {
     this(name, node);
     this.graph = graph;
     graph.addMethod(this);
@@ -95,11 +96,11 @@ public class DataFlowMethod {
     this.name = name;
   }
 
-  public Node getRepresentedNode() {
+  public CallableDeclaration<?> getRepresentedNode() {
     return representedNode;
   }
 
-  public void setRepresentedNode(Node representedNode) {
+  public void setRepresentedNode(CallableDeclaration<?> representedNode) {
     this.representedNode = representedNode;
   }
 
@@ -297,7 +298,7 @@ public class DataFlowMethod {
     protected Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
     protected Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
     protected String name;
-    protected Node representedNode;
+    protected CallableDeclaration<?> representedNode;
     private DataFlowNode returnNode;
     private DataFlowGraph graph;
 
@@ -310,7 +311,7 @@ public class DataFlowMethod {
       return this;
     }
 
-    public Builder representedNode(Node representedNode) {
+    public Builder representedNode(CallableDeclaration<?> representedNode) {
       this.representedNode = representedNode;
       return this;
     }

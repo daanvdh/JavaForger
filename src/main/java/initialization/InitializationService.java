@@ -67,8 +67,10 @@ public class InitializationService {
   }
 
   private void initMethods(List<? extends MethodDefinition> methods) {
-    methods.stream().forEach(this::initialize);
+    methods.forEach(this::initialize);
     methods.forEach(m -> initVariables(m.getParameters()));
+    methods.forEach(t -> t.getInputMethods().forEach(this::initialize));
+    methods.forEach(t -> t.getOutputMethods().forEach(this::initialize));
   }
 
   private void initVariables(List<? extends VariableDefinition> list) {

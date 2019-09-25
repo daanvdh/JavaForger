@@ -10,16 +10,19 @@
  */
 package dataflow;
 
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserFieldDeclaration;
@@ -72,7 +75,7 @@ public class DataFlowResolver {
     if (dependedGraph == null) {
       dependedGraph = createGraph(graph, rmd);
     }
-    SimpleName methodName = new SimpleName(rmd.getQualifiedSignature());
+    CallableDeclaration<?> methodName = new MethodDeclaration(EnumSet.of(Modifier.PUBLIC), new ClassOrInterfaceType(), rmd.getQualifiedSignature());
     DataFlowMethod resolvedMethod = dependedGraph.getMethod(methodName);
     if (resolvedMethod == null) {
       resolvedMethod = createMethod(rmd, methodName);
@@ -95,7 +98,7 @@ public class DataFlowResolver {
     return dependedGraph;
   }
 
-  private DataFlowMethod createMethod(ReflectionMethodDeclaration rmd, SimpleName methodName) {
+  private DataFlowMethod createMethod(ReflectionMethodDeclaration rmd, CallableDeclaration<?> methodName) {
     DataFlowMethod newMethod;
     newMethod = DataFlowMethod.builder().name(rmd.getName()).representedNode(methodName).build();
     for (int i = 0; i < rmd.getNumberOfParams(); i++) {

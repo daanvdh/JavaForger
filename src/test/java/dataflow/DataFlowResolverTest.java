@@ -11,6 +11,7 @@
 package dataflow;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,8 +23,10 @@ import org.mockito.internal.util.collections.Sets;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import common.SymbolSolverSetup;
 
@@ -70,7 +73,8 @@ public class DataFlowResolverTest {
     Assert.assertEquals("StringBuilder", newDfg.getName());
     Assert.assertEquals("java.lang", newDfg.getClassPackage());
     Assert.assertEquals(1, newDfg.getMethods().size());
-    SimpleName expectedRepresentedNode = new SimpleName("java.lang.StringBuilder.append(java.lang.String)");
+    MethodDeclaration expectedRepresentedNode =
+        new MethodDeclaration(EnumSet.of(Modifier.PUBLIC), new ClassOrInterfaceType(), "java.lang.StringBuilder.append(java.lang.String)");
     Assert.assertEquals("Only contained keys " + newDfg.getMethodMap().keySet(), resultMethod.get(), newDfg.getMethod(expectedRepresentedNode));
 
     DataFlowMethod expectedDfm = DataFlowMethod.builder().name("append").representedNode(expectedRepresentedNode).graph(newDfg)

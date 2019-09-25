@@ -20,7 +20,7 @@ package dataflow;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.VarType;
 
@@ -34,7 +34,7 @@ public class DataFlowMethodBuilder extends DataFlowMethod.Builder {
   private Map<String, DataFlowNode> currentNodes = new HashMap<>();
 
   private DataFlowMethodBuilder() {
-    this.representedNode = new FieldDeclaration();
+    this.representedNode = new MethodDeclaration();
   }
 
   public static DataFlowMethodBuilder builder() {

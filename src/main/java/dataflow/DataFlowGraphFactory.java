@@ -77,7 +77,7 @@ public class DataFlowGraphFactory {
     DataFlowMethod method = null;
     if (node instanceof CallableDeclaration) {
       CallableDeclaration<?> cd = (CallableDeclaration<?>) node;
-      method = new DataFlowMethod(graph, node, cd.getNameAsString());
+      method = new DataFlowMethod(graph, cd, cd.getNameAsString());
       method.setInputParameters(parseParameters(cd));
       if (node instanceof MethodDeclaration) {
         MethodDeclaration md = (MethodDeclaration) node;
