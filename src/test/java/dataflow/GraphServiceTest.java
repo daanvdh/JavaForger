@@ -67,4 +67,9 @@ public class GraphServiceTest {
     Assert.assertEquals(Arrays.asList(parameters.get(0), parameters.get(1)), result);
   }
 
+  @Test
+  public void testWalkBackUntilLastInScopeOfMethod() {
+    Assert.fail("implement method and test");
+  }
+
 }

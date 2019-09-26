@@ -23,11 +23,11 @@ import common.SymbolSolverSetup;
 import templateInput.definition.VariableDefinition;
 
 /**
- * Unit test for {@link FieldFactory}.
+ * Unit test for {@link VariableFactory}.
  *
  * @author Daan
  */
-public class FieldFactoryTest {
+public class VariableFactoryTest {
 
   private ClassContainerReader sut = new ClassContainerReader();
 

@@ -51,12 +51,16 @@ public class DataFlowMethod {
   /** The input parameters of the method */
   private List<DataFlowNode> inputParameters = new ArrayList<>();
   /** The fields of the class that are read inside this method */
+  // TODO Should probably be removed since it's a derivative
   private List<DataFlowNode> inputFields = new ArrayList<>();
   /** The fields of the class that are written inside this method */
+  // TODO Should probably be removed since it's a derivative
   private List<DataFlowNode> changedFields = new ArrayList<>();
   /** The methods that are called from within this method for which the return value is read. Key is the return value, value is the method */
+  // TODO Should probably be removed since it's a derivative
   private Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
   /** The methods that are called from within this method for which the return value is either void or ignored */
+  // TODO Should probably be removed since it's a derivative
   private Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
   /** All nodes defined within this method */
   private Map<Node, DataFlowNode> nodes = new HashMap<>();
@@ -110,6 +114,7 @@ public class DataFlowMethod {
 
   public void setReturnNode(DataFlowNode returnNode) {
     this.returnNode = returnNode;
+    returnNode.setMethod(this);
   }
 
   public List<DataFlowNode> getInputParameters() {
@@ -187,6 +192,7 @@ public class DataFlowMethod {
 
   public DataFlowNode addNode(String name, Node n) {
     DataFlowNode dfn = new DataFlowNode(name, n);
+    dfn.setMethod(this);
     this.nodes.put(n, dfn);
     return dfn;
   }

@@ -50,6 +50,11 @@ public class DataFlowNode {
    * {@link CompilationUnit} of a dependend graph is not available while constructing a {@link DataFlowGraph}.
    */
   private String type;
+  /**
+   * The {@link DataFlowMethod} that contains this {@link DataFlowNode}, this will be null in case this node was not defined within a method, for instance in
+   * case of a class field.
+   */
+  private DataFlowMethod method;
 
   public DataFlowNode(String name, Node representedNode) {
     this.name = name;
@@ -67,6 +72,7 @@ public class DataFlowNode {
     this.out.clear();
     this.out.addAll(builder.out);
     this.setType(builder.type);
+    this.method = builder.method;
   }
 
   public Node getRepresentedNode() {
@@ -208,10 +214,19 @@ public class DataFlowNode {
     return sb.toString();
   }
 
+  public DataFlowMethod getMethod() {
+    return method;
+  }
+
+  public void setMethod(DataFlowMethod dataFlowMethod) {
+    this.method = dataFlowMethod;
+  }
+
   /**
    * Builder to build {@link DataFlowNode}.
    */
   public static final class Builder {
+    private DataFlowMethod method;
     private Node representedNode;
     private List<DataFlowEdge> in = new ArrayList<>();
     private List<DataFlowEdge> out = new ArrayList<>();
@@ -246,6 +261,11 @@ public class DataFlowNode {
 
     public Builder type(String type) {
       this.type = type;
+      return this;
+    }
+
+    public Builder method(DataFlowMethod method) {
+      this.method = method;
       return this;
     }
 

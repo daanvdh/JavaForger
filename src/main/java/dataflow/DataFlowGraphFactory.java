@@ -82,7 +82,7 @@ public class DataFlowGraphFactory {
       if (node instanceof MethodDeclaration) {
         MethodDeclaration md = (MethodDeclaration) node;
         if (!(md.getType() instanceof VoidType)) {
-          method.setReturnNode(new DataFlowNode(cd.getNameAsString() + ".return", node));
+          method.setReturnNode(new DataFlowNode(cd.getNameAsString() + "_return", node));
         }
       } else {
         // Always add a return statement for a constructor.

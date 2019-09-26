@@ -46,7 +46,7 @@ public class MethodFactory {
   private static final Logger LOG = LoggerFactory.getLogger(MethodFactory.class);
 
   private ImportResolver importResolver = new ImportResolver();
-  private FieldFactory fieldFactory = new FieldFactory();
+  private VariableFactory fieldFactory = new VariableFactory();
   private GraphService graphService = new GraphService();
 
   public MethodDefinition createMethod(Node node, DataFlowGraph dfg) {
@@ -92,7 +92,7 @@ public class MethodFactory {
       if (javaParserNode instanceof VariableDeclarator) {
         List<DataFlowNode> receivedNodes = graphService.walkBackUntil(dfn, dataFlowMethod);
         List<String> receivedNames = receivedNodes.stream().map(DataFlowNode::getName).collect(Collectors.toList());
-        VariableDefinition field = fieldFactory.createSingle((VariableDeclarator) javaParserNode);
+        VariableDefinition field = fieldFactory.createSingle(javaParserNode);
         FlowReceiverDefinition receiver = FlowReceiverDefinition.builder().copy(field).receivedValues(receivedNames).build();
         changedFields.add(receiver);
       } else {
@@ -111,12 +111,23 @@ public class MethodFactory {
       String type = dfm.getReturnNode().getType();
       builder.name(dfm.getName()).type(type);
 
-      // TODO we need to construct the signature here
-
-      // TODO where can we get the parameters from
-
       List<DataFlowNode> inputParameters = dfm.getInputParameters();
       // TODO walk back in the direction of the given dataFlowMethod
+      for (DataFlowNode param : inputParameters) {
+        List<DataFlowNode> nodeInMethod = graphService.walkBackUntil(param, dataFlowMethod);
+        // Get the list of nodes that are on the edge of the graph, or
+
+        // Returns all [read fields from the class, inputParameters, method return values, nodes that where created inside this method] that influence the state
+        // of the current parameter.
+        List<DataFlowNode> nodeInGraph = graphService.walkBackUntilLastInScopeOfMethod(nodeInMethod, dataFlowMethod);
+
+        // TODO The cast most likely fails now
+        VariableDefinition createSingle = fieldFactory.createSingle(param.getRepresentedNode());
+
+        FlowReceiverDefinition flowParam = new FlowReceiverDefinition();
+        flowParam.setReceivedValues(nodeInGraph.stream().map(DataFlowNode::getName).collect(Collectors.toList()));
+
+      }
 
       newMethod.addInputMethod(builder.build());
     }

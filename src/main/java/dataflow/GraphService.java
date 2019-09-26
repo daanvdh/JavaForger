@@ -43,4 +43,9 @@ public class GraphService {
     return dfn.getIn().stream().map(edge -> walkBackUntil(edge.getFrom(), method)).flatMap(List::stream).collect(Collectors.toList());
   }
 
+  public List<DataFlowNode> walkBackUntilLastInScopeOfMethod(List<DataFlowNode> nodeInMethod, DataFlowMethod dataFlowMethod) {
+    // TODO Auto-generated method stub
+    return Collections.emptyList();
+  }
+
 }

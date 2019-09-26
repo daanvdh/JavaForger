@@ -48,7 +48,7 @@ import templateInput.definition.VariableDefinition;
 public class MethodFactoryTest {
 
   @Mock
-  private FieldFactory fieldFactory;
+  private VariableFactory fieldFactory;
   @Mock
   private DataFlowGraph dfg;
 

@@ -49,6 +49,12 @@ public class FlowReceiverDefinition extends VariableDefinition {
     return receivedValues.isEmpty() ? "null" : receivedValues.get(0);
   }
 
+  /**
+   * If we don't have multiple assignments to the given parameter, this will result in a single name. If we have multiple assignments this name will not be
+   * defined in any other way, and will thus result in a compilation error if we don't define it explicitly.
+   *
+   * @return Concatenation of all received Values names.
+   */
   public String getAllReceivedValues() {
     return String.join("_", receivedValues);
   }

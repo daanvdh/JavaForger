@@ -53,7 +53,7 @@ public class ClassContainerReader {
 
   private DataFlowGraphFactory dfgFactory = new DataFlowGraphFactory();
   private MethodFactory methodFactory = new MethodFactory();
-  private FieldFactory fieldFactory = new FieldFactory();
+  private VariableFactory fieldFactory = new VariableFactory();
 
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);
