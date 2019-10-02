@@ -115,16 +115,16 @@ public class MethodNodeHandler {
     DataFlowMethod calledMethod = optionalCalledMethod.get();
 
     NodeList<Expression> arguments = n.getArguments();
-    if (arguments.size() != calledMethod.getInputParameters().size()) {
+    if (arguments.size() != calledMethod.getInputParameters().nofNodes()) {
       LOG.warn("In method {} for called method {} the used nof arguments {} is not equal to the expected nof arguments {}", method.getName(), arguments.size(),
-          calledMethod.getInputParameters().size());
+          calledMethod.getInputParameters().nofNodes());
       return Optional.empty();
     }
 
     for (int i = 0; i < arguments.size(); i++) {
       Optional<DataFlowNode> arg = handleNode(graph, method, overriddenValues, arguments.get(i));
       if (arg.isPresent()) {
-        arg.get().addEdgeTo(calledMethod.getInputParameters().get(i));
+        arg.get().addEdgeTo(calledMethod.getInputParameters().getNodes().get(i));
       }
     }
 
@@ -136,12 +136,13 @@ public class MethodNodeHandler {
         // TODO these are not the only cases that we need to handle.
         // TODO make sure that we indeed need to add the input method in this case.
       } else {
-        method.addOutputMethod(calledMethod);
+        // TODO Determine whether or not a DFM needs to contain in/output methods.
+        // method.addOutputMethod(calledMethod);
       }
     }
 
     // Return the return node of the called method so that the return value can be assigned to the caller.
-    return Optional.ofNullable(calledMethod.getReturnNode());
+    return calledMethod.getReturnNode();
   }
 
   private Optional<DataFlowNode> handleBlockStmt(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, BlockStmt node) {
@@ -160,7 +161,11 @@ public class MethodNodeHandler {
       if (assignToReturn.isPresent()) {
         createdReturn = method.addNode(method.getName() + ".return" + n.getBegin().map(Position::toString).orElse("?"), n);
         assignToReturn.get().addEdgeTo(createdReturn);
-        createdReturn.addEdgeTo(method.getReturnNode());
+        if (method.getReturnNode().isPresent()) {
+          createdReturn.addEdgeTo(method.getReturnNode().get());
+        } else {
+          throw new DataFlowException("Expected the method %s for which the return statement %s is handled to already have a return node", method, n);
+        }
       } else {
         LOG.warn("In method {} could not find node for assigning to the return value for node {} of type {}", method.getName(), expression,
             expression.getClass());

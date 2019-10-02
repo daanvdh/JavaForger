@@ -35,7 +35,7 @@ public class GraphServiceTest {
     DataFlowGraph graph = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.a").to("setS.b").to(NodeBuilder.ofField("s"))).build();
     DataFlowMethod m = graph.getMethods().iterator().next();
     DataFlowNode node = m.getChangedFields().get(0);
-    DataFlowNode expected = m.getInputParameters().get(0);
+    DataFlowNode expected = m.getInputParameters().getNodes().get(0);
 
     List<DataFlowNode> result = sut.walkBackUntil(node, m);
 
@@ -46,7 +46,7 @@ public class GraphServiceTest {
   public void testWalkBackUntil_inputIsBoundaryNode() {
     DataFlowGraph graph = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("setS", "a").to("setS.a").to("setS.b").to(NodeBuilder.ofField("s"))).build();
     DataFlowMethod m = graph.getMethods().iterator().next();
-    DataFlowNode expected = m.getInputParameters().get(0);
+    DataFlowNode expected = m.getInputParameters().getNodes().get(0);
 
     List<DataFlowNode> result = sut.walkBackUntil(expected, m);
 
@@ -64,7 +64,7 @@ public class GraphServiceTest {
     DataFlowGraph graph = withStartingNodes.build();
     DataFlowMethod m = graph.getMethods().iterator().next();
     DataFlowNode node = m.getChangedFields().get(0);
-    List<DataFlowNode> parameters = m.getInputParameters();
+    List<DataFlowNode> parameters = m.getInputParameters().getNodes();
 
     List<DataFlowNode> result = sut.walkBackUntil(node, m);
 

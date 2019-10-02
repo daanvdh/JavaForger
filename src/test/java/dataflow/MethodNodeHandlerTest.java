@@ -32,6 +32,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.ParameterList;
 
 /**
  * Unit test for {@link MethodNodeHandler}.
@@ -64,7 +65,7 @@ public class MethodNodeHandlerTest {
     HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
 
     DataFlowMethod createdDfm = DataFlowMethod.builder().returnNode(DataFlowNode.builder().name("ret").build())
-        .inputParameters(Arrays.asList(DataFlowNode.builder().name("param1").build())).build();
+        .inputParameters(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build()).build();
     Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(createdDfm));
 
     Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
@@ -98,7 +99,7 @@ public class MethodNodeHandlerTest {
     HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
 
     DataFlowMethod createdDfm = DataFlowMethod.builder().returnNode(DataFlowNode.builder().name("ret").build())
-        .inputParameters(Arrays.asList(DataFlowNode.builder().name("param1").build())).build();
+        .inputParameters(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build()).build();
     Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(createdDfm));
 
     Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();

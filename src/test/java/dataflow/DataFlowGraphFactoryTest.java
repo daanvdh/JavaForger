@@ -36,6 +36,10 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.google.common.base.Functions;
 
 import common.SymbolSolverSetup;
+import dataflow.model.DataFlowEdge;
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
 
 /**
  * Unit test for {@link DataFlowGraphFactory}.
@@ -222,7 +226,7 @@ public class DataFlowGraphFactoryTest {
   }
 
   private Optional<String> assertMethodEqual(DataFlowMethod expMethod, DataFlowMethod equalMethod) {
-    return assertNodesEqual(expMethod.getInputParameters(), equalMethod.getInputParameters());
+    return assertNodesEqual(expMethod.getInputParameters().getNodes(), equalMethod.getInputParameters().getNodes());
   }
 
   private Optional<DataFlowMethod> getEqualMethod(Collection<DataFlowMethod> methods, DataFlowMethod lookup) {
@@ -233,8 +237,8 @@ public class DataFlowGraphFactoryTest {
     EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(DataFlowMethod::getName, method.getName(), "methodName");
 
     EqualFeatureMatcher<DataFlowMethod, List<String>> parameterMatcher =
-        new EqualFeatureMatcher<>((m) -> m.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
-            method.getInputParameters().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
+        new EqualFeatureMatcher<>((m) -> m.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
+            method.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
 
     EqualFeatureMatcher<DataFlowMethod, List<String>> changedFieldsMatcher =
         new EqualFeatureMatcher<>((m) -> m.getChangedFields().stream().map(DataFlowNode::getName).collect(Collectors.toList()),

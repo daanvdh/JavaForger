@@ -29,6 +29,10 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import common.SymbolSolverSetup;
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+import dataflow.model.ParameterList;
 
 /**
  * Unit test for {@link DataFlowResolver}.
@@ -78,7 +82,7 @@ public class DataFlowResolverTest {
     Assert.assertEquals("Only contained keys " + newDfg.getMethodMap().keySet(), resultMethod.get(), newDfg.getMethod(expectedRepresentedNode));
 
     DataFlowMethod expectedDfm = DataFlowMethod.builder().name("append").representedNode(expectedRepresentedNode).graph(newDfg)
-        .inputParameters(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build();
+        .inputParameters(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build()).build();
     Assert.assertEquals(expectedDfm, resultMethod.get());
   }
 

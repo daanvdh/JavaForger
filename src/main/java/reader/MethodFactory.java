@@ -29,10 +29,10 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
-import dataflow.DataFlowGraph;
-import dataflow.DataFlowMethod;
-import dataflow.DataFlowNode;
 import dataflow.GraphService;
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.VariableDefinition;
@@ -108,16 +108,16 @@ public class MethodFactory {
     for (DataFlowMethod dfm : inputMethodNodes) {
 
       MethodDefinition.Builder builder = parseCallable(dfm.getRepresentedNode());
-      String type = dfm.getReturnNode().getType();
+      String type = dfm.getReturnNode().map(DataFlowNode::getType).orElse("void");
       builder.name(dfm.getName()).type(type);
 
-      List<DataFlowNode> inputParameters = dfm.getInputParameters();
+      List<DataFlowNode> inputParameters = dfm.getInputParameters().getNodes();
       // TODO walk back in the direction of the given dataFlowMethod
       for (DataFlowNode param : inputParameters) {
         List<DataFlowNode> nodeInMethod = graphService.walkBackUntil(param, dataFlowMethod);
         // Get the list of nodes that are on the edge of the graph, or
 
-        // Returns all [read fields from the class, inputParameters, method return values, nodes that where created inside this method] that influence the state
+        // Returns all [read fields from the class, inputParameters, method return values, nodes that are part of this method] that influence the state
         // of the current parameter.
         List<DataFlowNode> nodeInGraph = graphService.walkBackUntilLastInScopeOfMethod(nodeInMethod, dataFlowMethod);
 
