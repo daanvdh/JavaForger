@@ -25,7 +25,7 @@ import org.junit.Test;
 import common.AbstractFileChangingTest;
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
-import dataflow.DataFlowGraph;
+import dataflow.model.DataFlowGraph;
 import generator.JavaForger;
 
 /**

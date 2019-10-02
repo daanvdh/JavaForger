@@ -75,8 +75,16 @@ public class DefaultConfigurations {
   }
 
   protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
-    return defaultBuilder(template).childConfig(defaultBuilder(testTemplate).mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build())
-        .build();
+    return defaultBuilder(template).childConfig(defaultTestConfiguration(testTemplate)).build();
+  }
+
+  private static JavaForgerConfiguration defaultTestConfiguration(String testTemplate) {
+    return defaultBuilder(testTemplate).mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).configIfFileDoesNotExist(emptyTestFile()).build();
+  }
+
+  private static JavaForgerConfiguration emptyTestFile() {
+    return JavaForgerConfiguration.builder().template("test/common/emptyTestClass.javat").createFileIfNotExists(true)
+        .mergeClassProvider(ClassProvider.fromParentMergeClass()).build();
   }
 
   protected static JavaForgerConfiguration.Builder defaultBuilder(String template) {

@@ -35,6 +35,10 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.VoidType;
 
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+
 /**
  * Factory for creating a {@link DataFlowGraph} from a {@link JavaParser} {@link CompilationUnit}.
  *

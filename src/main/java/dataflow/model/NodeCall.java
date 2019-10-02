@@ -8,24 +8,36 @@
  * interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including
  * negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
  */
-package dataflow;
+package dataflow.model;
 
-import dataflow.model.DataFlowGraph;
+import java.util.Optional;
 
 /**
- * Exception that will be thrown for unexpected behavior or unsupported types while constructing a {@link DataFlowGraph}.
+ * A call from
  *
  * @author Daan
  */
-public class DataFlowException extends RuntimeException {
-  private static final long serialVersionUID = -1573995845694360640L;
+public class NodeCall extends OwnedNode {
 
-  public DataFlowException(String message) {
-    super(message);
+  /**
+   * The {@link ParameterList}s that contain the {@link DataFlowNode}s that where used for a specific {@link DataFlowMethod} call to the owner
+   * {@link DataFlowMethod}.
+   */
+  private ParameterList in;
+  /** The {@link ParameterList}s that contain the {@link DataFlowNode}s that where used as input for a call to another {@link DataFlowMethod}. */
+  private ParameterList out;
+  /** The method/constructor/codeBlock from which the method is called */
+  private OwnedNode owner;
+  /** The called method, this can be null in case that the given method is not parsed. */
+  private DataFlowMethod calledMethod;
+
+  public NodeCall(OwnedNode owner) {
+    this.owner = owner;
   }
 
-  public DataFlowException(String message, Object... args) {
-    this(String.format(message, args));
+  @Override
+  public Optional<OwnedNode> getOwner() {
+    return Optional.of(owner);
   }
 
 }

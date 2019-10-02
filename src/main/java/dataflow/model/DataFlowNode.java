@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dataflow;
+package dataflow.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -35,12 +36,8 @@ import com.github.javaparser.ast.Node;
  *
  * @author Daan
  */
-public class DataFlowNode {
+public class DataFlowNode extends OwnedNode {
 
-  /** The name of this node */
-  private String name;
-  /** The {@link JavaParser} {@link Node} */
-  private Node representedNode;
   /** The {@link DataFlowEdge}s from {@link DataFlowNode}s that influence the state of this node */
   private List<DataFlowEdge> in = new ArrayList<>();
   /** The {@link DataFlowEdge}s to {@link DataFlowNode}s who's state is influenced by this node */
@@ -54,33 +51,24 @@ public class DataFlowNode {
    * The {@link DataFlowMethod} that contains this {@link DataFlowNode}, this will be null in case this node was not defined within a method, for instance in
    * case of a class field.
    */
-  private DataFlowMethod method;
+  private OwnedNode owner;
 
-  public DataFlowNode(String name, Node representedNode) {
-    this.name = name;
-    this.representedNode = representedNode;
+  public DataFlowNode(Node representedNode) {
+    super(representedNode);
   }
 
-  public DataFlowNode(Node n) {
-    this.representedNode = n;
+  public DataFlowNode(String name, Node representedNode) {
+    super(name, representedNode);
   }
 
   private DataFlowNode(Builder builder) {
-    this(builder.name, builder.representedNode);
+    super(builder);
     this.in.clear();
     this.in.addAll(builder.in);
     this.out.clear();
     this.out.addAll(builder.out);
     this.setType(builder.type);
-    this.method = builder.method;
-  }
-
-  public Node getRepresentedNode() {
-    return representedNode;
-  }
-
-  public void setRepresentedNode(Node representedNode) {
-    this.representedNode = representedNode;
+    this.owner = builder.owner;
   }
 
   public List<DataFlowEdge> getIn() {
@@ -99,14 +87,6 @@ public class DataFlowNode {
     this.out = out;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public void addEdgeTo(DataFlowNode to) {
     DataFlowEdge edge = new DataFlowEdge(this, to);
     this.addOutgoing(edge);
@@ -123,7 +103,7 @@ public class DataFlowNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, representedNode, in, out);
+    return Objects.hash(super.hashCode(), in, out);
   }
 
   @Override
@@ -133,8 +113,7 @@ public class DataFlowNode {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
       DataFlowNode other = (DataFlowNode) obj;
-      equals = new EqualsBuilder().append(name, other.name).append(representedNode, other.representedNode).append(in, other.in).append(out, other.out)
-          .append(type, other.type).isEquals();
+      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(in, other.in).append(out, other.out).append(type, other.type).isEquals();
     }
     return equals;
   }
@@ -149,8 +128,8 @@ public class DataFlowNode {
 
   @Override
   public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("in", in).append("out", out)
-        .append("representedNode", representedNode).append("type", type).build();
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("in", in).append("out", out).append("type", type)
+        .build();
   }
 
   public String toStringForward(int tabs) {
@@ -214,32 +193,26 @@ public class DataFlowNode {
     return sb.toString();
   }
 
-  public DataFlowMethod getMethod() {
-    return method;
+  @Override
+  public Optional<OwnedNode> getOwner() {
+    return Optional.ofNullable(this.owner);
   }
 
-  public void setMethod(DataFlowMethod dataFlowMethod) {
-    this.method = dataFlowMethod;
+  public void setOwner(OwnedNode owner) {
+    this.owner = owner;
   }
 
   /**
    * Builder to build {@link DataFlowNode}.
    */
-  public static final class Builder {
-    private DataFlowMethod method;
-    private Node representedNode;
+  public static final class Builder extends NodeRepresenter.Builder<DataFlowNode.Builder> {
+    private OwnedNode owner;
     private List<DataFlowEdge> in = new ArrayList<>();
     private List<DataFlowEdge> out = new ArrayList<>();
-    private String name;
     private String type;
 
     private Builder() {
       // Builder should only be constructed via the parent class
-    }
-
-    public Builder representedNode(Node representedNode) {
-      this.representedNode = representedNode;
-      return this;
     }
 
     public Builder in(List<DataFlowEdge> in) {
@@ -254,18 +227,13 @@ public class DataFlowNode {
       return this;
     }
 
-    public Builder name(String name) {
-      this.name = name;
-      return this;
-    }
-
     public Builder type(String type) {
       this.type = type;
       return this;
     }
 
-    public Builder method(DataFlowMethod method) {
-      this.method = method;
+    public Builder owner(OwnedNode owner) {
+      this.owner = owner;
       return this;
     }
 

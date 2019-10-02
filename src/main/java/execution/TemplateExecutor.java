@@ -8,24 +8,30 @@
  * interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including
  * negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
  */
-package dataflow;
+package execution;
 
-import dataflow.model.DataFlowGraph;
+import configuration.DefaultConfigurations;
+import configuration.JavaForgerConfiguration;
+import generator.JavaForger;
 
 /**
- * Exception that will be thrown for unexpected behavior or unsupported types while constructing a {@link DataFlowGraph}.
+ * Helper class to generate parts of the code. Should never be called from any other class.
  *
  * @author Daan
  */
-public class DataFlowException extends RuntimeException {
-  private static final long serialVersionUID = -1573995845694360640L;
+public final class TemplateExecutor {
+  private static final String PATH_PREFIX = "C:/gitrepo";
 
-  public DataFlowException(String message) {
-    super(message);
-  }
+  public static void main(String[] args) {
+    String inputClass = "/JavaForger/src/main/java/dataflow/model/ParameterList.java";
+    JavaForgerConfiguration config = DefaultConfigurations.forHashCodeAndTest();
 
-  public DataFlowException(String message, Object... args) {
-    this(String.format(message, args));
+    // config.setMerge(false);
+    // config.setRecursive(JavaForgerConfiguration::setMerge, false);
+    // config.setRecursive(JavaForgerConfiguration::setOverride, true);
+    // config.setOverride(true);
+
+    JavaForger.execute(config, PATH_PREFIX + inputClass).print();
   }
 
 }

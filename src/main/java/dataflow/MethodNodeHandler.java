@@ -31,6 +31,10 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+
 /**
  * Class for handling {@link JavaParser} {@link Node}s while filling a {@link DataFlowMethod}.
  *

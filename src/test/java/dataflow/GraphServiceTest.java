@@ -17,6 +17,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+
 /**
  * Unit test for {@link GraphService}.
  *

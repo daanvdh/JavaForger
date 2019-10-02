@@ -1,0 +1,6 @@
+<#include "../../common/header.javat">
+<#include "../../common/package.javat">
+
+<#include "testClassDefinition.javat">{
+  
+}

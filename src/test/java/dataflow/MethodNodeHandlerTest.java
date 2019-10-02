@@ -29,6 +29,10 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+
 /**
  * Unit test for {@link MethodNodeHandler}.
  *
@@ -69,7 +73,7 @@ public class MethodNodeHandlerTest {
     Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
 
     Assert.assertTrue(resultNode.isPresent());
-    Assert.assertEquals(createdDfm.getReturnNode(), resultNode.get());
+    Assert.assertEquals(createdDfm.getReturnNode(), resultNode);
 
     Collection<DataFlowMethod> inputMethods = method.getInputMethods();
     Assert.assertEquals(1, inputMethods.size());

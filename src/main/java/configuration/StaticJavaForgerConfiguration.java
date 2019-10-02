@@ -40,15 +40,15 @@ import reader.ClassContainerReader;
  */
 public class StaticJavaForgerConfiguration {
 
-  private ClassContainerReader reader = new ClassContainerReader();
-  private InitializationService initializer = new InitializationService();
-  private CodeSnipitMerger merger = new LineMerger();
+  private ClassContainerReader reader;
+  private InitializationService initializer;
+  private CodeSnipitMerger merger;
   private Configuration freeMarkerConfiguration;
 
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
   private JavaSymbolSolver symbolSolver;
 
-  private static final StaticJavaForgerConfiguration config = new StaticJavaForgerConfiguration();
+  private static StaticJavaForgerConfiguration config;
 
   private StaticJavaForgerConfiguration() {
     // don't create it via any constructor
@@ -56,6 +56,12 @@ public class StaticJavaForgerConfiguration {
   }
 
   public static StaticJavaForgerConfiguration getConfig() {
+    if (config == null) {
+      config = new StaticJavaForgerConfiguration();
+      config.reader = new ClassContainerReader();
+      config.initializer = new InitializationService();
+      config.merger = new LineMerger();
+    }
     return config;
   }
 
@@ -64,7 +70,7 @@ public class StaticJavaForgerConfiguration {
   }
 
   public void setReader(ClassContainerReader classReader) {
-    config.reader = classReader;
+    getConfig().reader = classReader;
   }
 
   public static InitializationService getInitializer() {
@@ -72,7 +78,7 @@ public class StaticJavaForgerConfiguration {
   }
 
   public void setInitializer(InitializationService initializer) {
-    config.initializer = initializer;
+    getConfig().initializer = initializer;
   }
 
   /**
@@ -90,7 +96,7 @@ public class StaticJavaForgerConfiguration {
   }
 
   public void setMerger(CodeSnipitMerger merger) {
-    config.merger = merger;
+    getConfig().merger = merger;
   }
 
   public Configuration getFreeMarkerConfiguration() {

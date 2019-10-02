@@ -31,10 +31,10 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 
 import common.SymbolSolverSetup;
-import dataflow.DataFlowGraph;
-import dataflow.DataFlowMethod;
 import dataflow.GraphBuilder;
 import dataflow.NodeBuilder;
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
 import templateInput.definition.VariableDefinition;

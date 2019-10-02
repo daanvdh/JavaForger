@@ -24,6 +24,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.VarType;
 
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+
 /**
  * Builder for {@link DataFlowMethod} with some build method only ment for testing.
  *
@@ -34,7 +37,7 @@ public class DataFlowMethodBuilder extends DataFlowMethod.Builder {
   private Map<String, DataFlowNode> currentNodes = new HashMap<>();
 
   private DataFlowMethodBuilder() {
-    this.representedNode = new MethodDeclaration();
+    super.representedNode(new MethodDeclaration());
   }
 
   public static DataFlowMethodBuilder builder() {

@@ -36,8 +36,8 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 
 import dataflow.DataFlowException;
-import dataflow.DataFlowGraph;
 import dataflow.DataFlowGraphFactory;
+import dataflow.model.DataFlowGraph;
 import generator.JavaForgerException;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;

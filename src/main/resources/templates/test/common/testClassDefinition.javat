@@ -1,0 +1,10 @@
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+/**
+ * Unit test for {@link ${class.name}}.
+ *
+ * @author Daan
+ */
+@RunWith(MockitoJUnitRunner.class)
+public class ${class.name}Test 

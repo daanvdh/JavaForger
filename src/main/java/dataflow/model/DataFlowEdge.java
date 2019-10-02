@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dataflow;
+package dataflow.model;
 
 /**
  * An edge inside a {@link DataFlowGraph} representing a {@link DataFlowNode} influencing the state of another {@link DataFlowNode}.

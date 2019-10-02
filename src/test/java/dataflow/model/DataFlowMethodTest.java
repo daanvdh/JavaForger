@@ -8,7 +8,7 @@
  * interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including
  * negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
  */
-package dataflow;
+package dataflow.model;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +28,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
  * @author Daan
  */
 public class DataFlowMethodTest {
-  private static final List<DataFlowNode> INPUT_PARAMETERS = Collections.singletonList(DataFlowNode.builder().name("c").build());
+  private static final ParameterList INPUT_PARAMETERS = new ParameterList(DataFlowNode.builder().build());
   private static final List<DataFlowNode> INPUT_FIELDS = Collections.singletonList(DataFlowNode.builder().name("b").build());
   private static final List<DataFlowNode> CHANGED_FIELDS = Collections.singletonList(DataFlowNode.builder().name("a").build());
   private static final Map<DataFlowNode, DataFlowMethod> INPUT_METHODS =
@@ -43,7 +43,7 @@ public class DataFlowMethodTest {
   public void testDataFlowMethod_minimum() {
     DataFlowMethod dataFlowMethod = DataFlowMethod.builder().build();
 
-    Assert.assertTrue("Unexpected inputParameters", dataFlowMethod.getInputParameters().isEmpty());
+    Assert.assertNull("Unexpected inputParameters", dataFlowMethod.getInputParameters());
     Assert.assertTrue("Unexpected inputFields", dataFlowMethod.getInputFields().isEmpty());
     Assert.assertTrue("Unexpected changedFields", dataFlowMethod.getChangedFields().isEmpty());
     Assert.assertTrue("Unexpected inputMethods", dataFlowMethod.getInputMethods().isEmpty());
@@ -74,7 +74,7 @@ public class DataFlowMethodTest {
     verifyHashCode_Different(DataFlowMethod.Builder::name, "b");
     verifyHashCode_Different(DataFlowMethod.Builder::representedNode, new MethodDeclaration());
     verifyHashCode_Different(DataFlowMethod.Builder::returnNode, DataFlowNode.builder().build());
-    verifyHashCode_Different(DataFlowMethod.Builder::inputParameters, Collections.singletonList(DataFlowNode.builder().build()));
+    verifyHashCode_Different(DataFlowMethod.Builder::inputParameters, ParameterList.builder().name("x").build());
     verifyHashCode_Different(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyHashCode_Different(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyHashCode_Different(DataFlowMethod.Builder::inputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
@@ -94,7 +94,7 @@ public class DataFlowMethodTest {
     verifyEqualsDifferent(DataFlowMethod.Builder::name, "b");
     verifyEqualsDifferent(DataFlowMethod.Builder::representedNode, new MethodDeclaration());
     verifyEqualsDifferent(DataFlowMethod.Builder::returnNode, DataFlowNode.builder().build());
-    verifyEqualsDifferent(DataFlowMethod.Builder::inputParameters, Collections.singletonList(DataFlowNode.builder().build()));
+    verifyEqualsDifferent(DataFlowMethod.Builder::inputParameters, ParameterList.builder().name("x").build());
     verifyEqualsDifferent(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyEqualsDifferent(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyEqualsDifferent(DataFlowMethod.Builder::inputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));

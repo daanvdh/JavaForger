@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dataflow;
+package dataflow.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -30,15 +31,15 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 
+import dataflow.DataFlowException;
+
 /**
  * DataFlow class representing a method inside a {@link DataFlowGraph}.
  *
  * @author Daan
  */
-public class DataFlowMethod {
+public class DataFlowMethod extends OwnedNode {
 
-  /** The name of the method */
-  private String name;
   /** The node which this method represents */
   private CallableDeclaration<?> representedNode;
   /** The graph which this method is part of */
@@ -49,7 +50,7 @@ public class DataFlowMethod {
    */
   private DataFlowNode returnNode;
   /** The input parameters of the method */
-  private List<DataFlowNode> inputParameters = new ArrayList<>();
+  private ParameterList inputParameters;
   /** The fields of the class that are read inside this method */
   // TODO Should probably be removed since it's a derivative
   private List<DataFlowNode> inputFields = new ArrayList<>();
@@ -66,7 +67,7 @@ public class DataFlowMethod {
   private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
   public DataFlowMethod(String name, CallableDeclaration<?> representedNode) {
-    this.name = name;
+    super(name, representedNode);
     this.representedNode = representedNode;
   }
 
@@ -77,10 +78,9 @@ public class DataFlowMethod {
   }
 
   protected DataFlowMethod(Builder builder) {
-    this(builder.name, builder.representedNode);
+    super(builder);
     this.returnNode = builder.returnNode == null ? this.returnNode : builder.returnNode;
-    this.inputParameters.clear();
-    this.inputParameters.addAll(builder.inputParameters);
+    this.inputParameters = builder.inputParameters == null ? this.inputParameters : builder.inputParameters;
     this.inputFields.clear();
     this.inputFields.addAll(builder.inputFields);
     this.changedFields.clear();
@@ -92,14 +92,7 @@ public class DataFlowMethod {
     this.graph = builder.graph;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
+  @Override
   public CallableDeclaration<?> getRepresentedNode() {
     return representedNode;
   }
@@ -108,21 +101,21 @@ public class DataFlowMethod {
     this.representedNode = representedNode;
   }
 
-  public DataFlowNode getReturnNode() {
-    return returnNode;
+  public Optional<DataFlowNode> getReturnNode() {
+    return Optional.ofNullable(returnNode);
   }
 
   public void setReturnNode(DataFlowNode returnNode) {
     this.returnNode = returnNode;
-    returnNode.setMethod(this);
+    returnNode.setOwner(this);
   }
 
-  public List<DataFlowNode> getInputParameters() {
+  public ParameterList getInputParameters() {
     return inputParameters;
   }
 
   public void setInputParameters(List<DataFlowNode> inputParameters) {
-    this.inputParameters = inputParameters;
+    this.inputParameters = new ParameterList(inputParameters, this);
     this.getGraph().addNodes(inputParameters);
   }
 
@@ -155,11 +148,12 @@ public class DataFlowMethod {
   }
 
   public void addInputMethod(DataFlowMethod m) {
-    this.inputMethods.put(m.getReturnNode(), m);
+    this.inputMethods.put(m.getReturnNode().get(), m);
   }
 
   public void addOutputMethod(DataFlowMethod m) {
-    this.outputMethods.put(m.getReturnNode(), m);
+    throw new DataFlowException("Adding output methods is not supported yet, it must be redesigned how to store them since they do not have a return node.");
+    // this.outputMethods.put(m.getReturnNode().get(), m);
   }
 
   public Collection<DataFlowMethod> getOutputMethods() {
@@ -168,6 +162,11 @@ public class DataFlowMethod {
 
   public void setOutputMethods(Map<DataFlowNode, DataFlowMethod> outputMethods) {
     this.outputMethods = outputMethods;
+  }
+
+  @Override
+  public Optional<OwnedNode> getOwner() {
+    return Optional.ofNullable(this.graph);
   }
 
   public DataFlowGraph getGraph() {
@@ -192,7 +191,7 @@ public class DataFlowMethod {
 
   public DataFlowNode addNode(String name, Node n) {
     DataFlowNode dfn = new DataFlowNode(name, n);
-    dfn.setMethod(this);
+    dfn.setOwner(this);
     this.nodes.put(n, dfn);
     return dfn;
   }
@@ -250,9 +249,9 @@ public class DataFlowMethod {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("method " + name + "{\n");
+    sb.append("method " + super.getName() + "{\n");
     sb.append("\tparameters{\n");
-    for (DataFlowNode p : inputParameters) {
+    for (DataFlowNode p : inputParameters.getParameters()) {
       sb.append(p.toStringForward(1, 2) + "\n");
     }
     sb.append("\t}\n");
@@ -261,8 +260,9 @@ public class DataFlowMethod {
     for (DataFlowNode p : changedFields) {
       sb.append(p.toStringForward(1, 2) + "\n");
     }
-    sb.append("\t}");
-    sb.append("\n}");
+    sb.append("\t}\n");
+    sb.append("\treturn " + (this.returnNode == null ? "null" : this.returnNode.getName()) + "\n");
+    sb.append("}");
     return sb.toString();
   }
 
@@ -277,7 +277,7 @@ public class DataFlowMethod {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, representedNode, returnNode, inputParameters, inputFields, changedFields, inputMethods, outputMethods);
+    return Objects.hash(super.hashCode(), returnNode, inputParameters, inputFields, changedFields, inputMethods, outputMethods);
   }
 
   @Override
@@ -287,7 +287,7 @@ public class DataFlowMethod {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
       DataFlowMethod other = (DataFlowMethod) obj;
-      equals = new EqualsBuilder().append(name, other.name).append(representedNode, other.representedNode).append(returnNode, other.returnNode)
+      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(representedNode, other.representedNode).append(returnNode, other.returnNode)
           .append(inputParameters, other.inputParameters).append(inputFields, other.inputFields).append(changedFields, other.changedFields)
           .append(inputMethods, other.inputMethods).append(outputMethods, other.outputMethods).append(graph, other.graph).isEquals();
     }
@@ -297,14 +297,12 @@ public class DataFlowMethod {
   /**
    * Builder to build {@link DataFlowMethod}.
    */
-  public static class Builder {
-    protected List<DataFlowNode> inputParameters = new ArrayList<>();
+  public static class Builder extends NodeRepresenter.Builder<DataFlowMethod.Builder> {
+    protected ParameterList inputParameters;
     protected List<DataFlowNode> inputFields = new ArrayList<>();
     protected List<DataFlowNode> changedFields = new ArrayList<>();
     protected Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
     protected Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
-    protected String name;
-    protected CallableDeclaration<?> representedNode;
     private DataFlowNode returnNode;
     private DataFlowGraph graph;
 
@@ -312,24 +310,13 @@ public class DataFlowMethod {
       // Builder should only be constructed via the parent class
     }
 
-    public Builder name(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder representedNode(CallableDeclaration<?> representedNode) {
-      this.representedNode = representedNode;
-      return this;
-    }
-
     public Builder returnNode(DataFlowNode returnNode) {
       this.returnNode = returnNode;
       return this;
     }
 
-    public Builder inputParameters(List<DataFlowNode> inputParameters) {
-      this.inputParameters.clear();
-      this.inputParameters.addAll(inputParameters);
+    public Builder inputParameters(ParameterList inputParameters) {
+      this.inputParameters = inputParameters;
       return this;
     }
 

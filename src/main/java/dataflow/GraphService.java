@@ -21,6 +21,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dataflow.model.DataFlowGraph;
+import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowNode;
+
 /**
  * Service for methods to be executed on a {@link DataFlowGraph}.
  *
@@ -29,8 +33,9 @@ import java.util.stream.Collectors;
 public class GraphService {
 
   /**
-   * Returns all {@link DataFlowNode}s that directly influence the state of the input {@link DataFlowNode}, within the {@link DataFlowMethod}. The nodes
-   * directly influencing the state of node 'd' are state are b and c: {@code method(a,b,c) { d = a ? b : c;}}
+   * Returns all {@link DataFlowNode}s that directly influence the state of the input {@link DataFlowNode}, within the {@link DataFlowMethod}. In the method
+   * below the nodes directly influencing the state of node 'd' are state are b and c: <br>
+   * {@code method(a,b,c) { d = a ? b : c; }}
    *
    * @param dfn The {@link DataFlowNode} to traverse the path from.
    * @param method The method determining the scope for traversing the path.

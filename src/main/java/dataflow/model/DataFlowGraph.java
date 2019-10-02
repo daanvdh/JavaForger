@@ -15,13 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dataflow;
+package dataflow.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.Node;
@@ -32,10 +33,8 @@ import com.github.javaparser.ast.Node;
  *
  * @author Daan
  */
-public class DataFlowGraph {
+public class DataFlowGraph extends OwnedNode {
 
-  /** The name of the class that this {@link DataFlowGraph} represents. */
-  private String name;
   /** The package of the class that this {@link DataFlowGraph} represents. */
   private String classPackage;
   /** This fields within the represented class */
@@ -53,13 +52,15 @@ public class DataFlowGraph {
    * signatures of methods called from this class. The keys are the package and class name concatenated with a dot.
    */
   private Map<String, DataFlowGraph> dependedGraphs = new HashMap<>();
+  /** In case that this {@link DataFlowGraph} represents an inner class, the owner graph represents the class outer class. */
+  private DataFlowGraph ownerGraph;
 
   public DataFlowGraph() {
     // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
   }
 
   private DataFlowGraph(Builder builder) {
-    this.name = builder.name == null ? this.name : builder.name;
+    super(builder);
     this.classPackage = builder.classPackage == null ? this.classPackage : builder.classPackage;
     this.fields.clear();
     this.fields.addAll(builder.fields);
@@ -155,20 +156,17 @@ public class DataFlowGraph {
     this.dependedGraphs.put(graph.getClassPackage() + "." + graph.getName(), graph);
   }
 
-  public String getName() {
-    return this.name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public String getClassPackage() {
     return classPackage;
   }
 
   public void setClassPackage(String classPackage) {
     this.classPackage = classPackage;
+  }
+
+  @Override
+  public Optional<OwnedNode> getOwner() {
+    return Optional.ofNullable(this.ownerGraph);
   }
 
   @Override
@@ -201,8 +199,7 @@ public class DataFlowGraph {
   /**
    * Builder to build {@link DataFlowGraph}.
    */
-  public static final class Builder {
-    private String name;
+  public static final class Builder extends NodeRepresenter.Builder<DataFlowGraph.Builder> {
     private String classPackage;
     private List<DataFlowNode> fields = new ArrayList<>();
     private List<DataFlowMethod> constructors = new ArrayList<>();
@@ -212,11 +209,6 @@ public class DataFlowGraph {
 
     private Builder() {
       // Builder should only be constructed via the parent class
-    }
-
-    public Builder name(String name) {
-      this.name = name;
-      return this;
     }
 
     public Builder classPackage(String classPackage) {
