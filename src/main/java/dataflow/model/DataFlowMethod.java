@@ -51,6 +51,9 @@ public class DataFlowMethod extends OwnedNode {
   private DataFlowNode returnNode;
   /** The input parameters of the method */
   private ParameterList inputParameters;
+
+  private List<NodeCall> calledMethods = new ArrayList<>();
+
   /** The fields of the class that are read inside this method */
   // TODO Should probably be removed since it's a derivative
   private List<DataFlowNode> inputFields = new ArrayList<>();
@@ -239,11 +242,12 @@ public class DataFlowMethod extends OwnedNode {
   /**
    * @return List of {@link DataFlowMethod}s containing both the input and output methods.
    */
-  public List<DataFlowMethod> getCalledMethods() {
-    List<DataFlowMethod> methods = new ArrayList<>();
-    methods.addAll(inputMethods.values());
-    methods.addAll(outputMethods.values());
-    return methods;
+  public List<NodeCall> getCalledMethods() {
+    return this.calledMethods;
+  }
+
+  public void setCalledMethods(List<NodeCall> calledMethods) {
+    this.calledMethods = calledMethods;
   }
 
   @Override

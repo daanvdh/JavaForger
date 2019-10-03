@@ -59,6 +59,7 @@ public class DataFlowGraphFactory {
     executeForEachChildNode(cu, (node) -> this.addField(graph, node));
     executeForEachChildNode(cu, (node) -> this.createMethod(graph, node));
     executeForEachChildNode(cu, (node) -> this.fillMethod(graph, node));
+    connectMethods(graph);
     return graph;
   }
 
@@ -101,6 +102,15 @@ public class DataFlowGraphFactory {
       MethodDeclaration md = (MethodDeclaration) node;
       parseCallable(graph, md);
     }
+  }
+
+  /**
+   * Connects all method calls to methods inside this graph to each other.
+   *
+   * @param graph The graph to connect the methods from.
+   */
+  private void connectMethods(DataFlowGraph graph) {
+    // TODO Auto-generated method stub
   }
 
   /**

@@ -320,4 +320,9 @@ public class DataFlowGraphFactoryTest {
     }
   }
 
+  @Test
+  public void testConnectMethods() {
+    Assert.fail("implement and test ConnectMethods");
+  }
+
 }
