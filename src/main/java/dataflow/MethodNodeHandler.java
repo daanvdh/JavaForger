@@ -108,12 +108,13 @@ public class MethodNodeHandler {
   }
 
   private Optional<DataFlowNode> handleMethodCallExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, MethodCallExpr n) {
-    Optional<NodeCall> optionalCalledMethod = resolver.getDataFlowMethod(graph, method, n);
+    Optional<NodeCall> optionalCalledMethod = resolver.createNodeCall(graph, method, n);
     if (!optionalCalledMethod.isPresent()) {
       LOG.warn("In method {} could not resolve method call {} of type {}", method.getName(), n, n.getClass());
       return Optional.empty();
     }
     NodeCall calledMethod = optionalCalledMethod.get();
+    method.addMethodCall(calledMethod);
 
     NodeList<Expression> arguments = n.getArguments();
     if ((arguments.size() > 0 && calledMethod.getIn() == null) || arguments.size() != calledMethod.getIn().getNodes().size()) {

@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import dataflow.DataFlowException;
+
 /**
  * Represents the set of parameters from a {@link DataFlowMethod}. Every method has at most one {@link ParameterList}. A parameter list can also exist outside
  * of a method when it is constructed to represent a call to another method. It can have input or output edges to other {@link ParameterList}s representing a
@@ -81,6 +83,16 @@ public class ParameterList extends OwnedNode {
 
   public int nofNodes() {
     return this.nodes.size();
+  }
+
+  public void connectTo(ParameterList otherParams) {
+    if (this.nodes.size() != otherParams.nodes.size()) {
+      throw new DataFlowException("Number of parameters is not equal for ParameterList {} and {}, with owner nodes {} and {}", this, otherParams, owner,
+          otherParams.owner);
+    }
+    for (int i = 0; i < this.nodes.size(); i++) {
+      this.nodes.get(i).addEdgeTo(otherParams.nodes.get(i));
+    }
   }
 
   @Override

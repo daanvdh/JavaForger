@@ -122,6 +122,10 @@ public class DataFlowMethod extends OwnedNode {
     this.getGraph().addNodes(inputParameters);
   }
 
+  public void setInputParameters(ParameterList inputParameters) {
+    this.inputParameters = inputParameters;
+  }
+
   public List<DataFlowNode> getInputFields() {
     return inputFields;
   }
@@ -248,6 +252,10 @@ public class DataFlowMethod extends OwnedNode {
 
   public void setCalledMethods(List<NodeCall> calledMethods) {
     this.calledMethods = calledMethods;
+  }
+
+  public void addMethodCall(NodeCall calledMethod) {
+    this.calledMethods.add(calledMethod);
   }
 
   @Override

@@ -26,7 +26,6 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserFieldDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserParameterDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserSymbolDeclaration;
-import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionMethodDeclaration;
 
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
@@ -57,7 +56,7 @@ public class DataFlowResolver {
     return Optional.ofNullable(flowNode);
   }
 
-  public Optional<NodeCall> getDataFlowMethod(DataFlowGraph graph, DataFlowMethod method, MethodCallExpr node) {
+  public Optional<NodeCall> createNodeCall(DataFlowGraph graph, DataFlowMethod method, MethodCallExpr node) {
     Object resolved = resolve(method, node);
 
     NodeCall resolvedMethod = null;
@@ -93,35 +92,6 @@ public class DataFlowResolver {
       // TODO handle constructors?
     }
 
-    return methodCall;
-  }
-
-  private DataFlowGraph getGraph(DataFlowGraph graph, ReflectionMethodDeclaration rmd) {
-    String path = rmd.getQualifiedName();
-    path = path.substring(0, path.lastIndexOf("."));
-    DataFlowGraph dependedGraph = graph.getDependedGraph(path);
-    return dependedGraph;
-  }
-
-  private DataFlowGraph createGraph(DataFlowGraph graph, ReflectionMethodDeclaration rmd) {
-    DataFlowGraph dependedGraph;
-    dependedGraph = DataFlowGraph.builder().name(rmd.getClassName()).classPackage(rmd.getPackageName()).build();
-    graph.addDependedGraph(dependedGraph);
-    return dependedGraph;
-  }
-
-  private NodeCall createMethod(DataFlowMethod ownerMethod, ReflectionMethodDeclaration rmd, MethodCallExpr node) {
-    NodeCall methodCall =
-        NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(ownerMethod).representedNode(node).build();
-    if (rmd.getNumberOfParams() > 0) {
-      ParameterList params = ParameterList.builder().build();
-      for (int i = 0; i < rmd.getNumberOfParams(); i++) {
-        ResolvedParameterDeclaration p = rmd.getParam(i);
-        DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).build();
-        params.add(newNode);
-      }
-      methodCall.setIn(params);
-    }
     return methodCall;
   }
 

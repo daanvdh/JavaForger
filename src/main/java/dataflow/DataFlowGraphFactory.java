@@ -24,6 +24,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -34,10 +37,13 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.VoidType;
+import com.github.javaparser.resolution.Resolvable;
+import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
 
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.NodeCall;
 
 /**
  * Factory for creating a {@link DataFlowGraph} from a {@link JavaParser} {@link CompilationUnit}.
@@ -45,6 +51,7 @@ import dataflow.model.DataFlowNode;
  * @author Daan
  */
 public class DataFlowGraphFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(DataFlowGraphFactory.class);
 
   private MethodNodeHandler nodeHandler = new MethodNodeHandler();
 
@@ -110,7 +117,41 @@ public class DataFlowGraphFactory {
    * @param graph The graph to connect the methods from.
    */
   private void connectMethods(DataFlowGraph graph) {
-    // TODO Auto-generated method stub
+    // TODO probably best to extract this to another class.
+    // TODO not tested yet.
+    for (DataFlowMethod method : graph.getMethods()) {
+      for (NodeCall call : method.getCalledMethods()) {
+        Node node = call.getRepresentedNode();
+        Object resolved = resolve(method, node);
+        if (resolved instanceof JavaParserMethodDeclaration) {
+          MethodDeclaration resolvedNode = ((JavaParserMethodDeclaration) resolved).getWrappedNode();
+          DataFlowMethod resolvedMethod = graph.getMethod(resolvedNode);
+          if (resolvedMethod != null) {
+            call.setCalledMethod(resolvedMethod);
+          } else {
+            // TODO handle connecting to other graphs
+          }
+        } else {
+          LOG.warn("In method {}, resolving is not supported for node {} of type {}", method.getName(), node, resolved == null ? null : resolved.getClass());
+        }
+      }
+    }
+  }
+
+  private Object resolve(DataFlowMethod method, Node node) {
+    if (!Resolvable.class.isAssignableFrom(node.getClass())) {
+      // LOG.warn("In method {}, node is not Resolvable for expression {} of type {}", method.getName(), node, node.getClass());
+      return null;
+    }
+
+    Resolvable<?> resolvable = (Resolvable<?>) node;
+    Object resolved = null;
+    try {
+      resolved = resolvable.resolve();
+    } catch (Exception e) {
+      LOG.warn(e.getMessage());
+    }
+    return resolved;
   }
 
   /**

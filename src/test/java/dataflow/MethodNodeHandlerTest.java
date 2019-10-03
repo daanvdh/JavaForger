@@ -67,7 +67,7 @@ public class MethodNodeHandlerTest {
     DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
-    Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(methodCall));
+    Mockito.when(resolver.createNodeCall(graph, method, node)).thenReturn(Optional.of(methodCall));
 
     Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
     Mockito.when(resolver.getDataFlowNode(graph, method, overriddenValues, parameterNode)).thenReturn(Optional.of(DataFlowNode.builder().build()));
@@ -76,6 +76,7 @@ public class MethodNodeHandlerTest {
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
+    Assert.assertEquals(Arrays.asList(methodCall), method.getCalledMethods());
   }
 
   @Test
@@ -97,7 +98,7 @@ public class MethodNodeHandlerTest {
     DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
-    Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(methodCall));
+    Mockito.when(resolver.createNodeCall(graph, method, node)).thenReturn(Optional.of(methodCall));
 
     Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
     Mockito.when(resolver.getDataFlowNode(graph, method, overriddenValues, parameterNode)).thenReturn(Optional.of(DataFlowNode.builder().build()));
@@ -106,6 +107,7 @@ public class MethodNodeHandlerTest {
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
+    Assert.assertEquals(Arrays.asList(methodCall), method.getCalledMethods());
   }
 
 }

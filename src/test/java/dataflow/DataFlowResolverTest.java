@@ -45,33 +45,33 @@ public class DataFlowResolverTest {
   }
 
   @Test
-  public void testGetDataFlowMethod() {
-    String claz = //
-        "public class Claz {\n" + //
-            "  StringBuilder sb = new StringBuilder(); \n" + //
-            "  public void met(String a) {\n" + //
-            "    sb.append(a);\n" + //
-            "  }\n" + //
-            "}"; //
-    CompilationUnit cu = JavaParser.parse(claz);
-    List<MethodCallExpr> methodCalls = cu.findAll(MethodCallExpr.class);
-
-    DataFlowGraph graph = DataFlowGraph.builder().build();
-    DataFlowMethod method = DataFlowMethod.builder().build();
-    MethodCallExpr node = methodCalls.get(0);
-
-    Optional<NodeCall> resultMethod = sut.getDataFlowMethod(graph, method, node);
-
-    Assert.assertTrue(resultMethod.isPresent());
-    Assert.assertEquals("append", resultMethod.get().getName());
-
-    MethodCallExpr expectedRepresentedNode = cu.findAll(MethodCallExpr.class).get(0);
-    DataFlowNode expectedDfn = DataFlowNode.builder().name("return_append").representedNode(expectedRepresentedNode).build();
-    NodeCall expectedDfm =
-        NodeCall.builder().name("append").representedNode(expectedRepresentedNode).claz("StringBuilder").peckage("java.lang").returnNode(expectedDfn)
-            .in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build()).build();
-
-    Assert.assertEquals(expectedDfm, resultMethod.get());
-  }
+    public void testCreateNodeCall() {
+      String claz = //
+          "public class Claz {\n" + //
+              "  StringBuilder sb = new StringBuilder(); \n" + //
+              "  public void met(String a) {\n" + //
+              "    sb.append(a);\n" + //
+              "  }\n" + //
+              "}"; //
+      CompilationUnit cu = JavaParser.parse(claz);
+      List<MethodCallExpr> methodCalls = cu.findAll(MethodCallExpr.class);
+  
+      DataFlowGraph graph = DataFlowGraph.builder().build();
+      DataFlowMethod method = DataFlowMethod.builder().build();
+      MethodCallExpr node = methodCalls.get(0);
+  
+      Optional<NodeCall> resultMethod = sut.createNodeCall(graph, method, node);
+  
+      Assert.assertTrue(resultMethod.isPresent());
+      Assert.assertEquals("append", resultMethod.get().getName());
+  
+      MethodCallExpr expectedRepresentedNode = cu.findAll(MethodCallExpr.class).get(0);
+      DataFlowNode expectedDfn = DataFlowNode.builder().name("return_append").representedNode(expectedRepresentedNode).build();
+      NodeCall expectedDfm =
+          NodeCall.builder().name("append").representedNode(expectedRepresentedNode).claz("StringBuilder").peckage("java.lang").returnNode(expectedDfn)
+              .in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build()).build();
+  
+      Assert.assertEquals(expectedDfm, resultMethod.get());
+    }
 
 }

@@ -83,6 +83,7 @@ public class NodeCall extends OwnedNode {
 
   public void setCalledMethod(DataFlowMethod calledMethod) {
     this.calledMethod = calledMethod;
+    this.in.connectTo(calledMethod.getInputParameters());
   }
 
   public String getClaz() {
