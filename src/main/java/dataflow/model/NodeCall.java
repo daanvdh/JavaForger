@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * A call from
@@ -34,6 +36,8 @@ public class NodeCall extends OwnedNode {
   /** The called method, this can be null in case that the given method is not parsed. */
   private DataFlowMethod calledMethod;
 
+  private DataFlowNode returnNode;
+
   private String claz;
   private String peckage;
 
@@ -42,12 +46,14 @@ public class NodeCall extends OwnedNode {
   }
 
   private NodeCall(Builder builder) {
+    super(builder);
     this.in = builder.in == null ? this.in : builder.in;
     this.out = builder.out == null ? this.out : builder.out;
     this.owner = builder.owner == null ? this.owner : builder.owner;
     this.calledMethod = builder.calledMethod == null ? this.calledMethod : builder.calledMethod;
     this.claz = builder.claz == null ? this.claz : builder.claz;
     this.peckage = builder.peckage == null ? this.peckage : builder.peckage;
+    this.returnNode = builder.returnNode == null ? this.returnNode : builder.returnNode;
   }
 
   @Override
@@ -99,6 +105,14 @@ public class NodeCall extends OwnedNode {
     this.owner = owner;
   }
 
+  public DataFlowNode getReturnNode() {
+    return returnNode;
+  }
+
+  public void setReturnNode(DataFlowNode returnNode) {
+    this.returnNode = returnNode;
+  }
+
   /**
    * Creates builder to build {@link NodeCall}.
    *
@@ -126,6 +140,12 @@ public class NodeCall extends OwnedNode {
     return Objects.hash(in, out, calledMethod, claz, peckage);
   }
 
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("in", in).append("out", out)
+        .append("calledMethod", calledMethod).append("returnNode", returnNode).append("class", claz).append("package", peckage).build();
+  }
+
   /**
    * Builder to build {@link NodeCall}.
    */
@@ -136,6 +156,7 @@ public class NodeCall extends OwnedNode {
     private DataFlowMethod calledMethod;
     private String claz;
     private String peckage;
+    private DataFlowNode returnNode;
 
     private Builder() {
       // Builder should only be constructed via the parent class
@@ -171,9 +192,15 @@ public class NodeCall extends OwnedNode {
       return this;
     }
 
+    public Builder returnNode(DataFlowNode node) {
+      this.returnNode = node;
+      return this;
+    }
+
     public NodeCall build() {
       return new NodeCall(this);
     }
+
   }
 
 }

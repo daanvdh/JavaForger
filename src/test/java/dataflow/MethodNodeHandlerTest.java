@@ -11,7 +11,6 @@
 package dataflow;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -32,6 +31,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.NodeCall;
 import dataflow.model.ParameterList;
 
 /**
@@ -64,9 +64,10 @@ public class MethodNodeHandlerTest {
     DataFlowGraph graph = DataFlowGraph.builder().build();
     HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
 
-    DataFlowMethod createdDfm = DataFlowMethod.builder().returnNode(DataFlowNode.builder().name("ret").build())
-        .inputParameters(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build()).build();
-    Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(createdDfm));
+    DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
+    NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
+        .returnNode(returnNode).build();
+    Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(methodCall));
 
     Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
     Mockito.when(resolver.getDataFlowNode(graph, method, overriddenValues, parameterNode)).thenReturn(Optional.of(DataFlowNode.builder().build()));
@@ -74,12 +75,7 @@ public class MethodNodeHandlerTest {
     Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
 
     Assert.assertTrue(resultNode.isPresent());
-    Assert.assertEquals(createdDfm.getReturnNode(), resultNode);
-
-    Collection<DataFlowMethod> inputMethods = method.getInputMethods();
-    Assert.assertEquals(1, inputMethods.size());
-    Assert.assertTrue(inputMethods.contains(createdDfm));
-    Assert.assertEquals(0, method.getOutputMethods().size());
+    Assert.assertEquals(returnNode, resultNode.get());
   }
 
   @Test
@@ -98,9 +94,10 @@ public class MethodNodeHandlerTest {
     DataFlowGraph graph = DataFlowGraph.builder().build();
     HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
 
-    DataFlowMethod createdDfm = DataFlowMethod.builder().returnNode(DataFlowNode.builder().name("ret").build())
-        .inputParameters(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build()).build();
-    Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(createdDfm));
+    DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
+    NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
+        .returnNode(returnNode).build();
+    Mockito.when(resolver.getDataFlowMethod(graph, method, node)).thenReturn(Optional.of(methodCall));
 
     Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
     Mockito.when(resolver.getDataFlowNode(graph, method, overriddenValues, parameterNode)).thenReturn(Optional.of(DataFlowNode.builder().build()));
@@ -108,12 +105,7 @@ public class MethodNodeHandlerTest {
     Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
 
     Assert.assertTrue(resultNode.isPresent());
-    Assert.assertEquals(createdDfm.getReturnNode(), resultNode.get());
-
-    Collection<DataFlowMethod> outputMethods = method.getOutputMethods();
-    Assert.assertEquals(1, outputMethods.size());
-    Assert.assertTrue(outputMethods.contains(createdDfm));
-    Assert.assertEquals(0, method.getInputMethods().size());
+    Assert.assertEquals(returnNode, resultNode.get());
   }
 
 }

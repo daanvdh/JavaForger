@@ -10,23 +10,20 @@
  */
 package dataflow;
 
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.CallableDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.resolution.Resolvable;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedMethodLikeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
+import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserFieldDeclaration;
-import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserParameterDeclaration;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserSymbolDeclaration;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionMethodDeclaration;
@@ -34,6 +31,8 @@ import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionMethodDeclar
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.NodeCall;
+import dataflow.model.ParameterList;
 
 /**
  * Class for resolving {@link DataFlowMethod}s and {@link DataFlowNode}s from {@link Node}s and {@link DataFlowGraph}s.
@@ -58,34 +57,43 @@ public class DataFlowResolver {
     return Optional.ofNullable(flowNode);
   }
 
-  public Optional<DataFlowMethod> getDataFlowMethod(DataFlowGraph graph, DataFlowMethod method, MethodCallExpr node) {
+  public Optional<NodeCall> getDataFlowMethod(DataFlowGraph graph, DataFlowMethod method, MethodCallExpr node) {
     Object resolved = resolve(method, node);
 
-    DataFlowMethod resolvedMethod = null;
-    if (resolved instanceof JavaParserMethodDeclaration) {
-      MethodDeclaration resolvedNode = ((JavaParserMethodDeclaration) resolved).getWrappedNode();
-      resolvedMethod = graph.getMethod(resolvedNode);
-    } else if (resolved instanceof ReflectionMethodDeclaration) {
-      resolvedMethod = getOrCreateExternalMethod(graph, resolved);
+    NodeCall resolvedMethod = null;
+    if (resolved instanceof ResolvedMethodLikeDeclaration) {
+      resolvedMethod = createMethodCall(method, resolved, node);
     } else {
       LOG.warn("In method {}, resolving is not supported for node {} of type {}", method.getName(), node, resolved == null ? null : resolved.getClass());
     }
     return Optional.ofNullable(resolvedMethod);
   }
 
-  private DataFlowMethod getOrCreateExternalMethod(DataFlowGraph graph, Object resolved) {
-    ReflectionMethodDeclaration rmd = (ReflectionMethodDeclaration) resolved;
-    DataFlowGraph dependedGraph = getGraph(graph, rmd);
-    if (dependedGraph == null) {
-      dependedGraph = createGraph(graph, rmd);
+  private NodeCall createMethodCall(DataFlowMethod method, Object resolved, MethodCallExpr node) {
+    ResolvedMethodLikeDeclaration rmd = (ResolvedMethodLikeDeclaration) resolved;
+    NodeCall methodCall =
+        NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(method).representedNode(node).build();
+    if (rmd.getNumberOfParams() > 0) {
+      ParameterList params = ParameterList.builder().build();
+      for (int i = 0; i < rmd.getNumberOfParams(); i++) {
+        ResolvedParameterDeclaration p = rmd.getParam(i);
+        DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).build();
+        params.add(newNode);
+      }
+      methodCall.setIn(params);
     }
-    CallableDeclaration<?> methodName = new MethodDeclaration(EnumSet.of(Modifier.PUBLIC), new ClassOrInterfaceType(), rmd.getQualifiedSignature());
-    DataFlowMethod resolvedMethod = dependedGraph.getMethod(methodName);
-    if (resolvedMethod == null) {
-      resolvedMethod = createMethod(rmd, methodName);
-      dependedGraph.addMethod(resolvedMethod);
+
+    if (rmd instanceof ResolvedMethodDeclaration) {
+      ResolvedType returnType = ((ResolvedMethodDeclaration) rmd).getReturnType();
+      if (!returnType.isVoid()) {
+        DataFlowNode returnNode = DataFlowNode.builder().name("return_" + methodCall.getName()).representedNode(node).build();
+        methodCall.setReturnNode(returnNode);
+      }
+    } else {
+      // TODO handle constructors?
     }
-    return resolvedMethod;
+
+    return methodCall;
   }
 
   private DataFlowGraph getGraph(DataFlowGraph graph, ReflectionMethodDeclaration rmd) {
@@ -102,15 +110,19 @@ public class DataFlowResolver {
     return dependedGraph;
   }
 
-  private DataFlowMethod createMethod(ReflectionMethodDeclaration rmd, CallableDeclaration<?> methodName) {
-    DataFlowMethod newMethod;
-    newMethod = DataFlowMethod.builder().name(rmd.getName()).representedNode(methodName).build();
-    for (int i = 0; i < rmd.getNumberOfParams(); i++) {
-      ResolvedParameterDeclaration p = rmd.getParam(i);
-      DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).build();
-      newMethod.addParameter(newNode);
+  private NodeCall createMethod(DataFlowMethod ownerMethod, ReflectionMethodDeclaration rmd, MethodCallExpr node) {
+    NodeCall methodCall =
+        NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(ownerMethod).representedNode(node).build();
+    if (rmd.getNumberOfParams() > 0) {
+      ParameterList params = ParameterList.builder().build();
+      for (int i = 0; i < rmd.getNumberOfParams(); i++) {
+        ResolvedParameterDeclaration p = rmd.getParam(i);
+        DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).build();
+        params.add(newNode);
+      }
+      methodCall.setIn(params);
     }
-    return newMethod;
+    return methodCall;
   }
 
   private Optional<Node> getJavaParserNode(DataFlowMethod method, Node node) {

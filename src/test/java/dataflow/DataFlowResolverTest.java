@@ -11,27 +11,22 @@
 package dataflow;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.internal.util.collections.Sets;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import common.SymbolSolverSetup;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.NodeCall;
 import dataflow.model.ParameterList;
 
 /**
@@ -65,24 +60,17 @@ public class DataFlowResolverTest {
     DataFlowMethod method = DataFlowMethod.builder().build();
     MethodCallExpr node = methodCalls.get(0);
 
-    Optional<DataFlowMethod> resultMethod = sut.getDataFlowMethod(graph, method, node);
+    Optional<NodeCall> resultMethod = sut.getDataFlowMethod(graph, method, node);
 
     Assert.assertTrue(resultMethod.isPresent());
     Assert.assertEquals("append", resultMethod.get().getName());
-    Map<String, DataFlowGraph> dependedGraphs = graph.getDependedGraphs();
-    Assert.assertEquals(1, dependedGraphs.size());
-    String qualifiedPath = "java.lang.StringBuilder";
-    Assert.assertEquals(Sets.newSet(qualifiedPath), dependedGraphs.keySet());
-    DataFlowGraph newDfg = dependedGraphs.get(qualifiedPath);
-    Assert.assertEquals("StringBuilder", newDfg.getName());
-    Assert.assertEquals("java.lang", newDfg.getClassPackage());
-    Assert.assertEquals(1, newDfg.getMethods().size());
-    MethodDeclaration expectedRepresentedNode =
-        new MethodDeclaration(EnumSet.of(Modifier.PUBLIC), new ClassOrInterfaceType(), "java.lang.StringBuilder.append(java.lang.String)");
-    Assert.assertEquals("Only contained keys " + newDfg.getMethodMap().keySet(), resultMethod.get(), newDfg.getMethod(expectedRepresentedNode));
 
-    DataFlowMethod expectedDfm = DataFlowMethod.builder().name("append").representedNode(expectedRepresentedNode).graph(newDfg)
-        .inputParameters(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build()).build();
+    MethodCallExpr expectedRepresentedNode = cu.findAll(MethodCallExpr.class).get(0);
+    DataFlowNode expectedDfn = DataFlowNode.builder().name("return_append").representedNode(expectedRepresentedNode).build();
+    NodeCall expectedDfm =
+        NodeCall.builder().name("append").representedNode(expectedRepresentedNode).claz("StringBuilder").peckage("java.lang").returnNode(expectedDfn)
+            .in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("arg0").type("java.lang.String").build())).build()).build();
+
     Assert.assertEquals(expectedDfm, resultMethod.get());
   }
 

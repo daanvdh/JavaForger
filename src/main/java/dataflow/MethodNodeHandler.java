@@ -34,6 +34,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.NodeCall;
 
 /**
  * Class for handling {@link JavaParser} {@link Node}s while filling a {@link DataFlowMethod}.
@@ -107,42 +108,30 @@ public class MethodNodeHandler {
   }
 
   private Optional<DataFlowNode> handleMethodCallExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, MethodCallExpr n) {
-    Optional<DataFlowMethod> optionalCalledMethod = resolver.getDataFlowMethod(graph, method, n);
+    Optional<NodeCall> optionalCalledMethod = resolver.getDataFlowMethod(graph, method, n);
     if (!optionalCalledMethod.isPresent()) {
       LOG.warn("In method {} could not resolve method call {} of type {}", method.getName(), n, n.getClass());
       return Optional.empty();
     }
-    DataFlowMethod calledMethod = optionalCalledMethod.get();
+    NodeCall calledMethod = optionalCalledMethod.get();
 
     NodeList<Expression> arguments = n.getArguments();
-    if (arguments.size() != calledMethod.getInputParameters().nofNodes()) {
-      LOG.warn("In method {} for called method {} the used nof arguments {} is not equal to the expected nof arguments {}", method.getName(), arguments.size(),
-          calledMethod.getInputParameters().nofNodes());
+    if ((arguments.size() > 0 && calledMethod.getIn() == null) || arguments.size() != calledMethod.getIn().getNodes().size()) {
+      LOG.warn("In method {} for called method {} the used nof arguments {} is not equal to the expected nof arguments {}", method.getName(),
+          calledMethod.getName(), arguments, calledMethod.getIn());
       return Optional.empty();
     }
 
+    // Connect to NodeCall arguments
     for (int i = 0; i < arguments.size(); i++) {
       Optional<DataFlowNode> arg = handleNode(graph, method, overriddenValues, arguments.get(i));
       if (arg.isPresent()) {
-        arg.get().addEdgeTo(calledMethod.getInputParameters().getNodes().get(i));
-      }
-    }
-
-    if (n.getParentNode().isPresent()) {
-      if (n.getParentNode().get() instanceof ReturnStmt) {
-        method.addInputMethod(calledMethod);
-      } else if (n.getParentNode().get() instanceof AssignExpr) {
-        method.addInputMethod(calledMethod);
-        // TODO these are not the only cases that we need to handle.
-        // TODO make sure that we indeed need to add the input method in this case.
-      } else {
-        // TODO Determine whether or not a DFM needs to contain in/output methods.
-        // method.addOutputMethod(calledMethod);
+        arg.get().addEdgeTo(calledMethod.getIn().getNodes().get(i));
       }
     }
 
     // Return the return node of the called method so that the return value can be assigned to the caller.
-    return calledMethod.getReturnNode();
+    return Optional.ofNullable(calledMethod.getReturnNode());
   }
 
   private Optional<DataFlowNode> handleBlockStmt(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, BlockStmt node) {

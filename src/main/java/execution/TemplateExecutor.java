@@ -23,8 +23,8 @@ public final class TemplateExecutor {
   private static final String PATH_PREFIX = "C:/gitrepo";
 
   public static void main(String[] args) {
-    String inputClass = "/JavaForger/src/main/java/dataflow/model/ParameterList.java";
-    JavaForgerConfiguration config = DefaultConfigurations.forHashCodeAndTest();
+    String inputClass = "/JavaForger/src/main/java/dataflow/model/NodeCall.java";
+    JavaForgerConfiguration config = DefaultConfigurations.forToString();
 
     // config.setMerge(false);
     // config.setRecursive(JavaForgerConfiguration::setMerge, false);
