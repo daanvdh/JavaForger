@@ -19,6 +19,7 @@ package dataflow;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import dataflow.model.DataFlowGraph;
@@ -51,6 +52,21 @@ public class GraphService {
   public List<DataFlowNode> walkBackUntilLastInScopeOfMethod(List<DataFlowNode> nodeInMethod, DataFlowMethod dataFlowMethod) {
     // TODO Auto-generated method stub
     return Collections.emptyList();
+  }
+
+  /**
+   * Walks back via {@link DataFlowNode#getIn()} until for each node it holds that either it does not have any input nodes or the predicate holds. The input
+   * {@link DataFlowNode} will be returned if the {@link Predicate} holds for it.
+   *
+   * @param dfn The input {@link DataFlowNode}
+   * @param predicate The {@link Predicate} to check on the {@link DataFlowNode}
+   * @return Returns a list of nodes that either have no incoming edges, or for which the predicate holds.
+   */
+  public List<DataFlowNode> walkBackUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate) {
+    if (dfn.getIn().isEmpty() || predicate.test(dfn)) {
+      return Collections.singletonList(dfn);
+    }
+    return dfn.getIn().stream().map(edge -> walkBackUntil(edge.getFrom(), predicate)).flatMap(List::stream).collect(Collectors.toList());
   }
 
 }

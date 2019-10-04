@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -33,8 +34,10 @@ import dataflow.GraphService;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
+import dataflow.model.NodeCall;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
+import templateInput.definition.MethodDefinition.Builder;
 import templateInput.definition.VariableDefinition;
 
 /**
@@ -104,6 +107,68 @@ public class MethodFactory {
   }
 
   private void addInputMethods(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
+
+    for (NodeCall call : dataFlowMethod.getCalledMethods()) {
+      // If method call has a return node and it's return node is read
+      if (call.getReturnNode().map(t -> !t.getIn().isEmpty()).isPresent()) {
+        Builder builder = call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
+        String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
+        builder.name(call.getName()).type(type);
+
+        List<DataFlowNode> inputParameters = call.getIn().getNodes();
+        for (DataFlowNode param : inputParameters) {
+
+          // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
+          // to define it in test data as well
+
+          // TODO this logic needs to be in the DFN itself
+          Predicate<DataFlowNode> isField = n -> n.getOwner().filter(o -> o.equals(dataFlowMethod.getOwner().get())).isPresent();
+          Predicate<DataFlowNode> isParam = n -> dataFlowMethod.getInputParameters().contains(n);
+          Predicate<DataFlowNode> isMethodReturn = n -> n.getOwner() //
+              // if it's a return node from a nodeCall (that is the only type of node directly owned by a NodeCall)
+              .filter(o -> NodeCall.class.isAssignableFrom(o.getClass())).map(NodeCall.class::cast)
+              // if the method is not present it is not parsed and is therefore part of another class.
+              .filter(t -> !t.getCalledMethod().isPresent())
+              // If the method is present but the owning class is different than the current class.
+              .filter(t -> !t.getCalledMethod().get().getOwner().equals(dataFlowMethod.getOwner()))
+              // If it's still present after the filters it is a method return node.
+              .isPresent();
+
+          List<DataFlowNode> inputNodes = graphService.walkBackUntil(param, isField.or(isParam).or(isMethodReturn));
+          // TODO construct the call signature for this method
+          StringBuilder callSignature = new StringBuilder();
+          callSignature.append(call.getName()).append("(");
+          boolean first = true;
+          // TODO construct the return signature for this method
+          String returnSignature = "returnSignature";
+          for (DataFlowNode inputNode : inputNodes) {
+            if (!first) {
+              callSignature.append(", ");
+            }
+
+            if (isField.test(param)) {
+              // TODO handle field: field must be set inside the template
+            } else if (isParam.test(inputNode)) {
+              // TODO handle param: Should probably not have to do anything, since parameters will already have to be set inside any test calling this method.
+              callSignature.append(inputNode.getName());
+            } else if (isMethodReturn.test(inputNode)) {
+              // TODO handle return node: Maybe we have to make sure that the name of something else returning it is equal to this methodCall receiving it.
+              // Maybe we do not need to do anything.
+            } else {
+              // TODO handle nodes that are constructed inside the method. These will have to be constructed and initialized separately.
+            }
+          }
+          callSignature.append(")");
+        }
+
+        // get the input for
+
+      }
+    }
+
+    // =======================================================================================
+    // =======================================================================================
+    // =======================================================================================
     Collection<DataFlowMethod> inputMethodNodes = dataFlowMethod.getInputMethods();
     for (DataFlowMethod dfm : inputMethodNodes) {
 

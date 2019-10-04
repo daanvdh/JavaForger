@@ -36,9 +36,9 @@ public class MethodDefinition extends InitializedTypeDefinition {
   private List<VariableDefinition> parameters = new ArrayList<>();
   /** The fields that might be changed after this method call */
   private List<FlowReceiverDefinition> changedFields = new ArrayList<>();
-  /** The methods called from this method, where the return value is not used. */
-  private List<MethodDefinition> inputMethods = new ArrayList<>();
   /** The methods called from this method, where the return value is used. */
+  private List<MethodDefinition> inputMethods = new ArrayList<>();
+  /** The methods called from this method, where the return value is not used. */
   private List<MethodDefinition> outputMethods = new ArrayList<>();
 
   private MethodDefinition(Builder builder) {

@@ -18,7 +18,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * A call from
+ * Represents a call to a node (method, constructor or other code block). This node will be owned by the calling method. This class groups all in/output data
+ * from one method to another.
  *
  * @author Daan
  */
@@ -35,7 +36,10 @@ public class NodeCall extends OwnedNode {
   private OwnedNode owner;
   /** The called method, this can be null in case that the given method is not parsed. */
   private DataFlowMethod calledMethod;
-
+  /**
+   * The return Node of a node call, this will be null if method is void. If the return value is not read, the outgoing edges of this node will be empty. There
+   * should only be a single incoming edge from the return node of the called method. This NodeCall is the owner of the returnNode.
+   */
   private DataFlowNode returnNode;
 
   private String claz;
@@ -77,8 +81,8 @@ public class NodeCall extends OwnedNode {
     this.out = out;
   }
 
-  public DataFlowMethod getCalledMethod() {
-    return calledMethod;
+  public Optional<DataFlowMethod> getCalledMethod() {
+    return Optional.ofNullable(calledMethod);
   }
 
   public void setCalledMethod(DataFlowMethod calledMethod) {
@@ -106,8 +110,8 @@ public class NodeCall extends OwnedNode {
     this.owner = owner;
   }
 
-  public DataFlowNode getReturnNode() {
-    return returnNode;
+  public Optional<DataFlowNode> getReturnNode() {
+    return Optional.ofNullable(returnNode);
   }
 
   public void setReturnNode(DataFlowNode returnNode) {

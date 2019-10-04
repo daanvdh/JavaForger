@@ -114,7 +114,6 @@ public class MethodFactoryTest {
   @Test
   public void testAddInputMethods() {
     Assert.fail("Finish test and implementation");
-
   }
 
 }

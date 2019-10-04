@@ -132,7 +132,7 @@ public class MethodNodeHandler {
     }
 
     // Return the return node of the called method so that the return value can be assigned to the caller.
-    return Optional.ofNullable(calledMethod.getReturnNode());
+    return calledMethod.getReturnNode();
   }
 
   private Optional<DataFlowNode> handleBlockStmt(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, BlockStmt node) {

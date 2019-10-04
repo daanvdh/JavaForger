@@ -48,7 +48,9 @@ import org.junit.Test;
     
     // TODO The expectedReturn is the name of the variable that was expected. 
     // This should already have been defined earlier in the template by values returned by mocks, variables defined within the method or input parameters. 
+<#--
     Assert.assertEquals("Unexpected ${method.name}", ${method.expectedReturn}, ${method.returnSignature});
+-->
     
   }
 </#list>
