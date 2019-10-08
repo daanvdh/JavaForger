@@ -22,6 +22,8 @@ import java.io.IOException;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.MultiTemplateLoader;
@@ -53,6 +55,7 @@ public class StaticJavaForgerConfiguration {
   private StaticJavaForgerConfiguration() {
     // don't create it via any constructor
     this.freeMarkerConfiguration = FreeMarkerConfiguration.getDefaultConfig();
+    setupSymbolSolver();
   }
 
   public static StaticJavaForgerConfiguration getConfig() {
@@ -114,13 +117,19 @@ public class StaticJavaForgerConfiguration {
     this.freeMarkerConfiguration.setTemplateLoader(mtl);
   }
 
-  public void setSymbolSolver(JavaSymbolSolver symbolSolver) {
+  public final void setSymbolSolver(JavaSymbolSolver symbolSolver) {
     this.symbolSolver = symbolSolver;
     JavaParser.getStaticConfiguration().setSymbolResolver(symbolSolver);
   }
 
   public JavaSymbolSolver getSymbolSolver() {
     return symbolSolver;
+  }
+
+  private final void setupSymbolSolver() {
+    TypeSolver reflTypeSolver = new ReflectionTypeSolver();
+    JavaSymbolSolver symbolSolver = new JavaSymbolSolver(reflTypeSolver);
+    this.setSymbolSolver(symbolSolver);
   }
 
 }

@@ -10,8 +10,15 @@
  */
 package execution;
 
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
+import configuration.StaticJavaForgerConfiguration;
 import generator.JavaForger;
 
 /**
@@ -23,8 +30,9 @@ public final class TemplateExecutor {
   private static final String PATH_PREFIX = "C:/gitrepo";
 
   public static void main(String[] args) {
-    String inputClass = "/JavaForger/src/main/java/dataflow/model/NodeCall.java";
-    JavaForgerConfiguration config = DefaultConfigurations.forToString();
+    setupSymbolSolver();
+    String inputClass = "/JavaForger/src/main/java/templateInput/definition/MethodDefinition.java";
+    JavaForgerConfiguration config = DefaultConfigurations.forBuilderAndTest();
 
     // config.setMerge(false);
     // config.setRecursive(JavaForgerConfiguration::setMerge, false);
@@ -32,6 +40,14 @@ public final class TemplateExecutor {
     // config.setOverride(true);
 
     JavaForger.execute(config, PATH_PREFIX + inputClass).print();
+  }
+
+  private static void setupSymbolSolver() {
+    StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
+    TypeSolver[] reflTypeSolver = {new ReflectionTypeSolver(), new JavaParserTypeSolver(PATH_PREFIX + "/JavaForger/src/main/java/")};
+    TypeSolver typeSolver = new CombinedTypeSolver(reflTypeSolver);
+    JavaSymbolSolver symbolSolver = new JavaSymbolSolver(typeSolver);
+    staticConfig.setSymbolSolver(symbolSolver);
   }
 
 }
