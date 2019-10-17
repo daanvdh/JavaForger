@@ -13,11 +13,11 @@ package dataflow;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.Position;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -27,6 +27,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -84,7 +85,7 @@ public class MethodNodeHandler {
 
   private Optional<DataFlowNode> handleVariableDeclarator(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues,
       VariableDeclarator n) {
-    DataFlowNode created = method.addNode(n.getNameAsString(), n);
+    DataFlowNode created = method.createAndAddNode(n.getNameAsString(), n);
     Optional<Expression> initializer = n.getInitializer();
     if (initializer.isPresent()) {
       Optional<DataFlowNode> assigner = handleNode(graph, method, overriddenValues, initializer.get());
@@ -149,7 +150,7 @@ public class MethodNodeHandler {
       Optional<DataFlowNode> assignToReturn = handleNode(graph, method, overriddenValues, expression);
 
       if (assignToReturn.isPresent()) {
-        createdReturn = method.addNode(method.getName() + ".return" + n.getBegin().map(Position::toString).orElse("?"), n);
+        createdReturn = method.createAndAddNode(method.getName() + "_return_" + n.getBegin().map(t -> "line" + t.line + "_col" + t.column).orElse("?"), n);
         assignToReturn.get().addEdgeTo(createdReturn);
         if (method.getReturnNode().isPresent()) {
           createdReturn.addEdgeTo(method.getReturnNode().get());
@@ -181,28 +182,49 @@ public class MethodNodeHandler {
   private Optional<DataFlowNode> handleAssignExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, AssignExpr expr) {
     Expression assignedJP = expr.getTarget();
     Expression assignerJP = expr.getValue();
-    // This is the original field
-    Optional<DataFlowNode> assignedDF = resolver.getDataFlowNode(graph, method, overriddenValues, assignedJP);
+    Optional<Node> optionalRealAssignedJP = resolver.getJavaParserNode(method, assignedJP);
     Optional<DataFlowNode> assignerDF = resolver.getDataFlowNode(graph, method, overriddenValues, assignerJP);
-    if (assignedDF.isPresent() && assignerDF.isPresent()) {
+
+    if (!optionalRealAssignedJP.isPresent()) {
+      // Logging is already done in the method call.
+      return Optional.empty();
+    }
+    if (!(assignedJP instanceof NodeWithSimpleName)) {
+      LOG.warn("Not able to create a new DFN if the assigned node does not implement NodeWithSimpleName, for node {}", assignedJP);
+      return Optional.empty();
+    }
+    if (!assignerDF.isPresent()) {
+      // Logging is already done in the method call.
+      return Optional.empty();
+    }
+
+    Node realAssignedJP = optionalRealAssignedJP.get();
+    String name = nameForInBetweenNode(method, overriddenValues, realAssignedJP, (NodeWithSimpleName<?>) assignedJP);
+    DataFlowNode flowNode = method.createAndAddNode(name, expr);
+    if (isField(realAssignedJP)) {
       // This is the version of the field that will receive the assigner edge.
       // If this is the last assignment to the field, an edge to the original field will be created.
-      DataFlowNode flowNode = method.addNode(assignedJP.toString(), assignedJP);
-      if (isField(assignedDF.get())) {
-        overriddenValues.put(assignedDF.get().getRepresentedNode(), flowNode);
-      }
-
-      flowNode.setName(method.getName() + "." + assignedDF.get().getName());
-
-      assignerDF.get().addEdgeTo(flowNode);
+      overriddenValues.put(realAssignedJP, flowNode);
     }
-    return null;
+
+    assignerDF.get().addEdgeTo(flowNode);
+    return Optional.of(flowNode);
   }
 
-  private boolean isField(DataFlowNode assignedDF) {
-    // TODO handle the fact that this can represent a field in an in-between state, in that case we have to walk back to figure that out.
-    // The question is how far do we have to walk back...
-    Node representedNode = assignedDF.getRepresentedNode();
+  private String nameForInBetweenNode(DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, Node realAssignedJP,
+      NodeWithSimpleName<?> nodeWithName) {
+    String namePostFix = "";
+    if (overriddenValues.containsKey(realAssignedJP)) {
+      DataFlowNode overridden = overriddenValues.get(realAssignedJP);
+      String stringNumber = overridden.getName().substring(overridden.getName().lastIndexOf("."));
+      namePostFix = StringUtils.isNumeric(stringNumber) ? "." + (new Integer(stringNumber) + 1) : ".2";
+    }
+
+    // Make the name unique for multiple assignments to the same variable
+    return method.getName() + "." + nodeWithName.getNameAsString() + namePostFix;
+  }
+
+  private boolean isField(Node representedNode) {
     boolean isField = false;
     if (representedNode instanceof VariableDeclarator) {
       VariableDeclarator vd = (VariableDeclarator) representedNode;

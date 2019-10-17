@@ -182,8 +182,8 @@ public class DataFlowGraphFactory {
     overwriddenValues.forEach((javaParserNode, dataFlowNode) -> dataFlowNode.addEdgeTo(graph.getNode(javaParserNode)));
 
     // Add changed fields
-    overwriddenValues.keySet().stream().filter(javaParserNode -> VariableDeclarator.class.isAssignableFrom(javaParserNode.getClass())).map(graph::getNode)
-        .filter(n -> n != null).forEach(method::addChangedField);
+    overwriddenValues.keySet().stream().filter(VariableDeclarator.class::isInstance).map(graph::getNode).filter(n -> n != null).distinct()
+        .forEach(method::addChangedField);
   }
 
   private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {

@@ -75,10 +75,10 @@ public class NodeBuilder {
     return builder;
   }
 
-  public static NodeBuilder ofReturn(String methodName) {
-    NodeBuilder builder = new NodeBuilder(methodName + ".return", NodeType.RETURN);
-    builder.method = methodName;
-    return builder;
+  public static NodeBuilder ofReturn(String methodName, String line, String column) {
+    NodeBuilder methodReturn = new NodeBuilder(methodName + "_return_" + line + "_" + column, NodeType.RETURN);
+    methodReturn.method = methodName;
+    return methodReturn;
   }
 
   public NodeBuilder to(String name) {

@@ -107,9 +107,16 @@ public class GraphBuilder {
       break;
     case RETURN:
       method = getOrCreateMethod(graph, methods, nodeBuilder.getMethod());
-      method.setReturnNode(node);
+
+      method.addNode(node);
+
+      DataFlowNode methodReturn = getOrCreateReturnNode(method);
+      node.addEdgeTo(methodReturn);
+
       break;
     case IN_BETWEEN:
+      currentMethod.addNode(node);
+      break;
     default:
       // Do nothing
     }
@@ -117,6 +124,13 @@ public class GraphBuilder {
     DataFlowMethod nextMethod = method == null ? currentMethod : method;
     addedNodes.add(node);
     nodeBuilder.getOut().forEach(nb -> addNode(graph, nb, nodes, methods, node, nextMethod, addedNodes));
+  }
+
+  private DataFlowNode getOrCreateReturnNode(DataFlowMethod method) {
+    if (!method.getReturnNode().isPresent()) {
+      method.setReturnNode(new DataFlowNode(method.getName() + "_return", method.getRepresentedNode()));
+    }
+    return method.getReturnNode().get();
   }
 
   private DataFlowMethod getOrCreateMethod(DataFlowGraph graph, Map<String, DataFlowMethod> methods, String methodName) {

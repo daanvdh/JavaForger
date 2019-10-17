@@ -31,8 +31,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 
-import dataflow.DataFlowException;
-
 /**
  * DataFlow class representing a method inside a {@link DataFlowGraph}.
  *
@@ -40,7 +38,10 @@ import dataflow.DataFlowException;
  */
 public class DataFlowMethod extends OwnedNode {
 
+  /** All nodes defined within this method. This method should be an (indirect) owner for each of these nodes. */
+  private Map<Node, DataFlowNode> nodes = new HashMap<>();
   /** The node which this method represents */
+  // TODO remove this field
   private CallableDeclaration<?> representedNode;
   /** The graph which this method is part of */
   private DataFlowGraph graph;
@@ -66,8 +67,6 @@ public class DataFlowMethod extends OwnedNode {
   /** The methods that are called from within this method for which the return value is either void or ignored */
   // TODO Should probably be removed since it's a derivative
   private Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
-  /** All nodes defined within this method */
-  private Map<Node, DataFlowNode> nodes = new HashMap<>();
 
   public DataFlowMethod(String name, CallableDeclaration<?> representedNode) {
     super(name, representedNode);
@@ -111,6 +110,7 @@ public class DataFlowMethod extends OwnedNode {
   public void setReturnNode(DataFlowNode returnNode) {
     this.returnNode = returnNode;
     returnNode.setOwner(this);
+    this.addNode(returnNode);
   }
 
   public ParameterList getInputParameters() {
@@ -119,7 +119,7 @@ public class DataFlowMethod extends OwnedNode {
 
   public void setInputParameters(List<DataFlowNode> inputParameters) {
     this.inputParameters = new ParameterList(inputParameters, this);
-    this.getGraph().addNodes(inputParameters);
+    this.addNodes(inputParameters);
   }
 
   public void setInputParameters(ParameterList inputParameters) {
@@ -148,19 +148,6 @@ public class DataFlowMethod extends OwnedNode {
 
   public void setInputMethods(Map<DataFlowNode, DataFlowMethod> inputMethods) {
     this.inputMethods = inputMethods;
-  }
-
-  public void addInputMethods(List<DataFlowMethod> inputMethods) {
-    inputMethods.forEach(this::addInputMethod);
-  }
-
-  public void addInputMethod(DataFlowMethod m) {
-    this.inputMethods.put(m.getReturnNode().get(), m);
-  }
-
-  public void addOutputMethod(DataFlowMethod m) {
-    throw new DataFlowException("Adding output methods is not supported yet, it must be redesigned how to store them since they do not have a return node.");
-    // this.outputMethods.put(m.getReturnNode().get(), m);
   }
 
   public Collection<DataFlowMethod> getOutputMethods() {
@@ -192,11 +179,15 @@ public class DataFlowMethod extends OwnedNode {
     this.nodes = nodes;
   }
 
+  public void addNodes(List<DataFlowNode> inputParameters) {
+    inputParameters.forEach(this::addNode);
+  }
+
   public void addNode(DataFlowNode created) {
     this.nodes.put(created.getRepresentedNode(), created);
   }
 
-  public DataFlowNode addNode(String name, Node n) {
+  public DataFlowNode createAndAddNode(String name, Node n) {
     DataFlowNode dfn = new DataFlowNode(name, n);
     dfn.setOwner(this);
     this.nodes.put(n, dfn);
@@ -209,10 +200,12 @@ public class DataFlowMethod extends OwnedNode {
 
   public void addParameter(DataFlowNode node) {
     this.inputParameters.add(node);
+    this.addNode(node);
   }
 
   public void addChangedField(DataFlowNode node) {
     this.changedFields.add(node);
+    this.addNode(node);
   }
 
   public void addChangedFields(DataFlowNode... fields) {
@@ -262,6 +255,7 @@ public class DataFlowMethod extends OwnedNode {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("method " + super.getName() + "{\n");
+
     sb.append("\tparameters{\n");
     for (DataFlowNode p : inputParameters.getParameters()) {
       sb.append(p.toStringForward(1, 2) + "\n");
@@ -273,6 +267,13 @@ public class DataFlowMethod extends OwnedNode {
       sb.append(p.toStringForward(1, 2) + "\n");
     }
     sb.append("\t}\n");
+
+    sb.append("\tnodes{\n");
+    for (DataFlowNode p : nodes.values()) {
+      sb.append("\t\t" + p.toString() + "\n");
+    }
+    sb.append("\t}\n");
+
     sb.append("\treturn " + (this.returnNode == null ? "null" : this.returnNode.getName()) + "\n");
     sb.append("}");
     return sb.toString();

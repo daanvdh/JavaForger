@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.Resolvable;
@@ -41,6 +42,15 @@ import dataflow.model.ParameterList;
 public class DataFlowResolver {
   private static final Logger LOG = LoggerFactory.getLogger(DataFlowResolver.class);
 
+  /**
+   * TODO javadoc
+   *
+   * @param graph
+   * @param method
+   * @param overwriddenValues
+   * @param node
+   * @return
+   */
   public Optional<DataFlowNode> getDataFlowNode(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overwriddenValues, Node node) {
     Optional<Node> optionalResolvedNode = getJavaParserNode(method, node);
     DataFlowNode flowNode = null;
@@ -95,7 +105,15 @@ public class DataFlowResolver {
     return methodCall;
   }
 
-  private Optional<Node> getJavaParserNode(DataFlowMethod method, Node node) {
+  /**
+   * Gets the node to which the input points to. For example for the input "this.s" which points to a field usage in a class, the {@link JavaParser}
+   * {@link Node} that will be returned is the field "s".
+   *
+   * @param method Only needed for logging purposes
+   * @param node The node to resolve.
+   * @return An empty {@link Optional} if the node could not be resolved, an {@link Optional} with the pointed to node otherwise.
+   */
+  public Optional<Node> getJavaParserNode(DataFlowMethod method, Node node) {
     Object resolved = resolve(method, node);
     Node resolvedNode = null;
     if (resolved instanceof JavaParserFieldDeclaration) {
