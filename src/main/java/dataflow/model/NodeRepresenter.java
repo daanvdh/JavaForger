@@ -23,11 +23,12 @@ import com.github.javaparser.ast.Node;
  * A class representing a {@link JavaParser} {@link Node}.
  *
  * @author Daan
+ * @param <T> The type of the {@link JavaParser} {@link Node} to represent.
  */
-public abstract class NodeRepresenter {
+public abstract class NodeRepresenter<T extends Node> {
 
   /** The {@link JavaParser} {@link Node} */
-  protected Node representedNode;
+  protected T representedNode;
   /** The name of this node */
   private String name;
 
@@ -35,25 +36,25 @@ public abstract class NodeRepresenter {
     // empty constructor which would otherwise be invisible
   }
 
-  public NodeRepresenter(Node representedNode) {
+  public NodeRepresenter(T representedNode) {
     this.representedNode = representedNode;
   }
 
-  public NodeRepresenter(String name, Node representedNode) {
+  public NodeRepresenter(String name, T representedNode) {
     this(representedNode);
     this.name = name;
   }
 
-  protected NodeRepresenter(NodeRepresenter.Builder<?> builder) {
+  protected NodeRepresenter(NodeRepresenter.Builder<T, ?> builder) {
     this.representedNode = builder.representedNode == null ? this.representedNode : builder.representedNode;
     this.name = builder.name == null ? this.name : builder.name;
   }
 
-  public Node getRepresentedNode() {
+  public T getRepresentedNode() {
     return representedNode;
   }
 
-  public void setRepresentedNode(Node representedNode) {
+  public void setRepresentedNode(T representedNode) {
     this.representedNode = representedNode;
   }
 
@@ -71,7 +72,7 @@ public abstract class NodeRepresenter {
     if (this == obj) {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
-      NodeRepresenter other = (NodeRepresenter) obj;
+      NodeRepresenter<?> other = (NodeRepresenter<?>) obj;
       equals = new EqualsBuilder().append(representedNode, other.representedNode).append(name, other.name).isEquals();
     }
     return equals;
@@ -92,7 +93,7 @@ public abstract class NodeRepresenter {
    *
    * @return created builder
    */
-  public static Builder<? extends NodeRepresenter.Builder<?>> builder() {
+  public static <T extends Node> Builder<T, ? extends NodeRepresenter.Builder<T, ?>> builder() {
     return new Builder<>();
   }
 
@@ -100,22 +101,22 @@ public abstract class NodeRepresenter {
    * Builder to build {@link NodeRepresenter}.
    */
   @SuppressWarnings("unchecked")
-  public static class Builder<T extends NodeRepresenter.Builder<?>> {
-    private Node representedNode;
+  public static class Builder<T extends Node, S extends NodeRepresenter.Builder<T, ?>> {
+    private T representedNode;
     private String name;
 
     protected Builder() {
       // Builder should only be used via the parent class or extending builder
     }
 
-    public T representedNode(Node representedNode) {
+    public S representedNode(T representedNode) {
       this.representedNode = representedNode;
-      return (T) this;
+      return (S) this;
     }
 
-    public T name(String name) {
+    public S name(String name) {
       this.name = name;
-      return (T) this;
+      return (S) this;
     }
 
   }

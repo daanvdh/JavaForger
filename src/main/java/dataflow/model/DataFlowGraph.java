@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 /**
  * Graph representing the data flow within a single class. The {@link DataFlowNode}s represent variables. An {@link DataFlowEdge} goes from node a to b iff a
@@ -199,11 +200,11 @@ public class DataFlowGraph extends OwnedNode {
   /**
    * Builder to build {@link DataFlowGraph}.
    */
-  public static final class Builder extends NodeRepresenter.Builder<DataFlowGraph.Builder> {
+  public static final class Builder extends NodeRepresenter.Builder<ClassOrInterfaceDeclaration, DataFlowGraph.Builder> {
     private String classPackage;
     private List<DataFlowNode> fields = new ArrayList<>();
     private List<DataFlowMethod> constructors = new ArrayList<>();
-    private Map<Node, DataFlowMethod> methods;
+    private Map<Node, DataFlowMethod> methods = new HashMap<>();
     private Map<Node, DataFlowNode> nodes;
     private Map<String, DataFlowGraph> dependedGraphs;
 
@@ -233,6 +234,11 @@ public class DataFlowGraph extends OwnedNode {
       return this;
     }
 
+    public Builder methods(DataFlowMethod... methods) {
+      Stream.of(methods).forEach(m -> this.methods.put(m.getRepresentedNode(), m));
+      return this;
+    }
+
     public Builder nodes(Map<Node, DataFlowNode> nodes) {
       this.nodes = nodes;
       return this;
@@ -246,6 +252,7 @@ public class DataFlowGraph extends OwnedNode {
     public DataFlowGraph build() {
       return new DataFlowGraph(this);
     }
+
   }
 
 }

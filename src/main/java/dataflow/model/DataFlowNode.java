@@ -36,7 +36,7 @@ import com.github.javaparser.ast.Node;
  *
  * @author Daan
  */
-public class DataFlowNode extends OwnedNode {
+public class DataFlowNode extends OwnedNode<Node> {
 
   /** The {@link DataFlowEdge}s from {@link DataFlowNode}s that influence the state of this node */
   private List<DataFlowEdge> in = new ArrayList<>();
@@ -51,7 +51,7 @@ public class DataFlowNode extends OwnedNode {
    * The {@link DataFlowMethod} that contains this {@link DataFlowNode}, this will be null in case this node was not defined within a method, for instance in
    * case of a class field.
    */
-  private OwnedNode owner;
+  private OwnedNode<?> owner;
 
   public DataFlowNode(Node representedNode) {
     super(representedNode);
@@ -194,19 +194,19 @@ public class DataFlowNode extends OwnedNode {
   }
 
   @Override
-  public Optional<OwnedNode> getOwner() {
+  public Optional<OwnedNode<?>> getOwner() {
     return Optional.ofNullable(this.owner);
   }
 
-  public void setOwner(OwnedNode owner) {
+  public void setOwner(OwnedNode<?> owner) {
     this.owner = owner;
   }
 
   /**
    * Builder to build {@link DataFlowNode}.
    */
-  public static final class Builder extends NodeRepresenter.Builder<DataFlowNode.Builder> {
-    private OwnedNode owner;
+  public static final class Builder extends NodeRepresenter.Builder<Node, DataFlowNode.Builder> {
+    private OwnedNode<?> owner;
     private List<DataFlowEdge> in = new ArrayList<>();
     private List<DataFlowEdge> out = new ArrayList<>();
     private String type;
@@ -232,7 +232,7 @@ public class DataFlowNode extends OwnedNode {
       return this;
     }
 
-    public Builder owner(OwnedNode owner) {
+    public Builder owner(OwnedNode<?> owner) {
       this.owner = owner;
       return this;
     }

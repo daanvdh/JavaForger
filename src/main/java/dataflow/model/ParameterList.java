@@ -11,11 +11,14 @@
 package dataflow.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import com.github.javaparser.ast.Node;
 
 import dataflow.DataFlowException;
 
@@ -26,13 +29,13 @@ import dataflow.DataFlowException;
  *
  * @author Daan
  */
-public class ParameterList extends OwnedNode {
+public class ParameterList extends OwnedNode<Node> {
 
   private List<DataFlowNode> nodes = new ArrayList<>();
   /** The method/constructor/codeBlock that has this parameterList as input or the {@link NodeCall} for which this is the input. */
-  private OwnedNode owner;
+  private OwnedNode<?> owner;
 
-  public ParameterList(OwnedNode method) {
+  public ParameterList(OwnedNode<?> method) {
     this.owner = method;
   }
 
@@ -49,8 +52,12 @@ public class ParameterList extends OwnedNode {
   }
 
   @Override
-  public Optional<OwnedNode> getOwner() {
+  public Optional<OwnedNode<?>> getOwner() {
     return Optional.ofNullable(this.owner);
+  }
+
+  public void setOwner(OwnedNode<?> owner) {
+    this.owner = owner;
   }
 
   public List<DataFlowNode> getParameters() {
@@ -124,12 +131,17 @@ public class ParameterList extends OwnedNode {
   /**
    * Builder to build {@link ParameterList}.
    */
-  public static final class Builder extends NodeRepresenter.Builder<ParameterList.Builder> {
+  public static final class Builder extends NodeRepresenter.Builder<Node, ParameterList.Builder> {
     private List<DataFlowNode> nodes = new ArrayList<>();
-    private OwnedNode owner;
+    private OwnedNode<?> owner;
 
     private Builder() {
       // Builder should only be constructed via the parent class
+    }
+
+    public Builder node(DataFlowNode node) {
+      this.nodes.add(node);
+      return this;
     }
 
     public Builder nodes(List<DataFlowNode> nodes) {
@@ -138,7 +150,13 @@ public class ParameterList extends OwnedNode {
       return this;
     }
 
-    public Builder owner(OwnedNode owner) {
+    public Builder nodes(DataFlowNode... nodes) {
+      this.nodes.clear();
+      this.nodes.addAll(Arrays.asList(nodes));
+      return this;
+    }
+
+    public Builder owner(OwnedNode<?> owner) {
       this.owner = owner;
       return this;
     }
@@ -146,6 +164,7 @@ public class ParameterList extends OwnedNode {
     public ParameterList build() {
       return new ParameterList(this);
     }
+
   }
 
 }

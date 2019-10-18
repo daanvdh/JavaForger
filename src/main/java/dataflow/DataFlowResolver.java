@@ -86,7 +86,8 @@ public class DataFlowResolver {
       ParameterList params = ParameterList.builder().build();
       for (int i = 0; i < rmd.getNumberOfParams(); i++) {
         ResolvedParameterDeclaration p = rmd.getParam(i);
-        DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).build();
+        DataFlowNode newNode =
+            DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).representedNode(node.getArgument(i)).owner(params).build();
         params.add(newNode);
       }
       methodCall.setIn(params);

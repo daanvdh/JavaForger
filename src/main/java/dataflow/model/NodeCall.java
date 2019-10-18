@@ -16,6 +16,10 @@ import java.util.Optional;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.javaparser.ast.Node;
 
 /**
  * Represents a call to a node (method, constructor or other code block). This node will be owned by the calling method. This class groups all in/output data
@@ -23,7 +27,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * @author Daan
  */
-public class NodeCall extends OwnedNode {
+public class NodeCall extends OwnedNode<Node> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(NodeCall.class);
 
   /**
    * The {@link ParameterList}s that contain the {@link DataFlowNode}s that where used for a specific {@link DataFlowMethod} call to the owner
@@ -31,9 +37,10 @@ public class NodeCall extends OwnedNode {
    */
   private ParameterList in;
   /** The {@link ParameterList}s that contain the {@link DataFlowNode}s that where used as input for a call to another {@link DataFlowMethod}. */
+  // TODO should probably be removed since this data is already contained in calledMethod
   private ParameterList out;
   /** The method/constructor/codeBlock from which the method is called */
-  private OwnedNode owner;
+  private OwnedNode<?> owner;
   /** The called method, this can be null in case that the given method is not parsed. */
   private DataFlowMethod calledMethod;
   /**
@@ -61,7 +68,7 @@ public class NodeCall extends OwnedNode {
   }
 
   @Override
-  public Optional<OwnedNode> getOwner() {
+  public Optional<OwnedNode<?>> getOwner() {
     return Optional.of(owner);
   }
 
@@ -74,7 +81,7 @@ public class NodeCall extends OwnedNode {
   }
 
   public ParameterList getOut() {
-    return out;
+    return this.out;
   }
 
   public void setOut(ParameterList out) {
@@ -88,6 +95,14 @@ public class NodeCall extends OwnedNode {
   public void setCalledMethod(DataFlowMethod calledMethod) {
     this.calledMethod = calledMethod;
     this.in.connectTo(calledMethod.getInputParameters());
+    if (this.returnNode != null) {
+      if (calledMethod.getReturnNode().isPresent()) {
+        calledMethod.getReturnNode().get().addEdgeTo(returnNode);
+      } else {
+        LOG.warn("Could not connect method return node to NodeCall return Node because return node was not present in method {}", calledMethod);
+      }
+
+    }
   }
 
   public String getClaz() {
@@ -154,7 +169,7 @@ public class NodeCall extends OwnedNode {
   /**
    * Builder to build {@link NodeCall}.
    */
-  public static final class Builder extends NodeRepresenter.Builder<NodeCall.Builder> {
+  public static final class Builder extends NodeRepresenter.Builder<Node, NodeCall.Builder> {
     private ParameterList in;
     private ParameterList out;
     private OwnedNode owner;

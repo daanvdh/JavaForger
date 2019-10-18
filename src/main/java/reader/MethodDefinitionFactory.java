@@ -45,11 +45,11 @@ import templateInput.definition.VariableDefinition;
  *
  * @author Daan
  */
-public class MethodFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodFactory.class);
+public class MethodDefinitionFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(MethodDefinitionFactory.class);
 
   private ImportResolver importResolver = new ImportResolver();
-  private VariableFactory fieldFactory = new VariableFactory();
+  private VariableDefintionFactory fieldFactory = new VariableDefintionFactory();
   private GraphService graphService = new GraphService();
 
   public MethodDefinition createMethod(Node node, DataFlowGraph dfg) {

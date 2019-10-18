@@ -33,12 +33,15 @@ import org.junit.Test;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.google.common.base.Functions;
 
 import common.SymbolSolverSetup;
 import dataflow.model.DataFlowEdge;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
+import dataflow.model.DataFlowMethod.Builder;
 import dataflow.model.DataFlowNode;
 
 /**
@@ -153,13 +156,22 @@ public class DataFlowGraphFactoryTest {
             "  }\n" + //
             "}"; //
 
-    DataFlowGraph expected =
-        GraphBuilder
-            .withStartingNodes(NodeBuilder.ofParameter("caller", "a").to(NodeBuilder.ofParameter("called", "b")).to("called.return(line 6,col 5)")
-                .to(NodeBuilder.ofReturn("called", "line3", "col5")).to("caller.return(line 3,col 5)").to(NodeBuilder.ofReturn("caller", "line3", "col5")))
-            .build();
+    DataFlowNode a = createNode("a");
+    DataFlowNode b_caller = createNode("b");
+    DataFlowNode specificReturnCaller = createNode("caller_return_line3_col5");
+    DataFlowNode genericReturnCaller = createNode("caller_return");
+    DataFlowMethod caller =
+        createMethod("caller").inputParameters(a).nodes(b_caller, specificReturnCaller).returnNode(genericReturnCaller).representedNode(null).build();
 
-    executeAndVerify(claz, expected);
+    DataFlowNode b_called = createNode("b");
+    DataFlowNode specificReturnCalled = createNode("called_return_line6_col5");
+    DataFlowNode genericReturnCalled = createNode("called_return");
+    DataFlowMethod called = createMethod("called").inputParameters(b_called).nodes(specificReturnCalled).returnNode(genericReturnCalled).build();
+
+    connectNodesInSquence(a, b_caller, b_called, specificReturnCalled, genericReturnCalled, specificReturnCaller, genericReturnCaller);
+    DataFlowGraph exp = DataFlowGraph.builder().methods(caller, called).build();
+
+    executeAndVerify(claz, exp);
   }
 
   @Test
@@ -196,6 +208,22 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(claz, expected);
   }
 
+  private Builder createMethod(String name) {
+    MethodDeclaration m = new MethodDeclaration();
+    m.setName(new SimpleName(name));
+    return DataFlowMethod.builder().name(name).representedNode(m);
+  }
+
+  private void connectNodesInSquence(DataFlowNode... nodes) {
+    for (int i = 0; i < nodes.length - 1; i++) {
+      nodes[i].addEdgeTo(nodes[i + 1]);
+    }
+  }
+
+  private DataFlowNode createNode(String name) {
+    return DataFlowNode.builder().name(name).representedNode(new SimpleName(name)).build();
+  }
+
   private DataFlowGraph executeAndVerify(String setter, DataFlowGraph expected) {
     CompilationUnit cu = JavaParser.parse(setter);
     DataFlowGraph graph = factory.create(cu);
@@ -229,9 +257,10 @@ public class DataFlowGraphFactoryTest {
   }
 
   private Optional<String> assertMethodEqual(DataFlowMethod expMethod, DataFlowMethod equalMethod) {
-    Optional<String> parametersEqual =
-        assertNodesEqual(expMethod.getInputParameters().getNodes(), equalMethod.getInputParameters().getNodes()).map(s -> "Parameters not equal: " + s);
-    Optional<String> nodesEqual = parametersEqual.isPresent() ? parametersEqual : assertNodesEqual(expMethod.getNodes(), equalMethod.getNodes());
+    Optional<String> parametersEqual = assertNodesEqual(expMethod.getInputParameters().getNodes(), equalMethod.getInputParameters().getNodes())
+        .map(s -> "for " + expMethod.getName() + " parameters not equal: " + s);
+    Optional<String> nodesEqual = parametersEqual.isPresent() ? parametersEqual
+        : assertNodesEqual(expMethod.getNodes(), equalMethod.getNodes()).map(s -> "for " + expMethod.getName() + ": " + s);
     return nodesEqual;
   }
 
@@ -246,11 +275,7 @@ public class DataFlowGraphFactoryTest {
         new EqualFeatureMatcher<>((m) -> m.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
             method.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
 
-    EqualFeatureMatcher<DataFlowMethod, List<String>> changedFieldsMatcher =
-        new EqualFeatureMatcher<>((m) -> m.getChangedFields().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
-            method.getChangedFields().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "changedFields");
-
-    return Matchers.allOf(methodNameMatcher, parameterMatcher, changedFieldsMatcher);
+    return Matchers.allOf(methodNameMatcher, parameterMatcher);
   }
 
   /**

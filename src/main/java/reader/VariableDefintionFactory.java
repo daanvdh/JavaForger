@@ -34,8 +34,8 @@ import templateInput.definition.VariableDefinition.Builder;
  *
  * @author Daan
  */
-public class VariableFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(VariableFactory.class);
+public class VariableDefintionFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(VariableDefintionFactory.class);
 
   private ImportResolver importResolver = new ImportResolver();
 

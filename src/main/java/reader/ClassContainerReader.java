@@ -52,8 +52,8 @@ import templateInput.definition.VariableDefinition;
 public class ClassContainerReader {
 
   private DataFlowGraphFactory dfgFactory = new DataFlowGraphFactory();
-  private MethodFactory methodFactory = new MethodFactory();
-  private VariableFactory fieldFactory = new VariableFactory();
+  private MethodDefinitionFactory methodFactory = new MethodDefinitionFactory();
+  private VariableDefintionFactory fieldFactory = new VariableDefintionFactory();
 
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);

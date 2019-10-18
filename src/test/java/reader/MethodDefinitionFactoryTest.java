@@ -40,20 +40,20 @@ import templateInput.definition.MethodDefinition.Builder;
 import templateInput.definition.VariableDefinition;
 
 /**
- * Unit test for {@link MethodFactory}.
+ * Unit test for {@link MethodDefinitionFactory}.
  *
  * @author Daan
  */
 @RunWith(MockitoJUnitRunner.class)
-public class MethodFactoryTest {
+public class MethodDefinitionFactoryTest {
 
   @Mock
-  private VariableFactory fieldFactory;
+  private VariableDefintionFactory fieldFactory;
   @Mock
   private DataFlowGraph dfg;
 
   @InjectMocks
-  private MethodFactory methodFactory = new MethodFactory();
+  private MethodDefinitionFactory methodFactory = new MethodDefinitionFactory();
 
   private ClassContainerReader sut = new ClassContainerReader();
 

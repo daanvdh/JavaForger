@@ -20,21 +20,21 @@ import com.github.javaparser.ast.Node;
  *
  * @author Daan
  */
-public abstract class OwnedNode extends NodeRepresenter {
+public abstract class OwnedNode<T extends Node> extends NodeRepresenter<T> {
 
   protected OwnedNode() {
     super();
   }
 
-  public OwnedNode(Node representedNode) {
+  public OwnedNode(T representedNode) {
     super(representedNode);
   }
 
-  public OwnedNode(String name, Node representedNode) {
+  public OwnedNode(String name, T representedNode) {
     super(name, representedNode);
   }
 
-  public OwnedNode(NodeRepresenter.Builder<?> builder) {
+  public OwnedNode(NodeRepresenter.Builder<T, ?> builder) {
     super(builder);
   }
 
@@ -42,6 +42,6 @@ public abstract class OwnedNode extends NodeRepresenter {
    * @return An optional of the {@link OwnedNode} of this node. The optional will be empty in case of a {@link DataFlowGraph} representing a non inner class or
    *         a method for which the rest of the graph was not parsed.
    */
-  public abstract Optional<OwnedNode> getOwner();
+  public abstract Optional<OwnedNode<?>> getOwner();
 
 }
