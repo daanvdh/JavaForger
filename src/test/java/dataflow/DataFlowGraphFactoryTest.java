@@ -160,15 +160,16 @@ public class DataFlowGraphFactoryTest {
     DataFlowNode b_caller = createNode("b");
     DataFlowNode specificReturnCaller = createNode("caller_return_line3_col5");
     DataFlowNode genericReturnCaller = createNode("caller_return");
-    DataFlowMethod caller =
-        createMethod("caller").inputParameters(a).nodes(b_caller, specificReturnCaller).returnNode(genericReturnCaller).representedNode(null).build();
+    DataFlowNode nodeCallReturn = createNode("nodeCall_called_return");
+    DataFlowMethod caller = createMethod("caller").inputParameters(a).nodes(b_caller, specificReturnCaller, nodeCallReturn).returnNode(genericReturnCaller)
+        .representedNode(null).build();
 
     DataFlowNode b_called = createNode("b");
     DataFlowNode specificReturnCalled = createNode("called_return_line6_col5");
     DataFlowNode genericReturnCalled = createNode("called_return");
     DataFlowMethod called = createMethod("called").inputParameters(b_called).nodes(specificReturnCalled).returnNode(genericReturnCalled).build();
 
-    connectNodesInSquence(a, b_caller, b_called, specificReturnCalled, genericReturnCalled, specificReturnCaller, genericReturnCaller);
+    connectNodesInSquence(a, b_caller, b_called, specificReturnCalled, genericReturnCalled, nodeCallReturn, specificReturnCaller, genericReturnCaller);
     DataFlowGraph exp = DataFlowGraph.builder().methods(caller, called).build();
 
     executeAndVerify(claz, exp);
@@ -184,8 +185,8 @@ public class DataFlowGraphFactoryTest {
             "  }\n" + //
             "}"; //
 
-    DataFlowGraph expected = GraphBuilder
-        .withStartingNodes(NodeBuilder.ofParameter("met", "a").to("b").to("met.return(line 4,col 5)").to(NodeBuilder.ofReturn("met", "line3", "col5"))).build();
+    DataFlowGraph expected = GraphBuilder.withStartingNodes(NodeBuilder.ofParameter("met", "a").to("b").to(NodeBuilder.ofReturn("met", "line4", "col5")))
+        .build();
 
     executeAndVerify(claz, expected);
   }
@@ -200,10 +201,18 @@ public class DataFlowGraphFactoryTest {
             "  }\n" + //
             "}"; //
 
-    DataFlowGraph expected = GraphBuilder.withStartingNodes( //
-        NodeBuilder.ofField("sb"), //
-        NodeBuilder.ofParameter("met", "a").to("b").to("met.return(line 4,col 5)").to(NodeBuilder.ofReturn("met", "line3", "col5")) //
-    ).build();
+    DataFlowNode a = createNode("a");
+    DataFlowNode sb_input = createNode("arg0");
+    a.addEdgeTo(sb_input);
+
+    DataFlowNode sb_output = createNode("nodeCall_append_return");
+    DataFlowNode specificReturnCaller = createNode("met_return_line4_col5");
+    DataFlowNode genericReturnCaller = createNode("met_return");
+    this.connectNodesInSquence(sb_output, specificReturnCaller, genericReturnCaller);
+
+    DataFlowMethod caller = createMethod("met").inputParameters(a).nodes(sb_input, sb_output, specificReturnCaller).returnNode(genericReturnCaller).build();
+
+    DataFlowGraph expected = DataFlowGraph.builder().fields(createNode("sb")).methods(caller).build();
 
     executeAndVerify(claz, expected);
   }
@@ -247,8 +256,8 @@ public class DataFlowGraphFactoryTest {
 
   private Optional<String> assertMethodsEqual(Collection<DataFlowMethod> exp, Collection<DataFlowMethod> res) {
     Map<DataFlowMethod, Optional<DataFlowMethod>> expToResMap = exp.stream().collect(Collectors.toMap(Functions.identity(), e -> getEqualMethod(res, e)));
-    Optional<String> notFound =
-        expToResMap.entrySet().stream().filter(e -> !e.getValue().isPresent()).map(Map.Entry::getKey).map(dfm -> "no method found for " + dfm).findFirst();
+    Optional<String> notFound = expToResMap.entrySet().stream().filter(e -> !e.getValue().isPresent()).map(Map.Entry::getKey)
+        .map(dfm -> "no method found for " + dfm).findFirst();
     if (!notFound.isPresent()) {
       notFound = expToResMap.entrySet().stream().map(e -> assertMethodEqual(e.getKey(), e.getValue().get())).filter(Optional::isPresent).map(Optional::get)
           .findFirst();
@@ -271,9 +280,9 @@ public class DataFlowGraphFactoryTest {
   private Matcher<DataFlowMethod> createMatcher(DataFlowMethod method) {
     EqualFeatureMatcher<DataFlowMethod, String> methodNameMatcher = new EqualFeatureMatcher<>(DataFlowMethod::getName, method.getName(), "methodName");
 
-    EqualFeatureMatcher<DataFlowMethod, List<String>> parameterMatcher =
-        new EqualFeatureMatcher<>((m) -> m.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
-            method.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
+    EqualFeatureMatcher<DataFlowMethod, List<String>> parameterMatcher = new EqualFeatureMatcher<>(
+        (m) -> m.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()),
+        method.getInputParameters().getNodes().stream().map(DataFlowNode::getName).collect(Collectors.toList()), "methodParameters");
 
     return Matchers.allOf(methodNameMatcher, parameterMatcher);
   }
@@ -288,8 +297,8 @@ public class DataFlowGraphFactoryTest {
   private Optional<String> assertNodesEqual(Collection<DataFlowNode> expected, Collection<DataFlowNode> fields) {
     Map<String, DataFlowNode> exp = expected.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
     Map<String, DataFlowNode> res = fields.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
-    Optional<String> equal =
-        exp.keySet().equals(res.keySet()) ? Optional.empty() : Optional.of("Nodes not equal, expected: " + exp.keySet() + " but was: " + res.keySet());
+    Optional<String> equal = exp.keySet().equals(res.keySet()) ? Optional.empty()
+        : Optional.of("Nodes not equal, expected: " + exp.keySet() + " but was: " + res.keySet());
     if (!equal.isPresent()) {
       equal = exp.keySet().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
     }
@@ -308,8 +317,8 @@ public class DataFlowGraphFactoryTest {
     List<DataFlowEdge> resIn = res.getIn();
 
     String message = !(exp.getName().equals(res.getName())) ? "Names are not equal of expected node " + exp + " and result node " + res : null;
-    message =
-        (message == null && expIn.size() != resIn.size()) ? "number of incoming edges not equal for expected node " + exp + " and resultNode " + res : message;
+    message = (message == null && expIn.size() != resIn.size()) ? "number of incoming edges not equal for expected node " + exp + " and resultNode " + res
+        : message;
     for (int i = 0; i < expIn.size() && message == null; i++) {
       String edgeMessage = assertEdgeEqual(expIn.get(0), resIn.get(0));
       if (edgeMessage != null) {
@@ -344,8 +353,8 @@ public class DataFlowGraphFactoryTest {
     /**
      * Constructs an instance of {@link EqualFeatureMatcher}.
      *
-     * @param mapper a {@link Function} to maps object to its feature
-     * @param expected the expected value
+     * @param mapper      a {@link Function} to maps object to its feature
+     * @param expected    the expected value
      * @param description the description of the feature
      */
     public EqualFeatureMatcher(Function<T, U> mapper, U expected, String description) {
@@ -357,11 +366,6 @@ public class DataFlowGraphFactoryTest {
     protected U featureValueOf(T actual) {
       return mapper.apply(actual);
     }
-  }
-
-  @Test
-  public void testConnectMethods() {
-    Assert.fail("implement and test ConnectMethods");
   }
 
 }

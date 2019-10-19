@@ -52,7 +52,7 @@ public class NodeCall extends OwnedNode<Node> {
   private String claz;
   private String peckage;
 
-  public NodeCall(OwnedNode owner) {
+  public NodeCall(OwnedNode<?> owner) {
     this.owner = owner;
   }
 
@@ -121,7 +121,7 @@ public class NodeCall extends OwnedNode<Node> {
     this.peckage = peckage;
   }
 
-  public void setOwner(OwnedNode owner) {
+  public void setOwner(OwnedNode<?> owner) {
     this.owner = owner;
   }
 
@@ -172,7 +172,7 @@ public class NodeCall extends OwnedNode<Node> {
   public static final class Builder extends NodeRepresenter.Builder<Node, NodeCall.Builder> {
     private ParameterList in;
     private ParameterList out;
-    private OwnedNode owner;
+    private OwnedNode<?> owner;
     private DataFlowMethod calledMethod;
     private String claz;
     private String peckage;
@@ -192,7 +192,7 @@ public class NodeCall extends OwnedNode<Node> {
       return this;
     }
 
-    public Builder owner(OwnedNode owner) {
+    public Builder owner(OwnedNode<?> owner) {
       this.owner = owner;
       return this;
     }

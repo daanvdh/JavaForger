@@ -18,6 +18,7 @@
 package dataflow.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -223,6 +224,12 @@ public class DataFlowGraph extends OwnedNode {
       return this;
     }
 
+    public Builder fields(DataFlowNode... fields) {
+      this.fields.clear();
+      this.fields.addAll(Arrays.asList(fields));
+      return this;
+    }
+
     public Builder constructors(List<DataFlowMethod> constructors) {
       this.constructors.clear();
       this.constructors.addAll(constructors);
@@ -252,6 +259,7 @@ public class DataFlowGraph extends OwnedNode {
     public DataFlowGraph build() {
       return new DataFlowGraph(this);
     }
+
 
   }
 

@@ -30,13 +30,13 @@ import dataflow.model.NodeCall;
 import dataflow.model.ParameterList;
 
 /**
- * Unit test for {@link DataFlowResolver}.
+ * Unit test for {@link NodeCallFactory}.
  *
  * @author Daan
  */
-public class DataFlowResolverTest {
+public class NodeCallFactoryTest {
 
-  DataFlowResolver sut = new DataFlowResolver();
+  NodeCallFactory sut = new NodeCallFactory();
 
   @Before
   public void setup() {

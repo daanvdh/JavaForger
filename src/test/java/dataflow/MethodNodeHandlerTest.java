@@ -26,7 +26,6 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
 
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
@@ -43,7 +42,7 @@ import dataflow.model.ParameterList;
 public class MethodNodeHandlerTest {
 
   @Mock
-  private DataFlowResolver resolver;
+  private NodeCallFactory resolver;
 
   @InjectMocks
   MethodNodeHandler sut = new MethodNodeHandler();
@@ -68,9 +67,6 @@ public class MethodNodeHandlerTest {
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
     Mockito.when(resolver.createNodeCall(graph, method, node)).thenReturn(Optional.of(methodCall));
-
-    Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
-    Mockito.when(resolver.getDataFlowNode(graph, method, overriddenValues, parameterNode)).thenReturn(Optional.of(DataFlowNode.builder().build()));
 
     Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
 
@@ -99,9 +95,6 @@ public class MethodNodeHandlerTest {
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
     Mockito.when(resolver.createNodeCall(graph, method, node)).thenReturn(Optional.of(methodCall));
-
-    Node parameterNode = node.findAll(NameExpr.class).stream().filter(expr -> expr.getNameAsString().equals("a")).findFirst().get();
-    Mockito.when(resolver.getDataFlowNode(graph, method, overriddenValues, parameterNode)).thenReturn(Optional.of(DataFlowNode.builder().build()));
 
     Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
 

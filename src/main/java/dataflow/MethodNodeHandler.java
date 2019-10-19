@@ -32,6 +32,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 
+import dataflow.model.DataFlowEdge;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
@@ -45,17 +46,18 @@ import dataflow.model.NodeCall;
 public class MethodNodeHandler {
   private static final Logger LOG = LoggerFactory.getLogger(MethodNodeHandler.class);
 
-  private DataFlowResolver resolver = new DataFlowResolver();
+  private NodeCallFactory resolver = new NodeCallFactory();
+  private ParserUtil parserUtil = new ParserUtil();
 
   /**
-   * Recursively handles the input {@link Node}s. This method assumes all methods to already exist in the {@link DataFlowGraph}, including the
-   * {@link DataFlowNode}s for the input parameters and return value. Other {@link DataFlowNode}s will be added to the input {@link DataFlowMethod} if needed.
-   * If external method calls are done and they do not exist in the graph yet, they will be created.
+   * Recursively creates new {@link DataFlowNode} or finds existing ones and creates {@link DataFlowEdge} between those nodes if needed. This is done within the
+   * scope of a single method. This method assumes all methods to already exist in the {@link DataFlowGraph}, including the {@link DataFlowNode}s for the input
+   * parameters and return value. If external method calls are done, {@link NodeCall}s representing them will also be created.
    *
-   * @param graph {@link DataFlowGraph}
-   * @param method {@link DataFlowMethod} to add {@link DataFlowNode} to
+   * @param graph            {@link DataFlowGraph}
+   * @param method           {@link DataFlowMethod} to add {@link DataFlowNode} to
    * @param overriddenValues The values that have been overridden in previous iterations.
-   * @param n The {@link Node} to handle. ChildNodes will recursively be handled if needed.
+   * @param n                The {@link Node} to handle. ChildNodes will recursively be handled if needed.
    * @return An optional of the {@link DataFlowNode} of the input node. If multiple head nodes are created, (In case of a {@link BlockStmt}) the optional will
    *         be empty.
    */
@@ -131,6 +133,8 @@ public class MethodNodeHandler {
         arg.get().addEdgeTo(calledMethod.getIn().getNodes().get(i));
       }
     }
+    
+    calledMethod.getReturnNode().ifPresent(method::addNode);
 
     // Return the return node of the called method so that the return value can be assigned to the caller.
     return calledMethod.getReturnNode();
@@ -169,7 +173,7 @@ public class MethodNodeHandler {
    * Only gets an existing node for the given {@link NameExpr}.
    */
   private Optional<DataFlowNode> handleNameExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, NameExpr n) {
-    return resolver.getDataFlowNode(graph, method, overriddenValues, n);
+    return getDataFlowNode(graph, method, overriddenValues, n);
   }
 
   private Optional<DataFlowNode> handleExpressionStmt(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, ExpressionStmt n) {
@@ -182,8 +186,8 @@ public class MethodNodeHandler {
   private Optional<DataFlowNode> handleAssignExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, AssignExpr expr) {
     Expression assignedJP = expr.getTarget();
     Expression assignerJP = expr.getValue();
-    Optional<Node> optionalRealAssignedJP = resolver.getJavaParserNode(method, assignedJP);
-    Optional<DataFlowNode> assignerDF = resolver.getDataFlowNode(graph, method, overriddenValues, assignerJP);
+    Optional<Node> optionalRealAssignedJP = parserUtil.getJavaParserNode(method, assignedJP);
+    Optional<DataFlowNode> assignerDF = getDataFlowNode(graph, method, overriddenValues, assignerJP);
 
     if (!optionalRealAssignedJP.isPresent()) {
       // Logging is already done in the method call.
@@ -209,6 +213,29 @@ public class MethodNodeHandler {
 
     assignerDF.get().addEdgeTo(flowNode);
     return Optional.of(flowNode);
+  }
+  /**
+   * TODO javadoc
+   *
+   * @param graph
+   * @param method
+   * @param overwriddenValues
+   * @param node
+   * @return
+   */
+  private Optional<DataFlowNode> getDataFlowNode(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overwriddenValues, Node node) {
+    Optional<Node> optionalResolvedNode = parserUtil.getJavaParserNode(method, node);
+    DataFlowNode flowNode = null;
+    if (optionalResolvedNode.isPresent()) {
+      Node resolvedNode = optionalResolvedNode.get();
+      flowNode = overwriddenValues.get(resolvedNode);
+      flowNode = flowNode != null ? flowNode : graph.getNode(resolvedNode);
+      flowNode = flowNode != null ? flowNode : method.getNode(resolvedNode);
+    }
+    if (flowNode == null) {
+      LOG.warn("In method {} did not resolve the type of node {} of type {}", method.getName(), node, node.getClass());
+    }
+    return Optional.ofNullable(flowNode);
   }
 
   private String nameForInBetweenNode(DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, Node realAssignedJP,

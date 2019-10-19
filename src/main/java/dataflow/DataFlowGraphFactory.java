@@ -39,6 +39,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
+import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionMethodDeclaration;
 
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
@@ -118,7 +119,6 @@ public class DataFlowGraphFactory {
    */
   private void connectMethods(DataFlowGraph graph) {
     // TODO probably best to extract this to another class.
-    // TODO not tested yet.
     for (DataFlowMethod method : graph.getMethods()) {
       for (NodeCall call : method.getCalledMethods()) {
         Node node = call.getRepresentedNode();
