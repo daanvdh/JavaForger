@@ -68,7 +68,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   public DataFlowMethod(String name, CallableDeclaration<?> representedNode) {
     super(name, representedNode);
-    this.representedNode = representedNode;
   }
 
   public DataFlowMethod(DataFlowGraph graph, CallableDeclaration<?> node, String name) {
@@ -96,11 +95,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     this.outputMethods.clear();
     this.outputMethods.putAll(builder.outputMethods);
     this.graph = builder.graph;
-  }
-
-  @Override
-  public void setRepresentedNode(CallableDeclaration<?> representedNode) {
-    this.representedNode = representedNode;
   }
 
   public Optional<DataFlowNode> getReturnNode() {
@@ -184,8 +178,9 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     nodes.forEach(this::addNode);
   }
 
-  public void addNode(DataFlowNode created) {
+  public final void addNode(DataFlowNode created) {
     this.nodes.put(created.getRepresentedNode(), created);
+    created.setOwner(this);
   }
 
   public DataFlowNode createAndAddNode(String name, Node n) {
@@ -206,7 +201,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   public void addChangedField(DataFlowNode node) {
     this.changedFields.add(node);
-    this.addNode(node);
   }
 
   public void addChangedFields(DataFlowNode... fields) {
@@ -303,9 +297,8 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
       DataFlowMethod other = (DataFlowMethod) obj;
-      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(representedNode, other.representedNode).append(returnNode, other.returnNode)
-          .append(inputParameters, other.inputParameters).append(inputFields, other.inputFields).append(changedFields, other.changedFields)
-          .append(inputMethods, other.inputMethods).append(outputMethods, other.outputMethods).append(graph, other.graph).isEquals();
+      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(returnNode, other.returnNode)
+          .append(inputParameters, other.inputParameters).append(graph, other.graph).isEquals();
     }
     return equals;
   }
@@ -351,6 +344,12 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     public Builder changedFields(List<DataFlowNode> changedFields) {
       this.changedFields.clear();
       this.changedFields.addAll(changedFields);
+      return this;
+    }
+    
+    public Builder changedFields(DataFlowNode... changedFields) {
+      this.changedFields.clear();
+      this.changedFields.addAll(Arrays.asList(changedFields));
       return this;
     }
 

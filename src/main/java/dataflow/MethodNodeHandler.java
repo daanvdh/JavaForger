@@ -180,7 +180,7 @@ public class MethodNodeHandler {
     for (Node c : n.getChildNodes()) {
       handleNode(graph, method, overriddenValues, c);
     }
-    return null;
+    return Optional.empty();
   }
 
   private Optional<DataFlowNode> handleAssignExpr(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, AssignExpr expr) {

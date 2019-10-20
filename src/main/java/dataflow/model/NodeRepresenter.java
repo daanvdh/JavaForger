@@ -28,7 +28,7 @@ import com.github.javaparser.ast.Node;
 public abstract class NodeRepresenter<T extends Node> {
 
   /** The {@link JavaParser} {@link Node} */
-  protected T representedNode;
+  private T representedNode;
   /** The name of this node */
   private String name;
 

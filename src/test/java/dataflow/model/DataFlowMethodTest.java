@@ -95,10 +95,6 @@ public class DataFlowMethodTest {
     verifyEqualsDifferent(DataFlowMethod.Builder::representedNode, new MethodDeclaration());
     verifyEqualsDifferent(DataFlowMethod.Builder::returnNode, DataFlowNode.builder().build());
     verifyEqualsDifferent(DataFlowMethod.Builder::inputParameters, ParameterList.builder().name("x").build());
-    verifyEqualsDifferent(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
-    verifyEqualsDifferent(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
-    verifyEqualsDifferent(DataFlowMethod.Builder::inputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
-    verifyEqualsDifferent(DataFlowMethod.Builder::outputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
   }
 
   private DataFlowMethod.Builder createAndFillBuilder() {
