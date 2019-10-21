@@ -94,6 +94,8 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
 
     test.setup();
     test.testStateFullClassTest_setter();
+    test.setup();
+    test.testStatelessClassTest_facade();
     test.tearDown();
 
     Assert.fail();

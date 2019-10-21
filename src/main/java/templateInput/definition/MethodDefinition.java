@@ -52,6 +52,8 @@ public class MethodDefinition extends InitializedTypeDefinition {
    * will be null otherwise.
    */
   private String returnSignature;
+  /** The name of the variable that was expected as return value. */
+  private String expectedReturn;
 
   private MethodDefinition(Builder builder) {
     super(builder);
@@ -113,6 +115,14 @@ public class MethodDefinition extends InitializedTypeDefinition {
 
   public void setReturnSignature(String returnSignature) {
     this.returnSignature = returnSignature;
+  }
+
+  public String getExpectedReturn() {
+    return expectedReturn;
+  }
+
+  public void setExpectedReturn(String expectedReturn) {
+    this.expectedReturn = expectedReturn;
   }
 
   @Override

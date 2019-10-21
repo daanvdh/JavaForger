@@ -35,6 +35,7 @@ import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 import dataflow.model.NodeCall;
 import dataflow.model.ParameterList;
+import templateInput.StringConverter;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
@@ -148,11 +149,22 @@ public class MethodDefinitionFactory {
       method = MethodDefinition.builder().type(call.getClaz()).build();
     }
 
-    // TODO fix this
-    method.setReturnSignature("ret");
+    String returnSignature = "return" + new StringConverter(call.getName()).getUpperFirst();
+    method.setReturnSignature(returnSignature);
     method.setCallSignature(callSignature.toString());
 
     newMethod.addInputMethod(method);
+
+    if (call.getReturnNode().isPresent() && dataFlowMethod.getReturnNode().isPresent()) {
+      List<DataFlowNode> returnNode =
+          graphService.walkForwardUntil(call.getReturnNode().get(), dataFlowMethod.getReturnNode().get()::equals, dataFlowMethod.getNodes()::contains);
+
+      // If the returnNode was returned, that means that there exists a path from call.getReturnNode()
+      if (returnNode.size() > 0) {
+        String expectedReturn = newMethod.getExpectedReturn() == null ? returnSignature : newMethod.getExpectedReturn() + "__" + returnSignature;
+        newMethod.setExpectedReturn(expectedReturn);
+      }
+    }
 
     // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
     // to define it in test data as well
@@ -175,9 +187,6 @@ public class MethodDefinitionFactory {
         .isPresent();
 
     List<DataFlowNode> inputNodes = graphService.walkBackUntil(param, isField.or(isParam).or(isMethodReturn));
-    // TODO construct the call signature for this method
-    // TODO construct the return signature for this method
-    String returnSignature = "returnSignature";
 
     StringBuilder sb = new StringBuilder();
     boolean first = true;
@@ -190,6 +199,7 @@ public class MethodDefinitionFactory {
 
       if (param.isField()) {
         // TODO handle field: field must be set inside the template
+        sb.append(inputNode.getName());
       } else if (inputNode.isInputParameter()) {
         // TODO handle param: Should probably not have to do anything, since parameters will already have to be set inside any test calling this method.
         sb.append(inputNode.getName());
