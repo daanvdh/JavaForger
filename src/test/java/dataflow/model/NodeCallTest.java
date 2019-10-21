@@ -16,6 +16,7 @@
  * limitations under the License.
  */package dataflow.model;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.junit.Assert;
@@ -44,7 +45,7 @@ public class NodeCallTest {
     Assert.assertNull("Unexpected in", nodeCall.getIn());
     Assert.assertNull("Unexpected out", nodeCall.getOut());
     Assert.assertTrue("Unexpected owner", nodeCall.getOwner().isPresent());
-    Assert.assertNull("Unexpected calledMethod", nodeCall.getCalledMethod());
+    Assert.assertFalse("Unexpected calledMethod", nodeCall.getCalledMethod().isPresent());
     Assert.assertNull("Unexpected claz", nodeCall.getClaz());
     Assert.assertNull("Unexpected peckage", nodeCall.getPeckage());
   }
@@ -56,7 +57,7 @@ public class NodeCallTest {
     Assert.assertEquals("Unexpected in", IN, nodeCall.getIn());
     Assert.assertEquals("Unexpected out", OUT, nodeCall.getOut());
     Assert.assertEquals("Unexpected owner", OWNER, nodeCall.getOwner().get());
-    Assert.assertEquals("Unexpected calledMethod", CALLED_METHOD, nodeCall.getCalledMethod());
+    Assert.assertEquals("Unexpected calledMethod", Optional.of(CALLED_METHOD), nodeCall.getCalledMethod());
     Assert.assertEquals("Unexpected claz", CLAZ, nodeCall.getClaz());
     Assert.assertEquals("Unexpected peckage", PECKAGE, nodeCall.getPeckage());
   }
