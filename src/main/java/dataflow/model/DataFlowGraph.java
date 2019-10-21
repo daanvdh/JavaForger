@@ -35,7 +35,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
  *
  * @author Daan
  */
-public class DataFlowGraph extends OwnedNode {
+public class DataFlowGraph extends OwnedNode<ClassOrInterfaceDeclaration> {
 
   /** The package of the class that this {@link DataFlowGraph} represents. */
   private String classPackage;
@@ -65,7 +65,7 @@ public class DataFlowGraph extends OwnedNode {
     super(builder);
     this.classPackage = builder.classPackage == null ? this.classPackage : builder.classPackage;
     this.fields.clear();
-    this.fields.addAll(builder.fields);
+    this.addFields(builder.fields);
     this.constructors.clear();
     this.constructors.addAll(builder.constructors);
     this.methods = builder.methods == null ? this.methods : builder.methods;
@@ -114,16 +114,21 @@ public class DataFlowGraph extends OwnedNode {
     return methods.get(node);
   }
 
-  public void addField(DataFlowNode node) {
+  public final void addField(DataFlowNode node) {
     this.fields.add(node);
     if (node.getRepresentedNode() == null) {
       throw new NullPointerException("The representedNode may not be null, this risks overriding existing fields.");
     }
     this.nodes.put(node.getRepresentedNode(), node);
+    node.setOwner(this);
   }
 
-  public void addFields(DataFlowNode... fields) {
+  public final void addFields(DataFlowNode... fields) {
     Stream.of(fields).forEach(this::addField);
+  }
+
+  private final void addFields(List<DataFlowNode> fields) {
+    fields.forEach(this::addField);
   }
 
   public void addNodes(List<DataFlowNode> nodes) {
@@ -167,7 +172,7 @@ public class DataFlowGraph extends OwnedNode {
   }
 
   @Override
-  public Optional<OwnedNode> getOwner() {
+  public Optional<OwnedNode<?>> getOwner() {
     return Optional.ofNullable(this.ownerGraph);
   }
 
@@ -259,7 +264,6 @@ public class DataFlowGraph extends OwnedNode {
     public DataFlowGraph build() {
       return new DataFlowGraph(this);
     }
-
 
   }
 

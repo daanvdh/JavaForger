@@ -31,6 +31,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -39,7 +40,6 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
-import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionMethodDeclaration;
 
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
@@ -63,7 +63,8 @@ public class DataFlowGraphFactory {
    * @return A {@link DataFlowGraph}
    */
   public DataFlowGraph create(CompilationUnit cu) {
-    DataFlowGraph graph = new DataFlowGraph();
+    DataFlowGraph graph = DataFlowGraph.builder().build();
+    cu.findFirst(ClassOrInterfaceDeclaration.class).map(ClassOrInterfaceDeclaration::getNameAsString).ifPresent(graph::setName);
     executeForEachChildNode(cu, (node) -> this.addField(graph, node));
     executeForEachChildNode(cu, (node) -> this.createMethod(graph, node));
     executeForEachChildNode(cu, (node) -> this.fillMethod(graph, node));

@@ -101,6 +101,10 @@ public class DataFlowNode extends OwnedNode<Node> {
     this.type = type;
   }
 
+  public boolean isField() {
+    return this.getOwner().map(DataFlowGraph.class::isInstance).orElse(false);
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), in, out);

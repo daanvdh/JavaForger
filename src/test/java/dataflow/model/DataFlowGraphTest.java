@@ -22,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.SimpleName;
 
 /**
  * Unit test for {@link DataFlowGraph}.
@@ -32,7 +33,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 public class DataFlowGraphTest {
   private static final String NAME = "a";
   private static final String CLASS_PACKAGE = "c";
-  private static final List<DataFlowNode> FIELDS = Collections.singletonList(DataFlowNode.builder().build());
+  private static final List<DataFlowNode> FIELDS = Collections.singletonList(DataFlowNode.builder().representedNode(new SimpleName("f")).build());
   private static final List<DataFlowMethod> CONSTRUCTORS = Collections.singletonList(DataFlowMethod.builder().build());
   private static final Map<Node, DataFlowMethod> METHODS = Collections.singletonMap(new MethodDeclaration(), DataFlowMethod.builder().build());
   private static final Map<Node, DataFlowNode> NODES = Collections.singletonMap(new FieldDeclaration(), DataFlowNode.builder().build());

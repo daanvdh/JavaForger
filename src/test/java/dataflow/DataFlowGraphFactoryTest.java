@@ -80,7 +80,7 @@ public class DataFlowGraphFactoryTest {
     DataFlowNode setS_s = dfnTest.createNode(cu, "setS.s", AssignExpr.class);
     connectNodesInSquence(a, setS_s, s);
     DataFlowMethod setS = createMethod("setS").inputParameters(a).nodes(setS_s).changedFields(s).build();
-    DataFlowGraph expected = DataFlowGraph.builder().fields(s).methods(setS).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(s).methods(setS).build();
 
     executeAndVerify(cu, expected);
   }
@@ -106,7 +106,7 @@ public class DataFlowGraphFactoryTest {
     connectNodesInSquence(b, setS_t, t);
 
     DataFlowMethod setS = createMethod("setS").inputParameters(a, b).nodes(setS_s, setS_t).changedFields(s, t).build();
-    DataFlowGraph expected = DataFlowGraph.builder().fields(s, t).methods(setS).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(s, t).methods(setS).build();
 
     executeAndVerify(cu, expected);
   }
@@ -132,7 +132,7 @@ public class DataFlowGraphFactoryTest {
     connectNodesInSquence(b, setS_s2, s);
 
     DataFlowMethod setS = createMethod("setS").inputParameters(a, b).nodes(setS_s1, setS_s2).changedFields(s).build();
-    DataFlowGraph expected = DataFlowGraph.builder().fields(s).methods(setS).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(s).methods(setS).build();
 
     executeAndVerify(cu, expected);
   }
@@ -157,7 +157,7 @@ public class DataFlowGraphFactoryTest {
     connectNodesInSquence(setS_s, setS_t, t);
 
     DataFlowMethod setS = createMethod("setS").inputParameters(a).nodes(setS_s, setS_t).changedFields(s, t).build();
-    DataFlowGraph expected = DataFlowGraph.builder().fields(s, t).methods(setS).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(s, t).methods(setS).build();
 
     executeAndVerify(cu, expected);
   }
@@ -177,7 +177,7 @@ public class DataFlowGraphFactoryTest {
     connectNodesInSquence(a, ret1, methodReturn);
 
     DataFlowMethod setS = createMethod("called").inputParameters(a).nodes(ret1).returnNode(methodReturn).build();
-    DataFlowGraph expected = DataFlowGraph.builder().methods(setS).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").methods(setS).build();
 
     executeAndVerify(cu, expected);
   }
@@ -207,7 +207,7 @@ public class DataFlowGraphFactoryTest {
     DataFlowMethod called = createMethod("called").inputParameters(b_called).nodes(specificReturnCalled).returnNode(genericReturnCalled).build();
 
     connectNodesInSquence(a, b_caller, b_called, specificReturnCalled, genericReturnCalled, nodeCallReturn, specificReturnCaller, genericReturnCaller);
-    DataFlowGraph expected = DataFlowGraph.builder().methods(caller, called).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").methods(caller, called).build();
 
     executeAndVerify(cu, expected);
   }
@@ -229,7 +229,7 @@ public class DataFlowGraphFactoryTest {
         createMethod("met").inputParameters(a).nodes(b_caller, specificReturnCaller).returnNode(genericReturnCaller).representedNode(null).build();
 
     connectNodesInSquence(a, b_caller, specificReturnCaller, genericReturnCaller);
-    DataFlowGraph expected = DataFlowGraph.builder().methods(caller).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").methods(caller).build();
 
     executeAndVerify(cu, expected);
   }
@@ -254,7 +254,7 @@ public class DataFlowGraphFactoryTest {
 
     DataFlowMethod caller = createMethod("met").inputParameters(a).nodes(sb_input, sb_output, specificReturnCaller).returnNode(genericReturnCaller).build();
 
-    DataFlowGraph expected = DataFlowGraph.builder().fields(dfnTest.createField(cu, "sb")).methods(caller).build();
+    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(dfnTest.createField(cu, "sb")).methods(caller).build();
 
     executeAndVerify(cu, expected);
   }
@@ -278,6 +278,7 @@ public class DataFlowGraphFactoryTest {
   }
 
   private void assertGraph(DataFlowGraph expected, DataFlowGraph graph) {
+    Assert.assertEquals("Unexpected name for graph", expected.getName(), graph.getName());
     dfnTest.assertNodesEqual(expected.getFields(), graph.getFields()).ifPresent(m -> fail(expected, graph, "Fields not equal: " + m));
     assertMethodsEqual(expected.getMethods(), graph.getMethods()).ifPresent(m -> fail(expected, graph, "Methods not equal: " + m));
     assertMethodsEqual(expected.getConstructors(), graph.getConstructors()).ifPresent(m -> fail(expected, graph, "Constructors not equal: " + m));
