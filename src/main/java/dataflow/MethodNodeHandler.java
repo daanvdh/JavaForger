@@ -10,6 +10,7 @@
  */
 package dataflow;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,6 +38,7 @@ import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 import dataflow.model.NodeCall;
+import dataflow.model.ParameterList;
 
 /**
  * Class for handling {@link JavaParser} {@link Node}s while filling a {@link DataFlowMethod}.
@@ -54,10 +56,10 @@ public class MethodNodeHandler {
    * scope of a single method. This method assumes all methods to already exist in the {@link DataFlowGraph}, including the {@link DataFlowNode}s for the input
    * parameters and return value. If external method calls are done, {@link NodeCall}s representing them will also be created.
    *
-   * @param graph            {@link DataFlowGraph}
-   * @param method           {@link DataFlowMethod} to add {@link DataFlowNode} to
+   * @param graph {@link DataFlowGraph}
+   * @param method {@link DataFlowMethod} to add {@link DataFlowNode} to
    * @param overriddenValues The values that have been overridden in previous iterations.
-   * @param n                The {@link Node} to handle. ChildNodes will recursively be handled if needed.
+   * @param n The {@link Node} to handle. ChildNodes will recursively be handled if needed.
    * @return An optional of the {@link DataFlowNode} of the input node. If multiple head nodes are created, (In case of a {@link BlockStmt}) the optional will
    *         be empty.
    */
@@ -120,7 +122,7 @@ public class MethodNodeHandler {
     method.addMethodCall(calledMethod);
 
     NodeList<Expression> arguments = n.getArguments();
-    if ((arguments.size() > 0 && calledMethod.getIn() == null) || arguments.size() != calledMethod.getIn().getNodes().size()) {
+    if (arguments.size() != calledMethod.getIn().map(ParameterList::getNodes).map(Collection::size).orElse(0)) {
       LOG.warn("In method {} for called method {} the used nof arguments {} is not equal to the expected nof arguments {}", method.getName(),
           calledMethod.getName(), arguments, calledMethod.getIn());
       return Optional.empty();
@@ -130,10 +132,10 @@ public class MethodNodeHandler {
     for (int i = 0; i < arguments.size(); i++) {
       Optional<DataFlowNode> arg = handleNode(graph, method, overriddenValues, arguments.get(i));
       if (arg.isPresent()) {
-        arg.get().addEdgeTo(calledMethod.getIn().getNodes().get(i));
+        arg.get().addEdgeTo(calledMethod.getIn().get().getNodes().get(i));
       }
     }
-    
+
     calledMethod.getReturnNode().ifPresent(method::addNode);
 
     // Return the return node of the called method so that the return value can be assigned to the caller.
@@ -214,6 +216,7 @@ public class MethodNodeHandler {
     assignerDF.get().addEdgeTo(flowNode);
     return Optional.of(flowNode);
   }
+
   /**
    * TODO javadoc
    *

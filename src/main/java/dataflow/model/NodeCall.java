@@ -33,7 +33,7 @@ public class NodeCall extends OwnedNode<Node> {
 
   /**
    * The {@link ParameterList}s that contain the {@link DataFlowNode}s that where used for a specific {@link DataFlowMethod} call to the owner
-   * {@link DataFlowMethod}.
+   * {@link DataFlowMethod}. Can be null if method does not have any input.
    */
   private ParameterList in;
   /** The {@link ParameterList}s that contain the {@link DataFlowNode}s that where used as input for a call to another {@link DataFlowMethod}. */
@@ -72,8 +72,8 @@ public class NodeCall extends OwnedNode<Node> {
     return Optional.of(owner);
   }
 
-  public ParameterList getIn() {
-    return in;
+  public Optional<ParameterList> getIn() {
+    return Optional.ofNullable(in);
   }
 
   public void setIn(ParameterList in) {

@@ -35,6 +35,7 @@ import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 import dataflow.model.NodeCall;
+import dataflow.model.ParameterList;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
@@ -115,7 +116,7 @@ public class MethodDefinitionFactory {
         String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
         builder.name(call.getName()).type(type);
 
-        List<DataFlowNode> inputParameters = call.getIn().getNodes();
+        List<DataFlowNode> inputParameters = call.getIn().map(ParameterList::getNodes).orElse(new ArrayList<>());
         for (DataFlowNode param : inputParameters) {
 
           // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need

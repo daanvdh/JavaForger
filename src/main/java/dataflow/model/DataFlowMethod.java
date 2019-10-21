@@ -244,7 +244,7 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   public void addMethodCall(NodeCall calledMethod) {
     this.calledMethods.add(calledMethod);
-    this.addNodes(calledMethod.getIn().getNodes());
+    calledMethod.getIn().map(ParameterList::getNodes).ifPresent(this::addNodes);
     calledMethod.setOwner(this);
   }
 

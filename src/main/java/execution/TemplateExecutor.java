@@ -31,8 +31,8 @@ public final class TemplateExecutor {
 
   public static void main(String[] args) {
     setupSymbolSolver();
-    String inputClass = "/JavaForger/src/main/java/templateInput/definition/MethodDefinition.java";
-    JavaForgerConfiguration config = DefaultConfigurations.forBuilderAndTest();
+    String inputClass = "/JavaForger/src/main/java/dataflow/model/ParameterList.java";
+    JavaForgerConfiguration config = DefaultConfigurations.forToString();
 
     // config.setMerge(false);
     // config.setRecursive(JavaForgerConfiguration::setMerge, false);

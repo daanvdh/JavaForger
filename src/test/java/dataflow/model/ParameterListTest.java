@@ -33,7 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ParameterListTest {
   private static final List<DataFlowNode> NODES = Collections.singletonList(DataFlowNode.builder().build());
-  private static final OwnedNode OWNER = DataFlowNode.builder().build();
+  private static final OwnedNode<?> OWNER = DataFlowNode.builder().build();
 
   @Test
   public void testParameterList_minimum() {

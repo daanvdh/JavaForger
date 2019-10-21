@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.github.javaparser.ast.Node;
 
@@ -103,6 +105,11 @@ public class ParameterList extends OwnedNode<Node> {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), nodes);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     boolean equals = false;
     if (this == obj) {
@@ -124,8 +131,8 @@ public class ParameterList extends OwnedNode<Node> {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), nodes);
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("nodes", nodes).append("owner", owner).build();
   }
 
   /**

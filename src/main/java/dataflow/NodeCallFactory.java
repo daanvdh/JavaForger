@@ -52,14 +52,14 @@ public class NodeCallFactory {
 
   private NodeCall createMethodCall(DataFlowMethod method, Object resolved, MethodCallExpr node) {
     ResolvedMethodLikeDeclaration rmd = (ResolvedMethodLikeDeclaration) resolved;
-    NodeCall methodCall = NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(method).representedNode(node)
-        .build();
+    NodeCall methodCall =
+        NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(method).representedNode(node).build();
     if (rmd.getNumberOfParams() > 0) {
-      ParameterList params = ParameterList.builder().build();
+      ParameterList params = ParameterList.builder().name(method.getName() + "_inputParams").build();
       for (int i = 0; i < rmd.getNumberOfParams(); i++) {
         ResolvedParameterDeclaration p = rmd.getParam(i);
-        DataFlowNode newNode = DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).representedNode(node.getArgument(i))
-            .owner(params).build();
+        DataFlowNode newNode =
+            DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).representedNode(node.getArgument(i)).owner(params).build();
         params.add(newNode);
       }
       methodCall.setIn(params);

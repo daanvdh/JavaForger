@@ -10,16 +10,26 @@
  */
 package dataflow.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 
 /**
  * Unit test for {@link DataFlowNode}.
@@ -82,6 +92,119 @@ public class DataFlowNodeTest {
     verifyHashCode_Different(DataFlowNode.Builder::representedNode, new MethodDeclaration());
     verifyHashCode_Different(DataFlowNode.Builder::in, Collections.singletonList(DataFlowEdge.builder().build()));
     verifyHashCode_Different(DataFlowNode.Builder::out, Collections.singletonList(DataFlowEdge.builder().build()));
+  }
+
+  /**
+   * Assert that the names and all incoming and outgoing edges are equal, regardless of the order.
+   *
+   * @param expected
+   * @param fields
+   * @return Empty optional if assertion passed, optional containing an error message otherwise.
+   */
+  public Optional<String> assertNodesEqual(Collection<DataFlowNode> expected, Collection<DataFlowNode> fields) {
+    Map<String, DataFlowNode> exp = expected.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
+    Map<String, DataFlowNode> res = fields.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
+    Optional<String> equal =
+        exp.keySet().equals(res.keySet()) ? Optional.empty() : Optional.of("Nodes not equal, expected: " + exp.keySet() + " but was: " + res.keySet());
+    if (!equal.isPresent()) {
+      equal = exp.keySet().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
+    }
+    return equal;
+  }
+
+  /**
+   * Assert that the incoming and outgoing edges of both nodes are equal
+   *
+   * @param exp expected
+   * @param res result
+   * @return Empty optional if assertion passed, optional containing an error message otherwise.
+   */
+  public Optional<String> assertNodeEqual(DataFlowNode exp, DataFlowNode res) {
+    List<DataFlowEdge> expIn = exp.getIn();
+    List<DataFlowEdge> resIn = res.getIn();
+
+    String message = !(exp.getName().equals(res.getName())) ? "Names are not equal of expected node " + exp + " and result node " + res : null;
+    message =
+        (message == null && expIn.size() != resIn.size()) ? "number of incoming edges not equal for expected node " + exp + " and resultNode " + res : message;
+    for (int i = 0; i < expIn.size() && message == null; i++) {
+      String edgeMessage = assertEdgeEqual(expIn.get(0), resIn.get(0));
+      if (edgeMessage != null) {
+        message = "Incoming edges not equal of expected node " + exp + " and result node " + res + ": " + edgeMessage;
+      }
+    }
+
+    List<DataFlowEdge> expOut = exp.getOut();
+    List<DataFlowEdge> resOut = res.getOut();
+    message = (message == null && expOut.size() != resOut.size()) ? "number of outgoing edges not equal for expected node " + exp + " and resultNode " + res
+        : message;
+    for (int i = 0; i < expOut.size() && message == null; i++) {
+      String edgeMessage = assertEdgeEqual(expOut.get(0), resOut.get(0));
+      if (edgeMessage != null) {
+        message = "Outgoing edges not equal of expected node " + exp + " and result node " + res + ": " + edgeMessage;
+      }
+    }
+
+    if (message == null) {
+      String s = "Owner not equal for node " + exp.getName() + " expected " + exp.getOwner() + " but was " + res.getOwner();
+      if (exp.getOwner().isPresent() && res.getOwner().isPresent()) {
+        if (!(exp.getOwner().get().getName().equals(res.getOwner().get().getName())) || //
+            !(exp.getOwner().get().getClass().equals(res.getOwner().get().getClass()))) {
+          message = s;
+        }
+      } else if (exp.getOwner().isPresent() != res.getOwner().isPresent()) {
+        message = s;
+      }
+    }
+
+    if (message == null && !exp.getRepresentedNode().equals(res.getRepresentedNode())) {
+      message = "RepresentedNode not equal for node " + exp.getName() + " expected " + exp.getRepresentedNode() + " (" + exp.getRepresentedNode().getClass()
+          + ")" + " but was " + res.getRepresentedNode() + " (" + res.getRepresentedNode().getClass() + ")";
+    }
+
+    return Optional.ofNullable(message);
+  }
+
+  public DataFlowNode createField(CompilationUnit cu, String name) {
+    VariableDeclarator represented = cu.findAll(VariableDeclarator.class).stream().filter(v -> v.getNameAsString().equals(name)).findFirst().get();
+    return createNodeBuilder(name).representedNode(represented).build();
+  }
+
+  public DataFlowNode createMethodReturn(CompilationUnit cu, String methodName) {
+    MethodDeclaration method = cu.findAll(MethodDeclaration.class).stream().filter(v -> v.getNameAsString().equals(methodName)).findFirst().get();
+    return createNodeBuilder(methodName + "_return").representedNode(method).build();
+  }
+
+  public DataFlowNode createSpecificReturn(CompilationUnit cu, String methodName) {
+    ReturnStmt ret =
+        cu.findAll(MethodDeclaration.class).stream().filter(v -> v.getNameAsString().equals(methodName)).findFirst().get().findAll(ReturnStmt.class).get(0);
+    return createNodeBuilder(methodName + "_return_line" + ret.getBegin().get().line + "_col" + ret.getBegin().get().column).representedNode(ret).build();
+  }
+
+  public DataFlowNode createParameter(CompilationUnit cu, String name) {
+    Parameter represented =
+        cu.findAll(MethodDeclaration.class).stream().map(md -> md.getParameterByName(name)).filter(Optional::isPresent).findFirst().get().get();
+    return createNodeBuilder(name).representedNode(represented).build();
+  }
+
+  public DataFlowNode createNode(CompilationUnit cu, String name, Class<? extends Node> claz) {
+    return createNode(cu, name, claz, 0);
+  }
+
+  public DataFlowNode createNode(CompilationUnit cu, String name, Class<? extends Node> claz, int index) {
+    Node represented = cu.findAll(claz).get(index);
+    return createNodeBuilder(name).representedNode(represented).build();
+  }
+
+  public DataFlowNode.Builder createNodeBuilder(String name) {
+    return DataFlowNode.builder().name(name).representedNode(new SimpleName(name));
+  }
+
+  private String assertEdgeEqual(DataFlowEdge exp, DataFlowEdge res) {
+    String message = null;
+    if (!exp.getFrom().getName().equals(res.getFrom().getName()) && !exp.getTo().getName().equals(res.getTo().getName())) {
+      message = exp.toString() + " not equal to " + res.toString();
+    }
+    return message;
   }
 
   private DataFlowNode.Builder createAndFillBuilder() {

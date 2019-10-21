@@ -42,7 +42,7 @@ public class NodeCallTest {
   public void testNodeCall_minimum() {
     NodeCall nodeCall = NodeCall.builder().owner(OWNER).build();
 
-    Assert.assertNull("Unexpected in", nodeCall.getIn());
+    Assert.assertFalse("Unexpected in", nodeCall.getIn().isPresent());
     Assert.assertNull("Unexpected out", nodeCall.getOut());
     Assert.assertTrue("Unexpected owner", nodeCall.getOwner().isPresent());
     Assert.assertFalse("Unexpected calledMethod", nodeCall.getCalledMethod().isPresent());
@@ -54,7 +54,7 @@ public class NodeCallTest {
   public void testNodeCall_maximum() {
     NodeCall nodeCall = createAndFillBuilder().build();
 
-    Assert.assertEquals("Unexpected in", IN, nodeCall.getIn());
+    Assert.assertEquals("Unexpected in", IN, nodeCall.getIn().get());
     Assert.assertEquals("Unexpected out", OUT, nodeCall.getOut());
     Assert.assertEquals("Unexpected owner", OWNER, nodeCall.getOwner().get());
     Assert.assertEquals("Unexpected calledMethod", Optional.of(CALLED_METHOD), nodeCall.getCalledMethod());
