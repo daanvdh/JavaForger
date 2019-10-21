@@ -24,19 +24,15 @@ import org.junit.Test;
     ${parameter.type} ${parameter.name} = ${parameter.init1}; 
 </#list>
 
-// TODO these are all the starting nodes inside a method, e.g. "23" is a starting node in "countService.countUntil(23);". 
 <#--
+// TODO these are all the starting nodes inside a method, e.g. "23" is a starting node in "countService.countUntil(23);". 
 <#list method.definedVariables as var>
     ${var.type} ${var.name} = ${var.defaultInit}; 
 </#list>
 -->
 
-// TODO inputMethods is currently never assigned. 
 <#list method.inputMethods as input>
-    // TODO the returnSignature is the name of the variable to which the return was assigned. 
-    // This must be assigned to a variable because it might be needed as input for other methods, e.g. in the callSignature.  
     ${input.type} ${input.returnSignature} = ${input.init1};
-    // TODO the callSignature is the complete call e.g. "myProductService.orderProduct(product, amount)"
     Mockito.when(${input.callSignature}).thenReturn(${input.returnSignature});
 </#list>
 

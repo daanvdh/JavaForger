@@ -48,6 +48,11 @@ public class NodeCall extends OwnedNode<Node> {
    * should only be a single incoming edge from the return node of the called method. This NodeCall is the owner of the returnNode.
    */
   private DataFlowNode returnNode;
+  /**
+   * The name of the instance on which this {@link NodeCall} was called. Can be null if this {@link NodeCall} was a static call. Will be "this" if the method
+   * was called on the same instance as the method to which the call belongs to.
+   */
+  private String instanceName;
 
   private String claz;
   private String peckage;
@@ -131,6 +136,14 @@ public class NodeCall extends OwnedNode<Node> {
 
   public void setReturnNode(DataFlowNode returnNode) {
     this.returnNode = returnNode;
+  }
+
+  public Optional<String> getInstanceName() {
+    return Optional.ofNullable(instanceName);
+  }
+
+  public void setInstanceName(String instanceName) {
+    this.instanceName = instanceName;
   }
 
   /**

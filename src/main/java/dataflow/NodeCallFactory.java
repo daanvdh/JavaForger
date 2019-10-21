@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodLikeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
@@ -52,8 +54,17 @@ public class NodeCallFactory {
 
   private NodeCall createMethodCall(DataFlowMethod method, Object resolved, MethodCallExpr node) {
     ResolvedMethodLikeDeclaration rmd = (ResolvedMethodLikeDeclaration) resolved;
+
     NodeCall methodCall =
         NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(method).representedNode(node).build();
+
+    Optional<Expression> scope = node.getScope();
+    if (scope.isPresent()) {
+      if (scope.get() instanceof NameExpr) {
+        methodCall.setInstanceName(((NameExpr) scope.get()).getNameAsString());
+      }
+    }
+
     if (rmd.getNumberOfParams() > 0) {
       ParameterList params = ParameterList.builder().name(method.getName() + "_inputParams").build();
       for (int i = 0; i < rmd.getNumberOfParams(); i++) {

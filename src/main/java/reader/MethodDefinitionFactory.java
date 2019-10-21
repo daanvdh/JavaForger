@@ -122,6 +122,7 @@ public class MethodDefinitionFactory {
 
     List<DataFlowNode> inputParameters = call.getIn().map(ParameterList::getNodes).orElse(new ArrayList<>());
     StringBuilder callSignature = new StringBuilder();
+    call.getInstanceName().ifPresent(name -> callSignature.append(name + "."));
     callSignature.append(call.getName()).append("(");
     boolean first = true;
     for (DataFlowNode param : inputParameters) {

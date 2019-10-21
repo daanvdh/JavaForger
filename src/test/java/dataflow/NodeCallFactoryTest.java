@@ -80,8 +80,9 @@ public class NodeCallFactoryTest {
     Assert.assertEquals(expectedDfn, resultMethod.get().getReturnNode().get());
 
     Optional<String> m = dfnTest.assertNodeEqual(expectedInputNode, resultMethod.get().getIn().get().getNodes().get(0));
-    System.out.println(m);
     Assert.assertFalse(m.orElse(""), m.isPresent());
+
+    Assert.assertEquals("Unexpected instanceName", "sb", resultMethod.get().getInstanceName().get());
 
     Assert.assertEquals(expectedDfm, resultMethod.get());
   }

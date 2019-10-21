@@ -33,7 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class NodeCallTest {
   private static final ParameterList IN = ParameterList.builder().build();
   private static final ParameterList OUT = ParameterList.builder().build();
-  private static final OwnedNode OWNER = DataFlowNode.builder().build();
+  private static final OwnedNode<?> OWNER = DataFlowNode.builder().build();
   private static final DataFlowMethod CALLED_METHOD = DataFlowMethod.builder().build();
   private static final String CLAZ = "a";
   private static final String PECKAGE = "c";
