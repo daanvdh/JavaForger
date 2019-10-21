@@ -122,8 +122,8 @@ public class MethodDefinitionFactory {
           // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
           // to define it in test data as well
 
+          Predicate<DataFlowNode> isField = DataFlowNode::isField;
           // TODO this logic needs to be in the DFN itself
-          Predicate<DataFlowNode> isField = n -> n.getOwner().filter(o -> o.equals(dataFlowMethod.getOwner().get())).isPresent();
           Predicate<DataFlowNode> isParam = n -> dataFlowMethod.getInputParameters().contains(n);
           Predicate<DataFlowNode> isMethodReturn = n -> n.getOwner() //
               // if it's a return node from a nodeCall (that is the only type of node directly owned by a NodeCall)

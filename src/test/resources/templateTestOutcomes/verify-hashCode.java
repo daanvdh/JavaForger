@@ -60,8 +60,8 @@ public class ClassWithEverything {
 );
   }
 
-  private int method2(int j, String t) {
-    s = t;
+  private int method2(int j, String t2) {
+    s = t2;
     return j + 1;
   }
 
