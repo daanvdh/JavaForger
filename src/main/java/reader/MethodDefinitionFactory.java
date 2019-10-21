@@ -11,7 +11,6 @@
 package reader;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -108,95 +107,99 @@ public class MethodDefinitionFactory {
   }
 
   private void addInputMethods(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
-
     for (NodeCall call : dataFlowMethod.getCalledMethods()) {
       // If method call has a return node and it's return node is read
-      if (call.getReturnNode().map(t -> !t.getIn().isEmpty()).isPresent()) {
-        Builder builder = call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
-        String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
-        builder.name(call.getName()).type(type);
-
-        List<DataFlowNode> inputParameters = call.getIn().map(ParameterList::getNodes).orElse(new ArrayList<>());
-        for (DataFlowNode param : inputParameters) {
-
-          // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
-          // to define it in test data as well
-
-          Predicate<DataFlowNode> isField = DataFlowNode::isField;
-          // TODO this logic needs to be in the DFN itself
-          Predicate<DataFlowNode> isParam = n -> dataFlowMethod.getInputParameters().contains(n);
-          Predicate<DataFlowNode> isMethodReturn = n -> n.getOwner() //
-              // if it's a return node from a nodeCall (that is the only type of node directly owned by a NodeCall)
-              .filter(o -> NodeCall.class.isAssignableFrom(o.getClass())).map(NodeCall.class::cast)
-              // if the method is not present it is not parsed and is therefore part of another class.
-              .filter(t -> !t.getCalledMethod().isPresent())
-              // If the method is present but the owning class is different than the current class.
-              .filter(t -> !t.getCalledMethod().get().getOwner().equals(dataFlowMethod.getOwner()))
-              // If it's still present after the filters it is a method return node.
-              .isPresent();
-
-          List<DataFlowNode> inputNodes = graphService.walkBackUntil(param, isField.or(isParam).or(isMethodReturn));
-          // TODO construct the call signature for this method
-          StringBuilder callSignature = new StringBuilder();
-          callSignature.append(call.getName()).append("(");
-          boolean first = true;
-          // TODO construct the return signature for this method
-          String returnSignature = "returnSignature";
-          for (DataFlowNode inputNode : inputNodes) {
-            if (!first) {
-              callSignature.append(", ");
-            }
-
-            if (isField.test(param)) {
-              // TODO handle field: field must be set inside the template
-            } else if (isParam.test(inputNode)) {
-              // TODO handle param: Should probably not have to do anything, since parameters will already have to be set inside any test calling this method.
-              callSignature.append(inputNode.getName());
-            } else if (isMethodReturn.test(inputNode)) {
-              // TODO handle return node: Maybe we have to make sure that the name of something else returning it is equal to this methodCall receiving it.
-              // Maybe we do not need to do anything.
-            } else {
-              // TODO handle nodes that are constructed inside the method. These will have to be constructed and initialized separately.
-            }
-          }
-          callSignature.append(")");
-        }
-
-        // get the input for
-
+      if (call.getReturnNode().map(t -> !t.getOut().isEmpty()).orElse(false)) {
+        addInputMethod(newMethod, dataFlowMethod, call);
       }
     }
+  }
 
-    // =======================================================================================
-    // =======================================================================================
-    // =======================================================================================
-    Collection<DataFlowMethod> inputMethodNodes = dataFlowMethod.getInputMethods();
-    for (DataFlowMethod dfm : inputMethodNodes) {
+  private void addInputMethod(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call) {
+    Builder builder = call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
+    String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
+    builder.name(call.getName()).type(type);
 
-      MethodDefinition.Builder builder = parseCallable(dfm.getRepresentedNode());
-      String type = dfm.getReturnNode().map(DataFlowNode::getType).orElse("void");
-      builder.name(dfm.getName()).type(type);
+    List<DataFlowNode> inputParameters = call.getIn().map(ParameterList::getNodes).orElse(new ArrayList<>());
+    StringBuilder callSignature = new StringBuilder();
+    callSignature.append(call.getName()).append("(");
+    boolean first = true;
+    for (DataFlowNode param : inputParameters) {
+      if (!first) {
+        callSignature.append(", ");
+      } else {
+        first = false;
+      }
+      String inputName = getInputName(dataFlowMethod, param);
+      callSignature.append(inputName);
+    }
+    callSignature.append(")");
 
-      List<DataFlowNode> inputParameters = dfm.getInputParameters().getNodes();
-      // TODO walk back in the direction of the given dataFlowMethod
-      for (DataFlowNode param : inputParameters) {
-        List<DataFlowNode> nodeInMethod = graphService.walkBackUntil(param, dataFlowMethod);
-        // Get the list of nodes that are on the edge of the graph, or
+    MethodDefinition method = null;
+    if (call.getCalledMethod().isPresent()) {
+      // TODO fuck private methods for now, just add them.
+      method = parseCallable(call.getCalledMethod().get().getRepresentedNode()).build();
+      // TODO is this needed?
+      // String type = dfm.getReturnNode().map(DataFlowNode::getType).orElse("void");
+      // method.setName(dfm.getName());
+      // method.setType(type);
+    } else {
+      method = MethodDefinition.builder().type(call.getClaz()).build();
+    }
 
-        // Returns all [read fields from the class, inputParameters, method return values, nodes that are part of this method] that influence the state
-        // of the current parameter.
-        List<DataFlowNode> nodeInGraph = graphService.walkBackUntilLastInScopeOfMethod(nodeInMethod, dataFlowMethod);
+    // TODO fix this
+    method.setReturnSignature("ret");
+    method.setCallSignature(callSignature.toString());
 
-        // TODO The cast most likely fails now
-        VariableDefinition createSingle = fieldFactory.createSingle(param.getRepresentedNode());
+    newMethod.addInputMethod(method);
 
-        FlowReceiverDefinition flowParam = new FlowReceiverDefinition();
-        flowParam.setReceivedValues(nodeInGraph.stream().map(DataFlowNode::getName).collect(Collectors.toList()));
+    // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
+    // to define it in test data as well
 
+    // get the input for
+  }
+
+  private String getInputName(DataFlowMethod dataFlowMethod, DataFlowNode param) {
+    Predicate<DataFlowNode> isField = DataFlowNode::isField;
+    Predicate<DataFlowNode> isParam = DataFlowNode::isInputParameter;
+    // TODO this logic needs to be in the DFN itself
+    Predicate<DataFlowNode> isMethodReturn = n -> n.getOwner() //
+        // if it's a return node from a nodeCall (that is the only type of node directly owned by a NodeCall)
+        .filter(o -> NodeCall.class.isAssignableFrom(o.getClass())).map(NodeCall.class::cast)
+        // if the method is not present it is not parsed and is therefore part of another class.
+        .filter(t -> !t.getCalledMethod().isPresent())
+        // If the method is present but the owning class is different than the current class.
+        .filter(t -> !t.getCalledMethod().get().getOwner().equals(dataFlowMethod.getOwner()))
+        // If it's still present after the filters it is a method return node.
+        .isPresent();
+
+    List<DataFlowNode> inputNodes = graphService.walkBackUntil(param, isField.or(isParam).or(isMethodReturn));
+    // TODO construct the call signature for this method
+    // TODO construct the return signature for this method
+    String returnSignature = "returnSignature";
+
+    StringBuilder sb = new StringBuilder();
+    boolean first = true;
+    for (DataFlowNode inputNode : inputNodes) {
+      if (!first) {
+        sb.append("_");
+      } else {
+        first = false;
       }
 
-      newMethod.addInputMethod(builder.build());
+      if (param.isField()) {
+        // TODO handle field: field must be set inside the template
+      } else if (inputNode.isInputParameter()) {
+        // TODO handle param: Should probably not have to do anything, since parameters will already have to be set inside any test calling this method.
+        sb.append(inputNode.getName());
+      } else if (isMethodReturn.test(inputNode)) {
+        // TODO handle return node: Maybe we have to make sure that the name of something else returning it is equal to this methodCall receiving it.
+        // Maybe we do not need to do anything.
+      } else {
+        // TODO handle nodes that are constructed inside the method. These will have to be constructed and initialized separately.
+      }
     }
+    return sb.toString();
   }
 
 }

@@ -105,6 +105,11 @@ public class DataFlowNode extends OwnedNode<Node> {
     return this.getOwner().map(DataFlowGraph.class::isInstance).orElse(false);
   }
 
+  public boolean isInputParameter() {
+    return this.getOwner().filter(DataFlowMethod.class::isInstance).map(DataFlowMethod.class::cast).map(dfm -> dfm.getInputParameters().contains(this))
+        .orElse(false);
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), in, out);

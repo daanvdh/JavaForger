@@ -46,7 +46,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
    * by another method. If this {@link MethodDefinition} was constructed as part of parsing a class, the methodSignature input variables will be filled with
    * random constants.
    */
-  private String methodSignature;
+  private String callSignature;
   /**
    * If this {@link MethodDefinition} represents a method call from inside a parsed method, this holds the name of the variable to which it was assigned. This
    * will be null otherwise.
@@ -59,7 +59,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
     this.changedFields = builder.changedFields == null ? this.changedFields : builder.changedFields;
     this.inputMethods = builder.inputMethods == null ? this.inputMethods : builder.inputMethods;
     this.outputMethods = builder.outputMethods == null ? this.outputMethods : builder.outputMethods;
-    this.methodSignature = builder.methodSignature == null ? this.methodSignature : builder.methodSignature;
+    this.callSignature = builder.callSignature == null ? this.callSignature : builder.callSignature;
     this.returnSignature = builder.returnSignature == null ? this.returnSignature : builder.returnSignature;
   }
 
@@ -99,12 +99,12 @@ public class MethodDefinition extends InitializedTypeDefinition {
     this.outputMethods = outputMethods;
   }
 
-  public String getMethodSignature() {
-    return methodSignature;
+  public String getCallSignature() {
+    return callSignature;
   }
 
-  public void setMethodSignature(String methodSignature) {
-    this.methodSignature = methodSignature;
+  public void setCallSignature(String callSignature) {
+    this.callSignature = callSignature;
   }
 
   public String getReturnSignature() {
@@ -150,7 +150,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
     private List<FlowReceiverDefinition> changedFields = new ArrayList<>();
     private List<MethodDefinition> inputMethods = new ArrayList<>();
     private List<MethodDefinition> outputMethods = new ArrayList<>();
-    private String methodSignature;
+    private String callSignature;
     private String returnSignature;
 
     private Builder() {
@@ -188,8 +188,8 @@ public class MethodDefinition extends InitializedTypeDefinition {
       return this;
     }
 
-    public Builder methodSignature(String methodSignature) {
-      this.methodSignature = methodSignature;
+    public Builder callSignature(String callSignature) {
+      this.callSignature = callSignature;
       return this;
     }
 

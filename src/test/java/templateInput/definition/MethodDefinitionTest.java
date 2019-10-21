@@ -46,7 +46,7 @@ public class MethodDefinitionTest {
     Assert.assertTrue("Unexpected changedFields", methodDefinition.getChangedFields().isEmpty());
     Assert.assertTrue("Unexpected inputMethods", methodDefinition.getInputMethods().isEmpty());
     Assert.assertTrue("Unexpected outputMethods", methodDefinition.getOutputMethods().isEmpty());
-    Assert.assertNull("Unexpected methodSignature", methodDefinition.getMethodSignature());
+    Assert.assertNull("Unexpected methodSignature", methodDefinition.getCallSignature());
     Assert.assertNull("Unexpected returnSignature", methodDefinition.getReturnSignature());
   }
 
@@ -58,13 +58,13 @@ public class MethodDefinitionTest {
     Assert.assertEquals("Unexpected changedFields", CHANGED_FIELDS, methodDefinition.getChangedFields());
     Assert.assertEquals("Unexpected inputMethods", INPUT_METHODS, methodDefinition.getInputMethods());
     Assert.assertEquals("Unexpected outputMethods", OUTPUT_METHODS, methodDefinition.getOutputMethods());
-    Assert.assertEquals("Unexpected methodSignature", METHOD_SIGNATURE, methodDefinition.getMethodSignature());
+    Assert.assertEquals("Unexpected methodSignature", METHOD_SIGNATURE, methodDefinition.getCallSignature());
     Assert.assertEquals("Unexpected returnSignature", RETURN_SIGNATURE, methodDefinition.getReturnSignature());
   }
 
   private MethodDefinition.Builder createAndFillBuilder() {
     return MethodDefinition.builder().parameters(PARAMETERS).changedFields(CHANGED_FIELDS).inputMethods(INPUT_METHODS).outputMethods(OUTPUT_METHODS)
-        .methodSignature(METHOD_SIGNATURE).returnSignature(RETURN_SIGNATURE);
+        .callSignature(METHOD_SIGNATURE).returnSignature(RETURN_SIGNATURE);
   }
 
 }
