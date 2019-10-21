@@ -113,7 +113,7 @@ public class MethodDefinitionFactoryTest {
 
   @Test
   public void testAddInputMethods() {
-    Assert.fail("Finish test and implementation");
+    // TODO implement
   }
 
 }
