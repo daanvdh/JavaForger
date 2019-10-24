@@ -21,14 +21,13 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodLikeDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 import dataflow.model.NodeCall;
-import dataflow.model.ParameterList;
+import dataflow.model.OwnedNode;
 
 /**
  * Class for resolving {@link DataFlowMethod}s and {@link DataFlowNode}s from {@link Node}s and {@link DataFlowGraph}s.
@@ -40,42 +39,27 @@ public class NodeCallFactory {
 
   private ParserUtil parserUtil = new ParserUtil();
 
-  public Optional<NodeCall> createNodeCall(DataFlowGraph graph, DataFlowMethod method, MethodCallExpr node) {
-    Object resolved = parserUtil.resolve(method, node);
+  public Optional<NodeCall> create(OwnedNode<?> owner, MethodCallExpr node) {
+    Object resolved = parserUtil.resolve(owner, node);
 
     NodeCall resolvedMethod = null;
     if (resolved instanceof ResolvedMethodLikeDeclaration) {
-      resolvedMethod = createMethodCall(method, resolved, node);
+      resolvedMethod = createMethodCall(owner, (ResolvedMethodLikeDeclaration) resolved, node);
     } else {
-      LOG.warn("In method {}, resolving is not supported for node {} of type {}", method.getName(), node, resolved == null ? null : resolved.getClass());
+      LOG.warn("In method {}, resolving is not supported for node {} of type {}", owner.getName(), node, resolved == null ? null : resolved.getClass());
     }
     return Optional.ofNullable(resolvedMethod);
   }
 
-  private NodeCall createMethodCall(DataFlowMethod method, Object resolved, MethodCallExpr node) {
-    ResolvedMethodLikeDeclaration rmd = (ResolvedMethodLikeDeclaration) resolved;
-
+  private NodeCall createMethodCall(OwnedNode<?> owner, ResolvedMethodLikeDeclaration resolved, MethodCallExpr node) {
     NodeCall methodCall =
-        NodeCall.builder().name(rmd.getName()).claz(rmd.getClassName()).peckage(rmd.getPackageName()).owner(method).representedNode(node).build();
+        NodeCall.builder().name(resolved.getName()).claz(resolved.getClassName()).peckage(resolved.getPackageName()).owner(owner).representedNode(node).build();
+    setInstanceName(methodCall, node);
+    setReturn(methodCall, owner, node, resolved);
+    return methodCall;
+  }
 
-    Optional<Expression> scope = node.getScope();
-    if (scope.isPresent()) {
-      if (scope.get() instanceof NameExpr) {
-        methodCall.setInstanceName(((NameExpr) scope.get()).getNameAsString());
-      }
-    }
-
-    if (rmd.getNumberOfParams() > 0) {
-      ParameterList params = ParameterList.builder().name(method.getName() + "_inputParams").build();
-      for (int i = 0; i < rmd.getNumberOfParams(); i++) {
-        ResolvedParameterDeclaration p = rmd.getParam(i);
-        DataFlowNode newNode =
-            DataFlowNode.builder().name(p.getName()).type(p.getType().describe().toString()).representedNode(node.getArgument(i)).owner(params).build();
-        params.add(newNode);
-      }
-      methodCall.setIn(params);
-    }
-
+  private void setReturn(NodeCall methodCall, OwnedNode<?> method, MethodCallExpr node, ResolvedMethodLikeDeclaration rmd) {
     if (rmd instanceof ResolvedMethodDeclaration) {
       ResolvedType returnType = ((ResolvedMethodDeclaration) rmd).getReturnType();
       if (!returnType.isVoid()) {
@@ -85,8 +69,15 @@ public class NodeCallFactory {
     } else {
       LOG.warn("Not supported to create return node in NodeCall from resolved node of type {} in method {}", rmd.getClass(), method.getName());
     }
+  }
 
-    return methodCall;
+  private void setInstanceName(NodeCall methodCall, MethodCallExpr node) {
+    Optional<Expression> scope = node.getScope();
+    if (scope.isPresent()) {
+      if (scope.get() instanceof NameExpr) {
+        methodCall.setInstanceName(((NameExpr) scope.get()).getNameAsString());
+      }
+    }
   }
 
 }

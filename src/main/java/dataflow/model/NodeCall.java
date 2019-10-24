@@ -63,7 +63,9 @@ public class NodeCall extends OwnedNode<Node> {
 
   private NodeCall(Builder builder) {
     super(builder);
-    this.in = builder.in == null ? this.in : builder.in;
+    if (builder.in != null) {
+      this.setIn(builder.in);
+    }
     this.out = builder.out == null ? this.out : builder.out;
     this.owner = builder.owner == null ? this.owner : builder.owner;
     this.calledMethod = builder.calledMethod == null ? this.calledMethod : builder.calledMethod;
@@ -81,8 +83,9 @@ public class NodeCall extends OwnedNode<Node> {
     return Optional.ofNullable(in);
   }
 
-  public void setIn(ParameterList in) {
+  public final void setIn(ParameterList in) {
     this.in = in;
+    in.setOwner(this);
   }
 
   public ParameterList getOut() {
@@ -197,6 +200,11 @@ public class NodeCall extends OwnedNode<Node> {
 
     public Builder in(ParameterList in) {
       this.in = in;
+      return this;
+    }
+
+    public Builder in(DataFlowNode... inputNodes) {
+      this.in = ParameterList.builder().nodes(inputNodes).build();
       return this;
     }
 

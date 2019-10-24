@@ -42,10 +42,10 @@ import dataflow.model.ParameterList;
 public class MethodNodeHandlerTest {
 
   @Mock
-  private NodeCallFactory resolver;
+  private NodeCallFactory nodeCallFactory;
 
   @InjectMocks
-  MethodNodeHandler sut = new MethodNodeHandler();
+  private MethodNodeHandler sut;
 
   @Test
   public void testHandleMethodCallExpr_inputMethod() {
@@ -66,9 +66,9 @@ public class MethodNodeHandlerTest {
     DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
-    Mockito.when(resolver.createNodeCall(graph, method, node)).thenReturn(Optional.of(methodCall));
+    Mockito.when(nodeCallFactory.create(method, node)).thenReturn(Optional.of(methodCall));
 
-    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
+    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node, method);
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
@@ -94,9 +94,9 @@ public class MethodNodeHandlerTest {
     DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
-    Mockito.when(resolver.createNodeCall(graph, method, node)).thenReturn(Optional.of(methodCall));
+    Mockito.when(nodeCallFactory.create(method, node)).thenReturn(Optional.of(methodCall));
 
-    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node);
+    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node, method);
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());

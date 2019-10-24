@@ -13,6 +13,7 @@ import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParse
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserSymbolDeclaration;
 
 import dataflow.model.DataFlowMethod;
+import dataflow.model.OwnedNode;
 
 public class ParserUtil {
   private static final Logger LOG = LoggerFactory.getLogger(ParserUtil.class);
@@ -39,8 +40,8 @@ public class ParserUtil {
     }
     return Optional.ofNullable(resolvedNode);
   }
-  
-  public Object resolve(DataFlowMethod method, Node node) {
+
+  public Object resolve(OwnedNode<?> method, Node node) {
     if (!Resolvable.class.isAssignableFrom(node.getClass())) {
       LOG.warn("In method {}, node is not Resolvable for expression {} of type {}", method.getName(), node, node.getClass());
       return null;

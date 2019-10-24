@@ -48,8 +48,8 @@ public class ParameterList extends OwnedNode<Node> {
 
   private ParameterList(Builder builder) {
     super(builder);
-    this.nodes.clear();
-    this.nodes.addAll(builder.nodes);
+    super.name = "paramList";
+    this.addAll(builder.nodes);
     this.owner = builder.owner == null ? this.owner : builder.owner;
   }
 
@@ -67,19 +67,22 @@ public class ParameterList extends OwnedNode<Node> {
   }
 
   public void setParameters(List<DataFlowNode> parameters) {
-    this.nodes = parameters;
+    this.nodes.clear();
+    this.addAll(parameters);
   }
 
-  public void add(DataFlowNode node) {
+  public final void add(DataFlowNode node) {
     this.nodes.add(node);
+    // set the owner since this is the lowest possible owner
+    node.setOwner(this);
   }
 
   public void clear() {
     this.nodes.clear();
   }
 
-  public void addAll(List<DataFlowNode> inputParameters) {
-    this.nodes.addAll(inputParameters);
+  public final void addAll(List<DataFlowNode> inputParameters) {
+    inputParameters.forEach(this::add);
   }
 
   public boolean contains(DataFlowNode dfn) {
@@ -132,7 +135,8 @@ public class ParameterList extends OwnedNode<Node> {
 
   @Override
   public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("nodes", nodes).append("owner", owner).build();
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("nodes", nodes)
+        .append("owner", owner != null ? owner.getName() : "null").build();
   }
 
   /**

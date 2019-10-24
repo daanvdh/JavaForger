@@ -25,12 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
+
+import dataflow.util.HashCodeWrapper;
 
 /**
  * DataFlow class representing a method inside a {@link DataFlowGraph}.
@@ -40,7 +43,7 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   /** All nodes defined within this method. This method should be an (indirect) owner for each of these nodes. */
-  private Map<Node, DataFlowNode> nodes = new HashMap<>();
+  private Map<HashCodeWrapper<Node>, DataFlowNode> nodes = new HashMap<>();
   /** The graph which this method is part of */
   private DataFlowGraph graph;
   /**
@@ -85,7 +88,14 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
       this.setInputParameters(builder.inputParameters);
     }
     this.addNodes(builder.nodes);
+    // If it's added via the builder this method will be the owner, otherwise this node should have been added via a nodeCall
+    builder.nodes.forEach(n -> n.setOwner(this));
 
+    this.calledMethods.clear();
+    this.calledMethods.addAll(builder.nodeCalls);
+    this.addNodes(builder.nodeCalls.stream().map(NodeCall::getReturnNode).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
+    this.addNodes(builder.nodeCalls.stream().map(NodeCall::getIn).filter(Optional::isPresent).map(Optional::get).map(ParameterList::getNodes)
+        .flatMap(List::stream).collect(Collectors.toList()));
     this.inputFields.clear();
     this.inputFields.addAll(builder.inputFields);
     this.changedFields.clear();
@@ -103,17 +113,11 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   public final void setReturnNode(DataFlowNode returnNode) {
     this.returnNode = returnNode;
-    returnNode.setOwner(this);
     this.addNode(returnNode);
   }
 
   public ParameterList getInputParameters() {
     return inputParameters;
-  }
-
-  public final void setInputParameters(List<DataFlowNode> inputParameters) {
-    this.inputParameters = new ParameterList(inputParameters, this);
-    this.addNodes(inputParameters);
   }
 
   public void setInputParameters(ParameterList inputParameters) {
@@ -170,28 +174,16 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     return nodes.values();
   }
 
-  public void setNodes(Map<Node, DataFlowNode> nodes) {
-    this.nodes = nodes;
-  }
-
   public final void addNodes(List<DataFlowNode> nodes) {
     nodes.forEach(this::addNode);
   }
 
   public final void addNode(DataFlowNode created) {
-    this.nodes.put(created.getRepresentedNode(), created);
-    created.setOwner(this);
-  }
-
-  public DataFlowNode createAndAddNode(String name, Node n) {
-    DataFlowNode dfn = new DataFlowNode(name, n);
-    dfn.setOwner(this);
-    this.nodes.put(n, dfn);
-    return dfn;
+    this.nodes.put(new HashCodeWrapper<>(created.getRepresentedNode()), created);
   }
 
   public DataFlowNode getNode(Node node) {
-    return nodes.get(node);
+    return nodes.get(new HashCodeWrapper<>(node));
   }
 
   public void addParameter(DataFlowNode node) {
@@ -245,7 +237,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
   public void addMethodCall(NodeCall calledMethod) {
     this.calledMethods.add(calledMethod);
     calledMethod.getIn().map(ParameterList::getNodes).ifPresent(this::addNodes);
-    calledMethod.setOwner(this);
   }
 
   @Override
@@ -317,6 +308,7 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     private DataFlowNode returnNode;
     private DataFlowGraph graph;
     private List<DataFlowNode> nodes = new ArrayList<>();
+    private List<NodeCall> nodeCalls = new ArrayList<>();
 
     protected Builder() {
       // Builder should only be constructed via the parent class
@@ -375,6 +367,12 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     public Builder nodes(DataFlowNode... nodes) {
       this.nodes.clear();
       this.nodes.addAll(Arrays.asList(nodes));
+      return this;
+    }
+
+    public Builder nodeCalls(NodeCall... calls) {
+      this.nodeCalls.clear();
+      Stream.of(calls).forEach(this.nodeCalls::add);
       return this;
     }
 

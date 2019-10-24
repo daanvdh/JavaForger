@@ -30,7 +30,7 @@ public abstract class NodeRepresenter<T extends Node> {
   /** The {@link JavaParser} {@link Node} */
   private T representedNode;
   /** The name of this node */
-  private String name;
+  protected String name;
 
   protected NodeRepresenter() {
     // empty constructor which would otherwise be invisible
@@ -48,6 +48,10 @@ public abstract class NodeRepresenter<T extends Node> {
   protected NodeRepresenter(NodeRepresenter.Builder<T, ?> builder) {
     this.representedNode = builder.representedNode == null ? this.representedNode : builder.representedNode;
     this.name = builder.name == null ? this.name : builder.name;
+  }
+
+  public NodeRepresenter(String name) {
+    this.name = name;
   }
 
   public T getRepresentedNode() {

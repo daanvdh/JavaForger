@@ -12,6 +12,7 @@ package dataflow.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,6 +31,9 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+
+import dataflow.util.HashCodeWrapper;
+import dataflow.util.HashMapWrapper;
 
 /**
  * Unit test for {@link DataFlowNode}.
@@ -102,12 +106,20 @@ public class DataFlowNodeTest {
    * @return Empty optional if assertion passed, optional containing an error message otherwise.
    */
   public Optional<String> assertNodesEqual(Collection<DataFlowNode> expected, Collection<DataFlowNode> fields) {
-    Map<String, DataFlowNode> exp = expected.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
-    Map<String, DataFlowNode> res = fields.stream().collect(Collectors.toMap(DataFlowNode::getName, Function.identity()));
-    Optional<String> equal =
-        exp.keySet().equals(res.keySet()) ? Optional.empty() : Optional.of("Nodes not equal, expected: " + exp.keySet() + " but was: " + res.keySet());
+    Map<HashCodeWrapper<Node>, DataFlowNode> exp1 =
+        expected.stream().collect(Collectors.toMap(t -> new HashCodeWrapper<>(t.getRepresentedNode()), Function.identity()));
+    HashMapWrapper<Node, DataFlowNode> exp = new HashMapWrapper<>(exp1);
+
+    Map<HashCodeWrapper<Node>, DataFlowNode> res1 =
+        fields.stream().collect(Collectors.toMap(t -> new HashCodeWrapper<>(t.getRepresentedNode()), Function.identity()));
+    HashMapWrapper<Node, DataFlowNode> res = new HashMapWrapper<>(res1);
+
+    Optional<String> equal = exp.keyList().equals(res.keyList()) ? Optional.empty()
+        : Optional.of("Nodes not equal, expected: " + exp.values().stream().map(DataFlowNode::getName).sorted().collect(Collectors.toList()) + " but was: "
+            + res.values().stream().map(DataFlowNode::getName).sorted().collect(Collectors.toList()) + " with types [" + res.values().stream()
+                .sorted(Comparator.comparing(DataFlowNode::getName)).map(DataFlowNode::getRepresentedNode).map(Node::getClass).collect(Collectors.toList()));
     if (!equal.isPresent()) {
-      equal = exp.keySet().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
+      equal = exp.keyList().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
     }
     return equal;
   }
@@ -122,10 +134,11 @@ public class DataFlowNodeTest {
   public Optional<String> assertNodeEqual(DataFlowNode exp, DataFlowNode res) {
     List<DataFlowEdge> expIn = exp.getIn();
     List<DataFlowEdge> resIn = res.getIn();
-
-    String message = !(exp.getName().equals(res.getName())) ? "Names are not equal of expected node " + exp + " and result node " + res : null;
-    message =
-        (message == null && expIn.size() != resIn.size()) ? "number of incoming edges not equal for expected node " + exp + " and resultNode " + res : message;
+    String message =
+        !(exp.getName().equals(res.getName())) ? "Names are not equal of expected node " + exp.getName() + " and result node " + res.getName() : null;
+    message = (message == null && expIn.size() != resIn.size())
+        ? "number of incoming edges not equal expected " + expIn.size() + " but was " + resIn.size() + " for expected node " + exp + " and resultNode " + res
+        : message;
     for (int i = 0; i < expIn.size() && message == null; i++) {
       String edgeMessage = assertEdgeEqual(expIn.get(0), resIn.get(0));
       if (edgeMessage != null) {

@@ -49,7 +49,7 @@ public class NodeCallFactoryTest {
   }
 
   @Test
-  public void testCreateNodeCall() {
+  public void testCreate() {
     String claz = //
         "public class Claz {\n" + //
             "  StringBuilder sb = new StringBuilder(); \n" + //
@@ -64,7 +64,7 @@ public class NodeCallFactoryTest {
     DataFlowMethod method = DataFlowMethod.builder().name("met").build();
     MethodCallExpr node = methodCalls.get(0);
 
-    Optional<NodeCall> resultMethod = sut.createNodeCall(graph, method, node);
+    Optional<NodeCall> resultMethod = sut.create(method, node);
 
     Assert.assertTrue(resultMethod.isPresent());
     Assert.assertEquals("append", resultMethod.get().getName());

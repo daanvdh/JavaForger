@@ -38,6 +38,10 @@ public abstract class OwnedNode<T extends Node> extends NodeRepresenter<T> {
     super(builder);
   }
 
+  public OwnedNode(String name) {
+    super(name);
+  }
+
   /**
    * @return An optional of the {@link OwnedNode} of this node. The optional will be empty in case of a {@link DataFlowGraph} representing a non inner class or
    *         a method for which the rest of the graph was not parsed.

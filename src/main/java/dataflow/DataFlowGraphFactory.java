@@ -45,6 +45,8 @@ import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 import dataflow.model.NodeCall;
+import dataflow.model.OwnedNode;
+import dataflow.model.ParameterList;
 
 /**
  * Factory for creating a {@link DataFlowGraph} from a {@link JavaParser} {@link CompilationUnit}.
@@ -55,6 +57,7 @@ public class DataFlowGraphFactory {
   private static final Logger LOG = LoggerFactory.getLogger(DataFlowGraphFactory.class);
 
   private MethodNodeHandler nodeHandler = new MethodNodeHandler();
+  private DataFlowNodeFactory dfnFactory = new DataFlowNodeFactory();
 
   /**
    * Creates a {@link DataFlowGraph} for the given {@link CompilationUnit}.
@@ -83,7 +86,7 @@ public class DataFlowGraphFactory {
 
   private void addField(DataFlowGraph graph, Node node) {
     if (node instanceof FieldDeclaration) {
-      parseField((FieldDeclaration) node).forEach(graph::addField);
+      parseField((FieldDeclaration) node, graph).forEach(graph::addField);
     }
   }
 
@@ -92,7 +95,9 @@ public class DataFlowGraphFactory {
     if (node instanceof CallableDeclaration) {
       CallableDeclaration<?> cd = (CallableDeclaration<?>) node;
       method = new DataFlowMethod(graph, cd, cd.getNameAsString());
-      method.setInputParameters(parseParameters(cd));
+      List<DataFlowNode> dfnParameters = parseParameters(cd, method);
+      ParameterList paramList = ParameterList.builder().nodes(dfnParameters).owner(method).build();
+      method.setInputParameters(paramList);
       if (node instanceof MethodDeclaration) {
         MethodDeclaration md = (MethodDeclaration) node;
         if (!(md.getType() instanceof VoidType)) {
@@ -162,8 +167,8 @@ public class DataFlowGraphFactory {
    * @param node
    * @return
    */
-  private List<DataFlowNode> parseField(FieldDeclaration node) {
-    return node.getVariables().stream().map(n -> DataFlowNode.builder().representedNode(n).name(n.getNameAsString()).build()).collect(Collectors.toList());
+  private List<DataFlowNode> parseField(FieldDeclaration node, OwnedNode<?> owner) {
+    return node.getVariables().stream().map(var -> dfnFactory.create(var, owner)).collect(Collectors.toList());
   }
 
   private void parseCallable(DataFlowGraph graph, CallableDeclaration<?> cd) {
@@ -176,7 +181,7 @@ public class DataFlowGraphFactory {
         cd.getChildNodes().stream().filter(n -> BlockStmt.class.isAssignableFrom(n.getClass())).findFirst().map(BlockStmt.class::cast);
 
     if (callableBody.isPresent()) {
-      nodeHandler.handleNode(graph, method, overwriddenValues, callableBody.get());
+      nodeHandler.handleNode(graph, method, overwriddenValues, callableBody.get(), method);
     }
 
     // Each overwridden value has to receive the value that it was overwridden with
@@ -187,8 +192,8 @@ public class DataFlowGraphFactory {
         .forEach(method::addChangedField);
   }
 
-  private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd) {
-    return cd.getParameters().stream().map(n -> DataFlowNode.builder().representedNode(n).name(n.getNameAsString()).build()).collect(Collectors.toList());
+  private List<DataFlowNode> parseParameters(CallableDeclaration<?> cd, OwnedNode<?> owner) {
+    return cd.getParameters().stream().map(n -> dfnFactory.create(n, owner)).collect(Collectors.toList());
   }
 
 }
