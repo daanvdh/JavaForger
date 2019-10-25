@@ -36,7 +36,7 @@ public class ClassWithEverythingTest {
 
 
     StringBuilder returnAppend = StringBuilder.builder().build();
-    Mockito.when(sb.append(a)).thenReturn(returnAppend);
+    Mockito.when(sb.append()).thenReturn(returnAppend);
 
     StringBuilder return_setS = sut.setS(
       a        );

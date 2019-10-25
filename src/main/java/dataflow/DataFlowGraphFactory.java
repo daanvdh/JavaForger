@@ -126,7 +126,7 @@ public class DataFlowGraphFactory {
   private void connectMethods(DataFlowGraph graph) {
     // TODO probably best to extract this to another class.
     for (DataFlowMethod method : graph.getMethods()) {
-      for (NodeCall call : method.getCalledMethods()) {
+      for (NodeCall call : method.getNodeCalls()) {
         Node node = call.getRepresentedNode();
         Object resolved = resolve(method, node);
         if (resolved instanceof JavaParserMethodDeclaration) {

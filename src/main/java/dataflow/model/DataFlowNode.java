@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -29,6 +30,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+
+import dataflow.GraphUtil;
 
 /**
  * A node inside the {@link DataFlowGraph} containing a {@link JavaParser} {@link Node}. The incoming {@link DataFlowEdge}s are {@link DataFlowNode}s that
@@ -108,6 +111,17 @@ public class DataFlowNode extends OwnedNode<Node> {
   public boolean isInputParameter() {
     return this.getOwner().filter(DataFlowMethod.class::isInstance).map(DataFlowMethod.class::cast).map(dfm -> dfm.getInputParameters().contains(this))
         .orElse(false);
+  }
+
+  /**
+   * Walks back over incoming edges until predicate is met or no incoming edges are present.
+   *
+   * @param predicate The {@link Predicate} to meet
+   * @return {@link List} of {@link DataFlowNode}
+   * @see GraphUtil#walkBackUntil(DataFlowNode, Predicate)
+   */
+  public List<DataFlowNode> walkBackUntil(Predicate<DataFlowNode> predicate) {
+    return GraphUtil.walkBackUntil(this, predicate);
   }
 
   @Override

@@ -10,8 +10,6 @@
  */
 package dataflow;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -22,13 +20,11 @@ import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 
 /**
- * Unit test for {@link GraphService}.
+ * Unit test for {@link GraphUtil}.
  *
  * @author Daan
  */
-public class GraphServiceTest {
-
-  private GraphService sut = new GraphService();
+public class GraphUtilTest {
 
   @Test
   public void testWalkBackUntil_simple() {
@@ -37,9 +33,11 @@ public class GraphServiceTest {
     DataFlowNode node = m.getChangedFields().get(0);
     DataFlowNode expected = m.getInputParameters().getNodes().get(0);
 
-    List<DataFlowNode> result = sut.walkBackUntil(node, m);
+    Assert.fail("not implemented");
 
-    Assert.assertEquals(Collections.singletonList(expected), result);
+    // List<DataFlowNode> result = GraphUtil.walkBackUntil(node, m);
+    Assert.fail("not implemented");
+    // Assert.assertEquals(Collections.singletonList(expected), result);
   }
 
   @Test
@@ -48,9 +46,9 @@ public class GraphServiceTest {
     DataFlowMethod m = graph.getMethods().iterator().next();
     DataFlowNode expected = m.getInputParameters().getNodes().get(0);
 
-    List<DataFlowNode> result = sut.walkBackUntil(expected, m);
-
-    Assert.assertEquals(Collections.singletonList(expected), result);
+    // List<DataFlowNode> result = GraphUtil.walkBackUntil(expected, m);
+    Assert.fail("not implemented");
+    // Assert.assertEquals(Collections.singletonList(expected), result);
   }
 
   @Test
@@ -66,9 +64,9 @@ public class GraphServiceTest {
     DataFlowNode node = m.getChangedFields().get(0);
     List<DataFlowNode> parameters = m.getInputParameters().getNodes();
 
-    List<DataFlowNode> result = sut.walkBackUntil(node, m);
-
-    Assert.assertEquals(Arrays.asList(parameters.get(0), parameters.get(1)), result);
+    // List<DataFlowNode> result = GraphUtil.walkBackUntil(node, m);
+    Assert.fail("not implemented");
+    // Assert.assertEquals(Arrays.asList(parameters.get(0), parameters.get(1)), result);
   }
 
   @Test

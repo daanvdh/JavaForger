@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +46,7 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   /** All nodes defined within this method. This method should be an (indirect) owner for each of these nodes. */
   private Map<HashCodeWrapper<Node>, DataFlowNode> nodes = new HashMap<>();
-  /** The graph which this method is part of */
+  /** The graph which this method is part of. This is the owner of this method. */
   private DataFlowGraph graph;
   /**
    * The return value of this method, null if this is a void method. Note that a method can have multiple return statements, we model as if a method only has a
@@ -53,8 +55,8 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
   private DataFlowNode returnNode;
   /** The input parameters of the method */
   private ParameterList inputParameters;
-
-  private List<NodeCall> calledMethods = new ArrayList<>();
+  /** The calls to other methods or constructors done from within this method. These can be either to methods in the same class or different classes. */
+  private List<NodeCall> nodeCalls = new ArrayList<>();
 
   /** The fields of the class that are read inside this method */
   // TODO Should probably be removed since it's a derivative
@@ -62,12 +64,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
   /** The fields of the class that are written inside this method */
   // TODO Should probably be removed since it's a derivative
   private List<DataFlowNode> changedFields = new ArrayList<>();
-  /** The methods that are called from within this method for which the return value is read. Key is the return value, value is the method */
-  // TODO Should probably be removed since it's a derivative
-  private Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
-  /** The methods that are called from within this method for which the return value is either void or ignored */
-  // TODO Should probably be removed since it's a derivative
-  private Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
 
   public DataFlowMethod(String name, CallableDeclaration<?> representedNode) {
     super(name, representedNode);
@@ -91,8 +87,8 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     // If it's added via the builder this method will be the owner, otherwise this node should have been added via a nodeCall
     builder.nodes.forEach(n -> n.setOwner(this));
 
-    this.calledMethods.clear();
-    this.calledMethods.addAll(builder.nodeCalls);
+    this.nodeCalls.clear();
+    this.nodeCalls.addAll(builder.nodeCalls);
     this.addNodes(builder.nodeCalls.stream().map(NodeCall::getReturnNode).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
     this.addNodes(builder.nodeCalls.stream().map(NodeCall::getIn).filter(Optional::isPresent).map(Optional::get).map(ParameterList::getNodes)
         .flatMap(List::stream).collect(Collectors.toList()));
@@ -100,10 +96,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     this.inputFields.addAll(builder.inputFields);
     this.changedFields.clear();
     this.changedFields.addAll(builder.changedFields);
-    this.inputMethods.clear();
-    this.inputMethods.putAll(builder.inputMethods);
-    this.outputMethods.clear();
-    this.outputMethods.putAll(builder.outputMethods);
     this.graph = builder.graph;
   }
 
@@ -139,22 +131,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   public void setChangedFields(List<DataFlowNode> changedFields) {
     this.changedFields = changedFields;
-  }
-
-  public Collection<DataFlowMethod> getInputMethods() {
-    return inputMethods.values();
-  }
-
-  public void setInputMethods(Map<DataFlowNode, DataFlowMethod> inputMethods) {
-    this.inputMethods = inputMethods;
-  }
-
-  public Collection<DataFlowMethod> getOutputMethods() {
-    return outputMethods.values();
-  }
-
-  public void setOutputMethods(Map<DataFlowNode, DataFlowMethod> outputMethods) {
-    this.outputMethods = outputMethods;
   }
 
   @Override
@@ -200,43 +176,49 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
   }
 
   /**
-   * An input boundary node of a {@link DataFlowMethod} is a {@link DataFlowNode} representing an object that is defined outside the scope of the method and is
-   * direct input to a method. A boundary node can be one of the following: 1) class field, 2) method parameter, 3) return value from a method called inside
-   * this method.
-   *
-   * @param dfn The {@link DataFlowNode} to check if it is a boundary node.
-   * @return True if the given {@link DataFlowNode} is an input boundary node, false otherwise.
-   */
-  public boolean isInputBoundaryNode(DataFlowNode dfn) {
-    return this.inputFields.contains(dfn) || this.inputParameters.contains(dfn) || this.inputMethods.containsKey(dfn);
-  }
-
-  /**
-   * An output boundary node of a {@link DataFlowMethod} is a {@link DataFlowNode} representing an object that is defined or changed inside the scope of the
-   * method and can be used outside the scope of the method. An output boundary node can be one of the following: 1) a changed class field, 2) an input
-   * parameter to a method called inside this method, 3) the method return value.
-   *
-   * @param dfn The {@link DataFlowNode} to check if it is an output boundary node.
-   * @return True if the given {@link DataFlowNode} is an output boundary node, false otherwise.
-   */
-  public boolean isOutputBoundaryNode(DataFlowNode dfn) {
-    return this.returnNode.equals(dfn) || this.changedFields.contains(dfn);
-  }
-
-  /**
    * @return List of {@link DataFlowMethod}s containing both the input and output methods.
    */
-  public List<NodeCall> getCalledMethods() {
-    return this.calledMethods;
+  public List<NodeCall> getNodeCalls() {
+    return this.nodeCalls;
   }
 
   public void setCalledMethods(List<NodeCall> calledMethods) {
-    this.calledMethods = calledMethods;
+    this.nodeCalls = calledMethods;
   }
 
   public void addMethodCall(NodeCall calledMethod) {
-    this.calledMethods.add(calledMethod);
+    this.nodeCalls.add(calledMethod);
     calledMethod.getIn().map(ParameterList::getNodes).ifPresent(this::addNodes);
+  }
+
+  public boolean isInputBoundary(DataFlowNode n) {
+    // TODO not tested yet
+    boolean isInputBoundary = false;
+    if (this.inputParameters.getNodes().contains(n)
+        || this.nodeCalls.stream().map(NodeCall::getReturnNode).filter(Optional::isPresent).map(Optional::get).filter(n::equals).findAny().isPresent()) {
+      isInputBoundary = true;
+    }
+    return isInputBoundary;
+  }
+
+  /**
+   * Get's all nodes that are directly connected with an edge to (not from) the input node, which are in scope of this method.
+   *
+   * @param node The node to get the direct input nodes for.
+   * @return The list of {@link DataFlowNode}
+   */
+  public List<DataFlowNode> getDirectInputNodesFor(DataFlowNode node) {
+    return node.getIn().stream().map(DataFlowEdge::getFrom).filter(this::owns).collect(Collectors.toList());
+  }
+
+  @Override
+  public Set<DataFlowNode> getOwnedNodes() {
+    Set<DataFlowNode> nodes = new HashSet<>(this.nodes.values());
+    // nodes.addAll(this.nodeCalls);
+    // if (this.inputParameters != null) {
+    // nodes.add(this.inputParameters);
+    // }
+    return nodes;
   }
 
   @Override
@@ -280,7 +262,7 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), returnNode, inputParameters, inputFields, changedFields, inputMethods, outputMethods);
+    return Objects.hash(super.hashCode(), returnNode, inputParameters, inputFields, changedFields);
   }
 
   @Override
@@ -303,8 +285,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     protected ParameterList inputParameters;
     protected List<DataFlowNode> inputFields = new ArrayList<>();
     protected List<DataFlowNode> changedFields = new ArrayList<>();
-    protected Map<DataFlowNode, DataFlowMethod> inputMethods = new HashMap<>();
-    protected Map<DataFlowNode, DataFlowMethod> outputMethods = new HashMap<>();
     private DataFlowNode returnNode;
     private DataFlowGraph graph;
     private List<DataFlowNode> nodes = new ArrayList<>();
@@ -344,18 +324,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     public Builder changedFields(DataFlowNode... changedFields) {
       this.changedFields.clear();
       this.changedFields.addAll(Arrays.asList(changedFields));
-      return this;
-    }
-
-    public Builder inputMethods(Map<DataFlowNode, DataFlowMethod> inputMethods) {
-      this.inputMethods.clear();
-      this.inputMethods.putAll(inputMethods);
-      return this;
-    }
-
-    public Builder outputMethods(Map<DataFlowNode, DataFlowMethod> outputMethods) {
-      this.outputMethods.clear();
-      this.outputMethods.putAll(outputMethods);
       return this;
     }
 

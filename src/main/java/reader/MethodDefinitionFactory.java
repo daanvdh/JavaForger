@@ -11,6 +11,7 @@
 package reader;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +30,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
-import dataflow.GraphService;
+import dataflow.GraphUtil;
 import dataflow.model.DataFlowGraph;
 import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
@@ -51,7 +52,6 @@ public class MethodDefinitionFactory {
 
   private ImportResolver importResolver = new ImportResolver();
   private VariableDefintionFactory fieldFactory = new VariableDefintionFactory();
-  private GraphService graphService = new GraphService();
 
   public MethodDefinition createMethod(Node node, DataFlowGraph dfg) {
     MethodDeclaration md = (MethodDeclaration) node;
@@ -60,7 +60,7 @@ public class MethodDefinitionFactory {
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
     if (dfg != null) {
       addChangedFields(method, dfg.getMethod(md));
-      addInputMethods(method, dfg.getMethod(md));
+      addMethodsCalls(method, dfg.getMethod(md));
     }
     return method;
   }
@@ -91,24 +91,27 @@ public class MethodDefinitionFactory {
   private void addChangedFields(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
     List<DataFlowNode> changedFieldsNodes = dataFlowMethod.getChangedFields();
     List<FlowReceiverDefinition> changedFields = new ArrayList<>();
-    for (DataFlowNode dfn : changedFieldsNodes) {
-      Node javaParserNode = dfn.getRepresentedNode();
+    for (DataFlowNode changedField : changedFieldsNodes) {
+      Node javaParserNode = changedField.getRepresentedNode();
       if (javaParserNode instanceof VariableDeclarator) {
-        List<DataFlowNode> receivedNodes = graphService.walkBackUntil(dfn, dataFlowMethod);
+
+        List<DataFlowNode> fieldAssigners = dataFlowMethod.getDirectInputNodesFor(changedField);
+        List<DataFlowNode> receivedNodes =
+            fieldAssigners.stream().map(n -> n.walkBackUntil(dataFlowMethod::isInputBoundary)).flatMap(Collection::stream).collect(Collectors.toList());
         List<String> receivedNames = receivedNodes.stream().map(DataFlowNode::getName).collect(Collectors.toList());
         VariableDefinition field = fieldFactory.createSingle(javaParserNode);
         FlowReceiverDefinition receiver = FlowReceiverDefinition.builder().copy(field).receivedValues(receivedNames).build();
         changedFields.add(receiver);
       } else {
-        LOG.error("Cannot add changed field {} to method {} because represented node {} with type {} was not a VariableDeclarator", dfn.getName(),
+        LOG.error("Cannot add changed field {} to method {} because represented node {} with type {} was not a VariableDeclarator", changedField.getName(),
             newMethod.getName(), javaParserNode, javaParserNode.getClass());
       }
     }
     newMethod.setChangedFields(changedFields);
   }
 
-  private void addInputMethods(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
-    for (NodeCall call : dataFlowMethod.getCalledMethods()) {
+  private void addMethodsCalls(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
+    for (NodeCall call : dataFlowMethod.getNodeCalls()) {
       // If method call has a return node and it's return node is read
       if (call.getReturnNode().map(t -> !t.getOut().isEmpty()).orElse(false)) {
         addInputMethod(newMethod, dataFlowMethod, call);
@@ -157,7 +160,7 @@ public class MethodDefinitionFactory {
 
     if (call.getReturnNode().isPresent() && dataFlowMethod.getReturnNode().isPresent()) {
       List<DataFlowNode> returnNode =
-          graphService.walkForwardUntil(call.getReturnNode().get(), dataFlowMethod.getReturnNode().get()::equals, dataFlowMethod.getNodes()::contains);
+          GraphUtil.walkForwardUntil(call.getReturnNode().get(), dataFlowMethod.getReturnNode().get()::equals, dataFlowMethod.getNodes()::contains);
 
       // If the returnNode was returned, that means that there exists a path from call.getReturnNode()
       if (returnNode.size() > 0) {
@@ -186,7 +189,7 @@ public class MethodDefinitionFactory {
         // If it's still present after the filters it is a method return node.
         .isPresent();
 
-    List<DataFlowNode> inputNodes = graphService.walkBackUntil(param, isField.or(isParam).or(isMethodReturn));
+    List<DataFlowNode> inputNodes = GraphUtil.walkBackUntil(param, isField.or(isParam).or(isMethodReturn));
 
     StringBuilder sb = new StringBuilder();
     boolean first = true;

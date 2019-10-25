@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import dataflow.model.DataFlowEdge;
 import dataflow.model.DataFlowGraph;
-import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 
 /**
@@ -32,22 +31,10 @@ import dataflow.model.DataFlowNode;
  *
  * @author Daan
  */
-public class GraphService {
+public class GraphUtil {
 
-  /**
-   * Returns all {@link DataFlowNode}s that directly influence the state of the input {@link DataFlowNode}, within the {@link DataFlowMethod}. In the method
-   * below the nodes directly influencing the state of node 'd' are state are b and c: <br>
-   * {@code method(a,b,c) { d = a ? b : c; }}
-   *
-   * @param dfn The {@link DataFlowNode} to traverse the path from.
-   * @param method The method determining the scope for traversing the path.
-   * @return a list of {@link DataFlowNode}
-   */
-  public List<DataFlowNode> walkBackUntil(DataFlowNode dfn, DataFlowMethod method) {
-    if (method.isInputBoundaryNode(dfn)) {
-      return Collections.singletonList(dfn);
-    }
-    return dfn.getIn().stream().map(edge -> walkBackUntil(edge.getFrom(), method)).flatMap(List::stream).collect(Collectors.toList());
+  public static List<DataFlowNode> walkBackUntil(List<DataFlowNode> nodes, Predicate<DataFlowNode> predicate) {
+    return nodes.stream().map(n -> walkBackUntil(n, predicate)).flatMap(List::stream).collect(Collectors.toList());
   }
 
   /**
@@ -58,7 +45,7 @@ public class GraphService {
    * @param predicate The {@link Predicate} to check on the {@link DataFlowNode}
    * @return Returns a list of nodes that either have no incoming edges, or for which the predicate holds.
    */
-  public List<DataFlowNode> walkBackUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate) {
+  public static List<DataFlowNode> walkBackUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate) {
     if (dfn.getIn().isEmpty() || predicate.test(dfn)) {
       return Collections.singletonList(dfn);
     }
@@ -75,7 +62,7 @@ public class GraphService {
    *          returned.
    * @return Returns a list of nodes that either have no incoming edges, or for which the predicate holds.
    */
-  public List<DataFlowNode> walkForwardUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate, Predicate<DataFlowNode> scopePredicate) {
+  public static List<DataFlowNode> walkForwardUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate, Predicate<DataFlowNode> scopePredicate) {
     if (!scopePredicate.test(dfn)) {
       return Collections.emptyList();
     }

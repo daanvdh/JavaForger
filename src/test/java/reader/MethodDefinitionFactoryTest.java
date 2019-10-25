@@ -112,8 +112,8 @@ public class MethodDefinitionFactoryTest {
   }
 
   @Test
-  public void testAddInputMethods() {
-    // TODO implement
-  }
+    public void testAddMethodsCalls() {
+      // TODO implement
+    }
 
 }

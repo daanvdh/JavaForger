@@ -33,13 +33,12 @@ public class ImportResolver {
 
   private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
-  @Deprecated
   /**
-   * Use resolveImports instead.
-   *
    * @param type
    * @param variable
+   * @deprecated Use resolveImports instead.
    */
+  @Deprecated
   public void resolveAndSetImport(Type type, TypeDefinition variable) {
     resolveImport(type).forEach(variable::addTypeImport);
   }

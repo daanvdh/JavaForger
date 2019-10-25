@@ -56,8 +56,9 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
     String claz = //
         "public class Claz {\n" + //
             "  StringBuilder sb = new StringBuilder(); \n" + //
+            "  StringBuilder sb1 = new StringBuilder(); \n" + //
             "  public StringBuilder setS(String a) {\n" + //
-            "    return sb.append(a);\n" + //
+            "    return sb1.append(sb.indexOf(a));\n" + //
             "  }\n" + //
             "}"; //
 

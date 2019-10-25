@@ -46,8 +46,6 @@ public class DataFlowMethodTest {
     Assert.assertNull("Unexpected inputParameters", dataFlowMethod.getInputParameters());
     Assert.assertTrue("Unexpected inputFields", dataFlowMethod.getInputFields().isEmpty());
     Assert.assertTrue("Unexpected changedFields", dataFlowMethod.getChangedFields().isEmpty());
-    Assert.assertTrue("Unexpected inputMethods", dataFlowMethod.getInputMethods().isEmpty());
-    Assert.assertTrue("Unexpected outputMethods", dataFlowMethod.getOutputMethods().isEmpty());
   }
 
   @Test
@@ -57,8 +55,6 @@ public class DataFlowMethodTest {
     Assert.assertEquals("Unexpected inputParameters", INPUT_PARAMETERS, dataFlowMethod.getInputParameters());
     Assert.assertEquals("Unexpected inputFields", INPUT_FIELDS, dataFlowMethod.getInputFields());
     Assert.assertEquals("Unexpected changedFields", CHANGED_FIELDS, dataFlowMethod.getChangedFields());
-    Assert.assertThat(dataFlowMethod.getInputMethods(), org.hamcrest.Matchers.containsInAnyOrder(INPUT_METHODS.values().iterator().next()));
-    Assert.assertThat(dataFlowMethod.getOutputMethods(), org.hamcrest.Matchers.containsInAnyOrder(OUTPUT_METHODS.values().iterator().next()));
   }
 
   @Test
@@ -77,8 +73,6 @@ public class DataFlowMethodTest {
     verifyHashCode_Different(DataFlowMethod.Builder::inputParameters, ParameterList.builder().name("x").build());
     verifyHashCode_Different(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyHashCode_Different(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
-    verifyHashCode_Different(DataFlowMethod.Builder::inputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
-    verifyHashCode_Different(DataFlowMethod.Builder::outputMethods, Collections.singletonMap(DataFlowNode.builder().build(), DataFlowMethod.builder().build()));
   }
 
   @Test
@@ -99,7 +93,7 @@ public class DataFlowMethodTest {
 
   private DataFlowMethod.Builder createAndFillBuilder() {
     return DataFlowMethod.builder().name(NAME).representedNode(REPRESENTED_NODE).returnNode(RETURN_NODE).inputParameters(INPUT_PARAMETERS)
-        .inputFields(INPUT_FIELDS).changedFields(CHANGED_FIELDS).inputMethods(INPUT_METHODS).outputMethods(OUTPUT_METHODS);
+        .inputFields(INPUT_FIELDS).changedFields(CHANGED_FIELDS);
   }
 
   private <T> void verifyHashCode_Different(BiFunction<DataFlowMethod.Builder, T, DataFlowMethod.Builder> withMapper, T argument) {

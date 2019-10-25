@@ -10,7 +10,9 @@
  */
 package dataflow.model;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 import com.github.javaparser.ast.Node;
 
@@ -40,6 +42,28 @@ public abstract class OwnedNode<T extends Node> extends NodeRepresenter<T> {
 
   public OwnedNode(String name) {
     super(name);
+  }
+
+  /**
+   * True when this owner is either a direct owner or is an indirect owner of the input node.
+   *
+   * @param node The {@link OwnedNode} to check if it's owned by this.
+   * @return true if this owns it, false otherwise.
+   */
+  public boolean owns(DataFlowNode node) {
+    return getOwnedNodes().contains(node);
+  }
+
+  /**
+   * Gets all direct or indirectly owned nodes.
+   *
+   * @return {@link Set} of {@link OwnedNode}.
+   */
+  // TODO this has to be made abstract.
+  public Set<DataFlowNode> getOwnedNodes() {
+    // TODO the idea is to not have one list of nodes in DFM containing everything, but to let other owners like NodeCall, ParameterList and later "FlowBlock"
+    // (representing BlockStatement) have a list of nodes of their own. Then recursively get all owned nodes of a specific OwnedNode via this method.
+    return Collections.emptySet();
   }
 
   /**

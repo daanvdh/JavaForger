@@ -72,7 +72,7 @@ public class MethodNodeHandlerTest {
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
-    Assert.assertEquals(Arrays.asList(methodCall), method.getCalledMethods());
+    Assert.assertEquals(Arrays.asList(methodCall), method.getNodeCalls());
   }
 
   @Test
@@ -100,7 +100,7 @@ public class MethodNodeHandlerTest {
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
-    Assert.assertEquals(Arrays.asList(methodCall), method.getCalledMethods());
+    Assert.assertEquals(Arrays.asList(methodCall), method.getNodeCalls());
   }
 
 }
