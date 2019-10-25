@@ -150,6 +150,17 @@ public class NodeCall extends OwnedNode<Node> {
   }
 
   /**
+   * @return True if the return value is used, false otherwise.
+   */
+  public boolean isReturnRead() {
+    return returnNode != null && (
+    // If it has outgoing edges, it's value is read
+    !returnNode.getOut().isEmpty() ||
+    // If the owner is a methodCall, that means that this nodeCall's return is the direct input to another method, example a(b());
+        (owner != null && owner instanceof NodeCall));
+  }
+
+  /**
    * Creates builder to build {@link NodeCall}.
    *
    * @return created builder

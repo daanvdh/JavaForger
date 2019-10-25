@@ -112,8 +112,7 @@ public class MethodDefinitionFactory {
 
   private void addMethodsCalls(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
     for (NodeCall call : dataFlowMethod.getNodeCalls()) {
-      // If method call has a return node and it's return node is read
-      if (call.getReturnNode().map(t -> !t.getOut().isEmpty()).orElse(false)) {
+      if (call.isReturnRead()) {
         addInputMethod(newMethod, dataFlowMethod, call);
       }
     }
