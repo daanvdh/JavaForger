@@ -138,7 +138,8 @@ public class DataFlowGraphFactory {
             // TODO handle connecting to other graphs
           }
         } else {
-          LOG.warn("In method {}, resolving is not supported for node {} of type {}", method.getName(), node, resolved == null ? null : resolved.getClass());
+          LOG.warn("In method {}, Connecting methods of type {} is not supported, the node that was not connected is: {}", method.getName(),
+              resolved == null ? null : resolved.getClass(), node);
         }
       }
     }
