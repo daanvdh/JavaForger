@@ -142,14 +142,8 @@ public class MethodDefinitionFactory {
     if (call.getReturnNode().isPresent() && dataFlowMethod.getReturnNode().isPresent()) {
       DataFlowNode methodReturn = dataFlowMethod.getReturnNode().get();
       DataFlowNode callReturn = call.getReturnNode().get();
-
-      List<DataFlowNode> returnNode = GraphUtil.walkForwardUntil(callReturn, methodReturn::equals, dataFlowMethod::owns);
       List<DataFlowNode> walkBackUntil = methodReturn.walkBackUntil(callReturn::equals, dataFlowMethod::owns);
-
-      System.out.println(returnNode);
-      System.out.println(walkBackUntil);
-
-      if (!returnNode.isEmpty() && !walkBackUntil.isEmpty()) {
+      if (!walkBackUntil.isEmpty()) {
         expectedReturn = newMethod.getExpectedReturn() == null ? returnSignature : newMethod.getExpectedReturn() + "__" + returnSignature;
       }
     }
