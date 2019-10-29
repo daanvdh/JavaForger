@@ -116,12 +116,21 @@ public class DataFlowNode extends OwnedNode<Node> {
   /**
    * Walks back over incoming edges until predicate is met or no incoming edges are present.
    *
-   * @param predicate The {@link Predicate} to meet
-   * @return {@link List} of {@link DataFlowNode}
    * @see GraphUtil#walkBackUntil(DataFlowNode, Predicate)
+   * @param predicate The {@link Predicate} to meet
+   * @param scope The scope for the variable, the search is stopped as soon as the scope does not hold and an empty list is returned.
+   * @return {@link List} of {@link DataFlowNode}
    */
-  public List<DataFlowNode> walkBackUntil(Predicate<DataFlowNode> predicate) {
-    return GraphUtil.walkBackUntil(this, predicate);
+  public List<DataFlowNode> walkBackUntil(Predicate<DataFlowNode> predicate, Predicate<DataFlowNode> scope) {
+    return GraphUtil.walkBackUntil(this, predicate, scope);
+  }
+
+  /**
+   * @param node The {@link DataFlowNode} to check.
+   * @return True if this node is equal to the given node or has a direct incoming edge from the input node, false otherwise.
+   */
+  public boolean hasAsDirectInput(DataFlowNode node) {
+    return this.equals(node) || this.in.stream().map(DataFlowEdge::getFrom).filter(node::equals).findAny().isPresent();
   }
 
   @Override

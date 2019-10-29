@@ -83,7 +83,7 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
   public static void main(String[] args) throws IOException {
 
     // This statement prevents the main method from accidently being executed.
-    Assert.fail();
+    // Assert.fail();
 
     DataFlowGraphTemplateIntegrationTest test = new DataFlowGraphTemplateIntegrationTest() {
       @Override

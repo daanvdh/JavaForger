@@ -33,40 +33,46 @@ import dataflow.model.DataFlowNode;
  */
 public class GraphUtil {
 
-  public static List<DataFlowNode> walkBackUntil(List<DataFlowNode> nodes, Predicate<DataFlowNode> predicate) {
-    return nodes.stream().map(n -> walkBackUntil(n, predicate)).flatMap(List::stream).collect(Collectors.toList());
+  public static List<DataFlowNode> walkBackUntil(List<DataFlowNode> nodes, Predicate<DataFlowNode> predicate, Predicate<DataFlowNode> scopePredicate) {
+    return nodes.stream().map(n -> walkBackUntil(n, predicate, scopePredicate)).flatMap(List::stream).collect(Collectors.toList());
   }
 
   /**
-   * Walks back via {@link DataFlowNode#getIn()} until for each node it holds that either it does not have any input nodes or the predicate holds. The input
-   * {@link DataFlowNode} will be returned if the {@link Predicate} holds for it.
+   * Walks back via {@link DataFlowNode#getIn()} until for each node it holds that the predicate holds. The input {@link DataFlowNode} will be returned if the
+   * {@link Predicate} holds for it. An empty list will be returned if the scopePredicate does not hold for the input node.
    *
    * @param dfn The input {@link DataFlowNode}
    * @param predicate The {@link Predicate} to check on the {@link DataFlowNode}
+   * @param scopePredicate This predicate determines the scope for when to stop searching. If this predicate does not hold for the input node an empty list will
+   *          be returned.
    * @return Returns a list of nodes that either have no incoming edges, or for which the predicate holds.
    */
-  public static List<DataFlowNode> walkBackUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate) {
-    if (dfn.getIn().isEmpty() || predicate.test(dfn)) {
+  public static List<DataFlowNode> walkBackUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate, Predicate<DataFlowNode> scopePredicate) {
+    if (!scopePredicate.test(dfn)) {
+      return Collections.emptyList();
+    }
+    if (predicate.test(dfn)) {
       return Collections.singletonList(dfn);
     }
-    return dfn.getIn().stream().map(DataFlowEdge::getFrom).map(node -> walkBackUntil(node, predicate)).flatMap(List::stream).collect(Collectors.toList());
+    return dfn.getIn().stream().map(DataFlowEdge::getFrom).map(node -> walkBackUntil(node, predicate, scopePredicate)).flatMap(List::stream)
+        .collect(Collectors.toList());
   }
 
   /**
-   * Walks forward via {@link DataFlowNode#getOut()} until for each node it holds that either it does not have any input nodes or the predicate holds. The input
-   * {@link DataFlowNode} will be returned if the {@link Predicate} holds for it.
+   * Walks forward via {@link DataFlowNode#getOut()} until for each node it holds that the predicate holds. The input {@link DataFlowNode} will be returned if
+   * the {@link Predicate} holds for it. An empty list will be returned if the scopePredicate does not hold for the input node.
    *
    * @param dfn The input {@link DataFlowNode}
    * @param predicate The {@link Predicate} to check on the {@link DataFlowNode}
-   * @param scopePredicate This predicate determines the scope for when to stop searching. If this predicate does hold for the input node an empty list will be
-   *          returned.
+   * @param scopePredicate This predicate determines the scope for when to stop searching. If this predicate does not hold for the input node an empty list will
+   *          be returned.
    * @return Returns a list of nodes that either have no incoming edges, or for which the predicate holds.
    */
   public static List<DataFlowNode> walkForwardUntil(DataFlowNode dfn, Predicate<DataFlowNode> predicate, Predicate<DataFlowNode> scopePredicate) {
     if (!scopePredicate.test(dfn)) {
       return Collections.emptyList();
     }
-    if (dfn.getIn().isEmpty() || predicate.test(dfn)) {
+    if (predicate.test(dfn)) {
       return Collections.singletonList(dfn);
     }
     return dfn.getOut().stream().map(DataFlowEdge::getTo).map(node -> walkForwardUntil(node, predicate, scopePredicate)).flatMap(List::stream)

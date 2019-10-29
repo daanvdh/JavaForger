@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.Node;
@@ -35,7 +36,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
  *
  * @author Daan
  */
-public class DataFlowGraph extends OwnedNode<ClassOrInterfaceDeclaration> {
+public class DataFlowGraph extends OwnerNode<ClassOrInterfaceDeclaration> {
 
   /** The package of the class that this {@link DataFlowGraph} represents. */
   private String classPackage;
@@ -174,6 +175,17 @@ public class DataFlowGraph extends OwnedNode<ClassOrInterfaceDeclaration> {
   @Override
   public Optional<OwnedNode<?>> getOwner() {
     return Optional.ofNullable(this.ownerGraph);
+  }
+
+  @Override
+  Collection<OwnerNode<?>> getOwnedOwners() {
+    // streaming and collecting needed for casting.
+    return this.methods.values().stream().collect(Collectors.toList());
+  }
+
+  @Override
+  Collection<DataFlowNode> getDirectOwnedNodes() {
+    return this.fields;
   }
 
   @Override

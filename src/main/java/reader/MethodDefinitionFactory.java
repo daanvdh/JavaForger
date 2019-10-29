@@ -95,8 +95,8 @@ public class MethodDefinitionFactory {
       if (javaParserNode instanceof VariableDeclarator) {
 
         List<DataFlowNode> fieldAssigners = dataFlowMethod.getDirectInputNodesFor(changedField);
-        List<DataFlowNode> receivedNodes =
-            fieldAssigners.stream().map(n -> n.walkBackUntil(dataFlowMethod::isInputBoundary)).flatMap(Collection::stream).collect(Collectors.toList());
+        List<DataFlowNode> receivedNodes = fieldAssigners.stream().map(n -> n.walkBackUntil(dataFlowMethod::isInputBoundary, dataFlowMethod::owns))
+            .flatMap(Collection::stream).collect(Collectors.toList());
         List<String> receivedNames = receivedNodes.stream().map(DataFlowNode::getName).collect(Collectors.toList());
         VariableDefinition field = fieldFactory.createSingle(javaParserNode);
         FlowReceiverDefinition receiver = FlowReceiverDefinition.builder().copy(field).receivedValues(receivedNames).build();
@@ -122,6 +122,41 @@ public class MethodDefinitionFactory {
     String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
     builder.name(call.getName()).type(type);
 
+    MethodDefinition method = createMethodDefinition(call);
+    String returnSignature = call.getReturnNode().map(DataFlowNode::getName).orElse(null);
+    method.setReturnSignature(returnSignature);
+    newMethod.addInputMethod(method);
+
+    StringBuilder callSignature = createCallSignature(dataFlowMethod, call);
+    method.setCallSignature(callSignature.toString());
+
+    String expectedReturn = createExpecedReturn(newMethod, dataFlowMethod, call, returnSignature);
+    newMethod.setExpectedReturn(expectedReturn);
+
+    // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
+    // to define it in test data as well
+  }
+
+  private String createExpecedReturn(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call, String returnSignature) {
+    String expectedReturn = null;
+    if (call.getReturnNode().isPresent() && dataFlowMethod.getReturnNode().isPresent()) {
+      DataFlowNode methodReturn = dataFlowMethod.getReturnNode().get();
+      DataFlowNode callReturn = call.getReturnNode().get();
+
+      List<DataFlowNode> returnNode = GraphUtil.walkForwardUntil(callReturn, methodReturn::equals, dataFlowMethod::owns);
+      List<DataFlowNode> walkBackUntil = methodReturn.walkBackUntil(callReturn::equals, dataFlowMethod::owns);
+
+      System.out.println(returnNode);
+      System.out.println(walkBackUntil);
+
+      if (!returnNode.isEmpty() && !walkBackUntil.isEmpty()) {
+        expectedReturn = newMethod.getExpectedReturn() == null ? returnSignature : newMethod.getExpectedReturn() + "__" + returnSignature;
+      }
+    }
+    return expectedReturn;
+  }
+
+  private StringBuilder createCallSignature(DataFlowMethod dataFlowMethod, NodeCall call) {
     List<DataFlowNode> inputParameters = call.getIn().map(ParameterList::getNodes).orElse(new ArrayList<>());
     StringBuilder callSignature = new StringBuilder();
     call.getInstanceName().ifPresent(name -> callSignature.append(name + "."));
@@ -137,7 +172,10 @@ public class MethodDefinitionFactory {
       callSignature.append(inputName);
     }
     callSignature.append(")");
+    return callSignature;
+  }
 
+  private MethodDefinition createMethodDefinition(NodeCall call) {
     MethodDefinition method = null;
     if (call.getCalledMethod().isPresent()) {
       // TODO fuck private methods for now, just add them.
@@ -149,28 +187,7 @@ public class MethodDefinitionFactory {
     } else {
       method = MethodDefinition.builder().type(call.getClaz()).build();
     }
-
-    String returnSignature = call.getReturnNode().get().getName();
-    method.setReturnSignature(returnSignature);
-    method.setCallSignature(callSignature.toString());
-
-    newMethod.addInputMethod(method);
-
-    if (call.getReturnNode().isPresent() && dataFlowMethod.getReturnNode().isPresent()) {
-      List<DataFlowNode> returnNode =
-          GraphUtil.walkForwardUntil(call.getReturnNode().get(), dataFlowMethod.getReturnNode().get()::equals, dataFlowMethod.getNodes()::contains);
-
-      // If the returnNode was returned, that means that there exists a path from call.getReturnNode()
-      if (returnNode.size() > 0) {
-        String expectedReturn = newMethod.getExpectedReturn() == null ? returnSignature : newMethod.getExpectedReturn() + "__" + returnSignature;
-        newMethod.setExpectedReturn(expectedReturn);
-      }
-    }
-
-    // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
-    // to define it in test data as well
-
-    // get the input for
+    return method;
   }
 
   private String getInputName(DataFlowMethod dataFlowMethod, DataFlowNode param) {
@@ -186,8 +203,9 @@ public class MethodDefinitionFactory {
             !t.getCalledMethod().get().getOwner().equals(dataFlowMethod.getOwner()))
         // If it's still present after the filters it is a method return node.
         .isPresent();
+    Predicate<DataFlowNode> hasNoInput = dfn -> dfn.getIn().isEmpty();
 
-    List<DataFlowNode> inputNodes = GraphUtil.walkBackUntil(param, isField.or(isParam).or(isMethodCallReturn));
+    List<DataFlowNode> inputNodes = GraphUtil.walkBackUntil(param, isField.or(isParam).or(isMethodCallReturn).or(hasNoInput), dataFlowMethod.getGraph()::owns);
 
     StringBuilder sb = new StringBuilder();
     boolean first = true;
@@ -208,6 +226,9 @@ public class MethodDefinitionFactory {
         sb.append(inputNode.getName());
         // TODO handle return node: Maybe we have to make sure that the name of something else returning it is equal to this methodCall receiving it.
         // Maybe we do not need to do anything.
+      } else if (hasNoInput.test(inputNode)) {
+        // TODO handle this
+        sb.append(inputNode.getName());
       } else {
         sb.append(inputNode.getName());
         // TODO handle nodes that are constructed inside the method. These will have to be constructed and initialized separately.

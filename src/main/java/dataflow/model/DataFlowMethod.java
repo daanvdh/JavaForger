@@ -20,8 +20,8 @@ package dataflow.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +42,10 @@ import dataflow.util.HashCodeWrapper;
  *
  * @author Daan
  */
-public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
+public class DataFlowMethod extends OwnerNode<CallableDeclaration<?>> {
+
+  // TODO the idea is to not have one list of nodes in DFM containing everything, but to let other owners like NodeCall, ParameterList and later "FlowBlock"
+  // (representing BlockStatement) have a list of nodes of their own. Then recursively get all owned nodes of a specific OwnedNode via this method.
 
   /** All nodes defined within this method. This method should be an (indirect) owner for each of these nodes. */
   private Map<HashCodeWrapper<Node>, DataFlowNode> nodes = new HashMap<>();
@@ -191,11 +194,24 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
     calledMethod.getIn().map(ParameterList::getNodes).ifPresent(this::addNodes);
   }
 
+  @Override
+  public Set<OwnerNode<?>> getOwnedOwners() {
+    // TODO later add NodeCall and InputParameter
+    return Collections.emptySet();
+  }
+
+  @Override
+  public Collection<DataFlowNode> getDirectOwnedNodes() {
+    return this.nodes.values();
+  }
+
   public boolean isInputBoundary(DataFlowNode n) {
     // TODO not tested yet
     boolean isInputBoundary = false;
-    if (this.inputParameters.getNodes().contains(n)
-        || this.nodeCalls.stream().map(NodeCall::getReturnNode).filter(Optional::isPresent).map(Optional::get).filter(n::equals).findAny().isPresent()) {
+    if (this.inputParameters.getNodes().contains(n) //
+        || this.nodeCalls.stream().map(NodeCall::getReturnNode).filter(Optional::isPresent).map(Optional::get).filter(n::equals).findAny().isPresent() //
+    // TODO || class fields
+    ) {
       isInputBoundary = true;
     }
     return isInputBoundary;
@@ -209,16 +225,6 @@ public class DataFlowMethod extends OwnedNode<CallableDeclaration<?>> {
    */
   public List<DataFlowNode> getDirectInputNodesFor(DataFlowNode node) {
     return node.getIn().stream().map(DataFlowEdge::getFrom).filter(this::owns).collect(Collectors.toList());
-  }
-
-  @Override
-  public Set<DataFlowNode> getOwnedNodes() {
-    Set<DataFlowNode> nodes = new HashSet<>(this.nodes.values());
-    // nodes.addAll(this.nodeCalls);
-    // if (this.inputParameters != null) {
-    // nodes.add(this.inputParameters);
-    // }
-    return nodes;
   }
 
   @Override
