@@ -40,6 +40,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
   private List<MethodDefinition> inputMethods = new ArrayList<>();
   /** The methods called from this method, where the return value is not used. */
   private List<MethodDefinition> outputMethods = new ArrayList<>();
+
   /**
    * The complete signature for calling this method, e.g. product.setName(name) for Product::setName. If this {@link MethodDefinition} is constructed from a
    * method call inside another method, the input variables used might depend on other variables defined in the method, e.g. a parameter or a return value given
@@ -54,6 +55,8 @@ public class MethodDefinition extends InitializedTypeDefinition {
   private String returnSignature;
   /** The name of the variable that was expected as return value. */
   private String expectedReturn;
+  /** The name of the instance of this MethodCallDefinition */
+  private String instance;
 
   private MethodDefinition(Builder builder) {
     super(builder);
@@ -101,6 +104,10 @@ public class MethodDefinition extends InitializedTypeDefinition {
     this.outputMethods = outputMethods;
   }
 
+  public void addOutputMethod(MethodDefinition method) {
+    this.outputMethods.add(method);
+  }
+
   public String getCallSignature() {
     return callSignature;
   }
@@ -123,6 +130,14 @@ public class MethodDefinition extends InitializedTypeDefinition {
 
   public void setExpectedReturn(String expectedReturn) {
     this.expectedReturn = expectedReturn;
+  }
+
+  public String getInstance() {
+    return instance;
+  }
+
+  public void setInstance(String instance) {
+    this.instance = instance;
   }
 
   @Override

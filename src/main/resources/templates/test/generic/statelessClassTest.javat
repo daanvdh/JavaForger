@@ -14,7 +14,7 @@ import org.junit.Test;
 </#list>
 
   @InjectMocks
-  private ${class.type} sut = new ${class.type}(); 
+  private ${class.type} sut; 
 
 <#list methods as method>
   @Test
@@ -33,18 +33,20 @@ import org.junit.Test;
 
 <#list method.inputMethods as input>
     ${input.type} ${input.returnSignature} = ${input.init1};
-    Mockito.when(${input.callSignature}).thenReturn(${input.returnSignature});
+    Mockito.when(${input.instance}.${input.callSignature}).thenReturn(${input.returnSignature});
 </#list>
-
-    ${method.type} return_${method.name} = sut.${method.name}(
-<#list method.parameters as parameter>
-      ${parameter.name}<#sep>, 
-</#list>
-        );
     
 <#if method.expectedReturn??>
+    ${method.type} return_${method.name} = sut.${method.callSignature};
+    
     Assert.assertEquals("Unexpected ${method.name}", ${method.expectedReturn}, return_${method.name});
+<#else>
+    sut.${method.callSignature};
 </#if>
+
+<#list method.outputMethods as output>
+    Mockito.verify(${output.instance}).${output.callSignature};
+</#list>
     
   }
 </#list>

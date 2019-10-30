@@ -27,8 +27,6 @@ import org.junit.Test;
 public class ClassWithEverythingTest {
   @Mock
   private StringBuilder sb; 
-  @Mock
-  private StringBuilder sb1; 
   @InjectMocks
   private Claz sut; 
   @Test
@@ -37,15 +35,10 @@ public class ClassWithEverythingTest {
     String a = "a"; 
 
 
-    StringBuilder nodeCall_indexOf_return = StringBuilder.builder().build();
-    Mockito.when(sb.indexOf(a)).thenReturn(nodeCall_indexOf_return);
-    StringBuilder nodeCall_append_return = StringBuilder.builder().build();
-    Mockito.when(sb1.append(nodeCall_indexOf_return)).thenReturn(nodeCall_append_return);
     
-    StringBuilder return_setS = sut.setS(a);
-    
-    Assert.assertEquals("Unexpected setS", nodeCall_append_return, return_setS);
+    sut.setS(a);
 
+    Mockito.verify(sb).indexOf(a);
     
   }
 

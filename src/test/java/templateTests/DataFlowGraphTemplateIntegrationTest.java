@@ -66,6 +66,20 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
     executeAndVerify(DefaultConfigurations.forStatelessClassTest(), claz, expectedClass);
   }
 
+  @Test
+  public void testStatelessClassTest_outputMethodCall() throws IOException {
+    String claz = //
+        "public class Claz {\n" + //
+            "  StringBuilder sb = new StringBuilder(); \n" + //
+            "  public void setS(String a) {\n" + //
+            "    sb.indexOf(a);\n" + //
+            "  }\n" + //
+            "}"; //
+
+    String expectedClass = "verify-statelessClassTest-outputMethodCall.java";
+    executeAndVerify(DefaultConfigurations.forStatelessClassTest(), claz, expectedClass);
+  }
+
   private void executeAndVerify(JavaForgerConfiguration config, String claz, String expectedClass) throws IOException {
     stringToFile(INPUT_CLASS, claz);
     JavaForger.execute(config, INPUT_CLASS);
@@ -97,6 +111,8 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
     test.testStateFullClassTest_setter();
     test.setup();
     test.testStatelessClassTest_facade();
+    test.setup();
+    test.testStatelessClassTest_outputMethodCall();
     test.tearDown();
 
     Assert.fail();

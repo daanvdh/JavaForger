@@ -36,6 +36,7 @@ import dataflow.model.DataFlowMethod;
 import dataflow.model.DataFlowNode;
 import dataflow.model.NodeCall;
 import dataflow.model.ParameterList;
+import templateInput.StringConverter;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
@@ -75,8 +76,16 @@ public class MethodDefinitionFactory {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
-    return MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations)
-        .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)).column(md.getBegin().map(p -> p.column).orElse(-1)).parameters(getParameters(md));
+    List<VariableDefinition> params = getParameters(md);
+    return MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations).parameters(params) //
+        .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)) //
+        .column(md.getBegin().map(p -> p.column).orElse(-1)) //
+        .callSignature(createCallSignature(md.getNameAsString(), params));
+  }
+
+  private String createCallSignature(String name, List<VariableDefinition> params) {
+    String paramNames = params.stream().map(VariableDefinition::getName).map(StringConverter::toString).collect(Collectors.joining(","));
+    return name + "(" + paramNames + ")";
   }
 
   private List<VariableDefinition> getParameters(CallableDeclaration<?> md) {
@@ -111,13 +120,11 @@ public class MethodDefinitionFactory {
 
   private void addMethodsCalls(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
     for (NodeCall call : dataFlowMethod.getNodeCalls()) {
-      if (call.isReturnRead()) {
-        addInputMethod(newMethod, dataFlowMethod, call);
-      }
+      addMethodCall(newMethod, dataFlowMethod, call);
     }
   }
 
-  private void addInputMethod(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call) {
+  private void addMethodCall(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call) {
     Builder builder = call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
     String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
     builder.name(call.getName()).type(type);
@@ -125,16 +132,20 @@ public class MethodDefinitionFactory {
     MethodDefinition method = createMethodDefinition(call);
     String returnSignature = call.getReturnNode().map(DataFlowNode::getName).orElse(null);
     method.setReturnSignature(returnSignature);
-    newMethod.addInputMethod(method);
 
     StringBuilder callSignature = createCallSignature(dataFlowMethod, call);
     method.setCallSignature(callSignature.toString());
 
+    call.getInstanceName().ifPresent(method::setInstance);
+
     String expectedReturn = createExpecedReturn(newMethod, dataFlowMethod, call, returnSignature);
     newMethod.setExpectedReturn(expectedReturn);
 
-    // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
-    // to define it in test data as well
+    if (call.isReturnRead()) {
+      newMethod.addInputMethod(method);
+    } else {
+      newMethod.addOutputMethod(method);
+    }
   }
 
   private String createExpecedReturn(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call, String returnSignature) {
@@ -153,7 +164,6 @@ public class MethodDefinitionFactory {
   private StringBuilder createCallSignature(DataFlowMethod dataFlowMethod, NodeCall call) {
     List<DataFlowNode> inputParameters = call.getIn().map(ParameterList::getNodes).orElse(new ArrayList<>());
     StringBuilder callSignature = new StringBuilder();
-    call.getInstanceName().ifPresent(name -> callSignature.append(name + "."));
     callSignature.append(call.getName()).append("(");
     boolean first = true;
     for (DataFlowNode param : inputParameters) {
@@ -226,6 +236,10 @@ public class MethodDefinitionFactory {
       } else {
         sb.append(inputNode.getName());
         // TODO handle nodes that are constructed inside the method. These will have to be constructed and initialized separately.
+
+        // If it's not a class field or method parameter, or return value from another method. It must be defined within the method itself, we therefore need
+        // to define it in test data as well
+
       }
     }
     return sb.toString();
