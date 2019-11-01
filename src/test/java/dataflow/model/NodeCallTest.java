@@ -31,8 +31,8 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class NodeCallTest {
-  private static final ParameterList IN = ParameterList.builder().build();
-  private static final ParameterList OUT = ParameterList.builder().build();
+  private static final ParameterList IN = ParameterList.builder().name("n").build();
+  private static final ParameterList OUT = ParameterList.builder().name("a").build();
   private static final OwnedNode<?> OWNER = DataFlowNode.builder().build();
   private static final DataFlowMethod CALLED_METHOD = DataFlowMethod.builder().build();
   private static final String CLAZ = "a";

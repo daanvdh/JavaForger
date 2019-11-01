@@ -48,7 +48,10 @@ public class ParameterList extends OwnedNode<Node> {
 
   private ParameterList(Builder builder) {
     super(builder);
-    super.name = "paramList";
+    // TODO this should probably not be here
+    if (super.name == null) {
+      super.name = "paramList";
+    }
     this.addAll(builder.nodes);
     this.owner = builder.owner == null ? this.owner : builder.owner;
   }
@@ -119,7 +122,7 @@ public class ParameterList extends OwnedNode<Node> {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
       ParameterList other = (ParameterList) obj;
-      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(nodes, other.nodes).isEquals();
+      equals = new EqualsBuilder().appendSuper(super.equals(obj)).append(nodes, other.nodes).append(name, other.name).isEquals();
     }
     return equals;
   }
