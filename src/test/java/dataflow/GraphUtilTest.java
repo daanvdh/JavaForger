@@ -10,6 +10,8 @@
  */
 package dataflow;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -33,11 +35,8 @@ public class GraphUtilTest {
     DataFlowNode node = m.getChangedFields().get(0);
     DataFlowNode expected = m.getInputParameters().getNodes().get(0);
 
-    Assert.fail("not implemented");
-
-    // List<DataFlowNode> result = GraphUtil.walkBackUntil(node, m);
-    Assert.fail("not implemented");
-    // Assert.assertEquals(Collections.singletonList(expected), result);
+    List<DataFlowNode> result = GraphUtil.walkBackUntil(node, m::isInputBoundary, graph::owns);
+    Assert.assertEquals(Collections.singletonList(expected), result);
   }
 
   @Test
@@ -46,9 +45,8 @@ public class GraphUtilTest {
     DataFlowMethod m = graph.getMethods().iterator().next();
     DataFlowNode expected = m.getInputParameters().getNodes().get(0);
 
-    // List<DataFlowNode> result = GraphUtil.walkBackUntil(expected, m);
-    Assert.fail("not implemented");
-    // Assert.assertEquals(Collections.singletonList(expected), result);
+    List<DataFlowNode> result = GraphUtil.walkBackUntil(expected, m::isInputBoundary, graph::owns);
+    Assert.assertEquals(Collections.singletonList(expected), result);
   }
 
   @Test
@@ -64,14 +62,8 @@ public class GraphUtilTest {
     DataFlowNode node = m.getChangedFields().get(0);
     List<DataFlowNode> parameters = m.getInputParameters().getNodes();
 
-    // List<DataFlowNode> result = GraphUtil.walkBackUntil(node, m);
-    Assert.fail("not implemented");
-    // Assert.assertEquals(Arrays.asList(parameters.get(0), parameters.get(1)), result);
-  }
-
-  @Test
-  public void testWalkBackUntilLastInScopeOfMethod() {
-    // TODO implement
+    List<DataFlowNode> result = GraphUtil.walkBackUntil(node, m::isInputBoundary, graph::owns);
+    Assert.assertEquals(Arrays.asList(parameters.get(0), parameters.get(1)), result);
   }
 
 }
