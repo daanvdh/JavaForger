@@ -15,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
@@ -30,6 +33,7 @@ import templateInput.definition.TypeDefinition;
  * @author Daan
  */
 public class ImportResolver {
+  private static final Logger LOG = LoggerFactory.getLogger(ImportResolver.class);
 
   private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 
@@ -60,8 +64,8 @@ public class ImportResolver {
       try {
         ResolvedType resolve = type.resolve();
         imports.addAll(getImportsFromResolvedType(resolve));
-      } catch (@SuppressWarnings("unused") Exception e) {
-        System.err.println("FieldReader: Could not resolve import for " + type.asString());
+      } catch (Exception e) {
+        LOG.error("Could not resolve import for {}, received exception with message: {}" + type.asString(), e.getMessage());
       }
     }
     return imports;
