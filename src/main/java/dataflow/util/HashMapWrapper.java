@@ -12,8 +12,8 @@ package dataflow.util;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -29,8 +29,8 @@ public class HashMapWrapper<T, V> {
     this.map = map;
   }
 
-  public List<T> keyList() {
-    return map.keySet().stream().map(HashCodeWrapper::getValue).collect(Collectors.toList());
+  public Set<T> keySet() {
+    return map.keySet().stream().map(HashCodeWrapper::getValue).collect(Collectors.toSet());
   }
 
   public V get(T key) {

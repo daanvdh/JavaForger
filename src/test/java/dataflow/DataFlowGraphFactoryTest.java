@@ -49,6 +49,7 @@ import dataflow.model.DataFlowMethod.Builder;
 import dataflow.model.DataFlowNode;
 import dataflow.model.DataFlowNodeTest;
 import dataflow.model.NodeCall;
+import dataflow.model.ParameterList;
 
 /**
  * Unit test for {@link DataFlowGraphFactory}.
@@ -205,19 +206,19 @@ public class DataFlowGraphFactoryTest {
             "}"); //
     DataFlowNode a_1 = dfnTest.createNode(cu, "a", NameExpr.class);
     DataFlowNode nodeCallReturn = dfnTest.createNode(cu, "nodeCall_called_return", MethodCallExpr.class);
-    NodeCall nodeCall = NodeCall.builder().in(a_1).returnNode(nodeCallReturn).build();
+    NodeCall nodeCall = createNodeCall("called", nodeCallReturn, a_1);
 
     DataFlowNode a = dfnTest.createParameter(cu, "a");
     DataFlowNode specificReturnCaller = dfnTest.createSpecificReturn(cu, "caller");
     DataFlowNode genericReturnCaller = dfnTest.createMethodReturn(cu, "caller");
     DataFlowMethod caller =
-        createMethod("caller").inputParameters(a).nodes(specificReturnCaller).nodeCalls(nodeCall).returnNode(genericReturnCaller).representedNode(null).build();
+        createMethod("caller", a).nodes(specificReturnCaller).nodeCalls(nodeCall).returnNode(genericReturnCaller).representedNode(null).build();
 
     DataFlowNode b_called = dfnTest.createParameter(cu, "b");
     DataFlowNode b_1 = dfnTest.createNode(cu, "b", NameExpr.class, 1);
     DataFlowNode specificReturnCalled = dfnTest.createSpecificReturn(cu, "called");
     DataFlowNode genericReturnCalled = dfnTest.createMethodReturn(cu, "called");
-    DataFlowMethod called = createMethod("called").inputParameters(b_called).nodes(b_1, specificReturnCalled).returnNode(genericReturnCalled).build();
+    DataFlowMethod called = createMethod("called", b_called).nodes(b_1, specificReturnCalled).returnNode(genericReturnCalled).build();
 
     connectNodesInSquence(a, a_1, b_called, b_1, specificReturnCalled, genericReturnCalled, nodeCallReturn, specificReturnCaller, genericReturnCaller);
     DataFlowGraph expected = DataFlowGraph.builder().name("Claz").methods(caller, called).build();
@@ -267,8 +268,8 @@ public class DataFlowGraphFactoryTest {
     DataFlowNode genericReturnCaller = dfnTest.createMethodReturn(cu, "met");
     this.connectNodesInSquence(sb_output, specificReturnCaller, genericReturnCaller);
 
-    DataFlowMethod caller = createMethod("met").inputParameters(a).nodeCalls(NodeCall.builder().in(a_1).returnNode(sb_output).build())
-        .nodes(specificReturnCaller).returnNode(genericReturnCaller).build();
+    DataFlowMethod caller = createMethod("met").inputParameters(a).nodeCalls(createNodeCall("append", sb_output, a_1)).nodes(specificReturnCaller)
+        .returnNode(genericReturnCaller).build();
 
     DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(dfnTest.createField(cu, "sb")).methods(caller).build();
 
@@ -287,10 +288,10 @@ public class DataFlowGraphFactoryTest {
             "}"); //
     DataFlowNode sb_input = dfnTest.createNode(cu, "a", NameExpr.class, 2);
     DataFlowNode sb_output = dfnTest.createNode(cu, "nodeCall_indexOf_return", MethodCallExpr.class, 1);
-    NodeCall sb_call = NodeCall.builder().in(sb_input).returnNode(sb_output).build();
+    NodeCall sb_call = createNodeCall("indexOf", sb_output, sb_input);
 
     DataFlowNode sb1_output = dfnTest.createNode(cu, "nodeCall_append_return", MethodCallExpr.class, 0);
-    NodeCall sb1_call = NodeCall.builder().in(sb_output).returnNode(sb1_output).build();
+    NodeCall sb1_call = createNodeCall("append", sb1_output, sb_output);
 
     DataFlowNode a = dfnTest.createParameter(cu, "a");
     DataFlowNode specificReturnCaller = dfnTest.createSpecificReturn(cu, "caller");
@@ -309,10 +310,20 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(cu, expected);
   }
 
-  private Builder createMethod(String name) {
+  private NodeCall createNodeCall(String name, DataFlowNode nodeCallReturn, DataFlowNode... params) {
+    NodeCall call = NodeCall.builder().in(ParameterList.builder().nodes(params).name(name + "CallParameters").build()).name("nodeCallCreatedAsTest")
+        .returnNode(nodeCallReturn).build();
+    return call;
+  }
+
+  private Builder createMethod(String name, DataFlowNode... params) {
     MethodDeclaration m = new MethodDeclaration();
     m.setName(new SimpleName(name));
-    return DataFlowMethod.builder().name(name).representedNode(m);
+    Builder method = DataFlowMethod.builder().name(name).representedNode(m);
+    if (params != null && params.length > 0) {
+      method.inputParameters(ParameterList.builder().name(name + "InputParameters").nodes(params).build());
+    }
+    return method;
   }
 
   private void connectNodesInSquence(DataFlowNode... nodes) {

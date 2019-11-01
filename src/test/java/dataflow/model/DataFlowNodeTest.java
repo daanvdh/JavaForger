@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -114,12 +115,12 @@ public class DataFlowNodeTest {
         fields.stream().collect(Collectors.toMap(t -> new HashCodeWrapper<>(t.getRepresentedNode()), Function.identity()));
     HashMapWrapper<Node, DataFlowNode> res = new HashMapWrapper<>(res1);
 
-    Optional<String> equal = exp.keyList().equals(res.keyList()) ? Optional.empty()
+    Optional<String> equal = exp.keySet().equals(res.keySet()) ? Optional.empty()
         : Optional.of("Nodes not equal, expected: " + exp.values().stream().map(DataFlowNode::getName).sorted().collect(Collectors.toList()) + " but was: "
             + res.values().stream().map(DataFlowNode::getName).sorted().collect(Collectors.toList()) + " with types [" + res.values().stream()
                 .sorted(Comparator.comparing(DataFlowNode::getName)).map(DataFlowNode::getRepresentedNode).map(Node::getClass).collect(Collectors.toList()));
     if (!equal.isPresent()) {
-      equal = exp.keyList().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
+      equal = exp.keySet().stream().map(key -> assertNodeEqual(exp.get(key), res.get(key))).filter(Optional::isPresent).map(Optional::get).findFirst();
     }
     return equal;
   }

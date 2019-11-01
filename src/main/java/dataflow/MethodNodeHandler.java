@@ -140,7 +140,7 @@ public class MethodNodeHandler {
     List<DataFlowNode> inputArguments = optionalInputArguments.stream().map(Optional::get).collect(Collectors.toList());
 
     // Add input to method
-    ParameterList.Builder params = ParameterList.builder().name(method.getName() + "_inputParams");
+    ParameterList.Builder params = ParameterList.builder().name(calledMethod.getName() + "CallParameters");
     if (inputArguments != null && !inputArguments.isEmpty()) {
       params.nodes(inputArguments).build();
     }

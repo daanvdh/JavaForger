@@ -48,10 +48,6 @@ public class ParameterList extends OwnedNode<Node> {
 
   private ParameterList(Builder builder) {
     super(builder);
-    // TODO this should probably not be here
-    if (super.name == null) {
-      super.name = "paramList";
-    }
     this.addAll(builder.nodes);
     this.owner = builder.owner == null ? this.owner : builder.owner;
   }
