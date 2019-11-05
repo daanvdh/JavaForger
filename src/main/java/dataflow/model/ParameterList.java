@@ -49,7 +49,9 @@ public class ParameterList extends OwnedNode<Node> {
   private ParameterList(Builder builder) {
     super(builder);
     this.addAll(builder.nodes);
-    this.owner = builder.owner == null ? this.owner : builder.owner;
+    if (builder.owner != null) {
+      this.setOwnerAndName(builder.owner);
+    }
   }
 
   @Override
@@ -57,8 +59,10 @@ public class ParameterList extends OwnedNode<Node> {
     return Optional.ofNullable(this.owner);
   }
 
-  public void setOwner(OwnedNode<?> owner) {
+  public final void setOwnerAndName(OwnedNode<?> owner) {
     this.owner = owner;
+    String ownerName = owner.getName() == null ? "unkown" + owner.getClass() : owner.getName();
+    this.name = ownerName + "Parameters";
   }
 
   public List<DataFlowNode> getParameters() {

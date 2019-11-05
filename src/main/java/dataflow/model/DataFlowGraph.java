@@ -192,6 +192,7 @@ public class DataFlowGraph extends OwnerNode<ClassOrInterfaceDeclaration> {
   public String toString() {
     StringBuilder sb = new StringBuilder();
 
+    sb.append(super.toString());
     sb.append("fields{");
     fields.forEach(f -> sb.append("\n->").append(f.toStringForward(1)));
     sb.append("\n");

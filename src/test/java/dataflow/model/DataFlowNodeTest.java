@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,6 +31,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.google.common.base.Objects;
 
 import dataflow.util.HashCodeWrapper;
 import dataflow.util.HashMapWrapper;
@@ -161,7 +161,7 @@ public class DataFlowNodeTest {
     if (message == null) {
       String s = "Owner not equal for node " + exp.getName() + " expected " + exp.getOwner() + " but was " + res.getOwner();
       if (exp.getOwner().isPresent() && res.getOwner().isPresent()) {
-        if (!(exp.getOwner().get().getName().equals(res.getOwner().get().getName())) || //
+        if (!Objects.equal(exp.getOwner().get().getName(), res.getOwner().get().getName()) || //
             !(exp.getOwner().get().getClass().equals(res.getOwner().get().getClass()))) {
           message = s;
         }

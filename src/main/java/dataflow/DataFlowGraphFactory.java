@@ -67,7 +67,11 @@ public class DataFlowGraphFactory {
    */
   public DataFlowGraph create(CompilationUnit cu) {
     DataFlowGraph graph = DataFlowGraph.builder().build();
-    cu.findFirst(ClassOrInterfaceDeclaration.class).map(ClassOrInterfaceDeclaration::getNameAsString).ifPresent(graph::setName);
+    Optional<ClassOrInterfaceDeclaration> representedNode = cu.findFirst(ClassOrInterfaceDeclaration.class);
+    if (representedNode.isPresent()) {
+      graph.setRepresentedNode(representedNode.get());
+      representedNode.map(ClassOrInterfaceDeclaration::getNameAsString).ifPresent(graph::setName);
+    }
     executeForEachChildNode(cu, (node) -> this.addField(graph, node));
     executeForEachChildNode(cu, (node) -> this.createMethod(graph, node));
     executeForEachChildNode(cu, (node) -> this.fillMethod(graph, node));

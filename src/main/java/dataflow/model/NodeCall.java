@@ -85,7 +85,7 @@ public class NodeCall extends OwnedNode<Node> {
 
   public final void setIn(ParameterList in) {
     this.in = in;
-    in.setOwner(this);
+    in.setOwnerAndName(this);
   }
 
   public ParameterList getOut() {

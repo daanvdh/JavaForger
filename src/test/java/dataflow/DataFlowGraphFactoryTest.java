@@ -17,6 +17,7 @@
  */
 package dataflow;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.junit.Test;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -84,7 +86,7 @@ public class DataFlowGraphFactoryTest {
     DataFlowNode setS_s = dfnTest.createNode(cu, "setS.s", AssignExpr.class);
     connectNodesInSquence(a, a_1, setS_s, s);
     DataFlowMethod setS = createMethod("setS").inputParameters(a).nodes(a_1, setS_s).changedFields(s).build();
-    DataFlowGraph expected = DataFlowGraph.builder().name("Claz").fields(s).methods(setS).build();
+    DataFlowGraph expected = createGraph(cu, Arrays.asList(s), setS);
 
     executeAndVerify(cu, expected);
   }
@@ -300,7 +302,6 @@ public class DataFlowGraphFactoryTest {
         createMethod("caller").inputParameters(a).nodes(specificReturnCaller).nodeCalls(sb_call, sb1_call).returnNode(genericReturnCaller).build();
 
     this.connectNodesInSquence(a, sb_input);
-    // this.connectNodesInSquence(sb_output, sb1_input);
     this.connectNodesInSquence(sb1_output, specificReturnCaller, genericReturnCaller);
 
     DataFlowNode sb = dfnTest.createField(cu, "sb");
@@ -310,9 +311,14 @@ public class DataFlowGraphFactoryTest {
     executeAndVerify(cu, expected);
   }
 
+  private DataFlowGraph createGraph(CompilationUnit cu, List<DataFlowNode> s, DataFlowMethod... setS) {
+    ClassOrInterfaceDeclaration representedNode = cu.findFirst(ClassOrInterfaceDeclaration.class).get();
+    return DataFlowGraph.builder().representedNode(representedNode).name(representedNode.getNameAsString()).fields(s).methods(setS).build();
+  }
+
   private NodeCall createNodeCall(String name, DataFlowNode nodeCallReturn, DataFlowNode... params) {
-    NodeCall call = NodeCall.builder().in(ParameterList.builder().nodes(params).name(name + "CallParameters").build()).name("nodeCallCreatedAsTest")
-        .returnNode(nodeCallReturn).build();
+    NodeCall call =
+        NodeCall.builder().name(name).in(ParameterList.builder().nodes(params).name(name + "Parameters").build()).returnNode(nodeCallReturn).build();
     return call;
   }
 
@@ -321,7 +327,7 @@ public class DataFlowGraphFactoryTest {
     m.setName(new SimpleName(name));
     Builder method = DataFlowMethod.builder().name(name).representedNode(m);
     if (params != null && params.length > 0) {
-      method.inputParameters(ParameterList.builder().name(name + "InputParameters").nodes(params).build());
+      method.inputParameters(ParameterList.builder().name(name + "Parameters").nodes(params).build());
     }
     return method;
   }

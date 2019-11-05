@@ -118,8 +118,7 @@ public class DataFlowMethod extends OwnerNode<CallableDeclaration<?>> {
   public final void setInputParameters(ParameterList inputParameters) {
     this.inputParameters = inputParameters;
     this.addNodes(inputParameters.getNodes());
-    this.inputParameters.setName(this.name + "Parameters");
-    // TODO this should also set the owner of the inputParams
+    inputParameters.setOwnerAndName(this);
   }
 
   public List<DataFlowNode> getInputFields() {
