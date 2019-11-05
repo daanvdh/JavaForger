@@ -24,6 +24,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+
 /**
  * Unit test for {@link NodeCall}.
  *
@@ -37,6 +40,7 @@ public class NodeCallTest {
   private static final DataFlowMethod CALLED_METHOD = DataFlowMethod.builder().build();
   private static final String CLAZ = "a";
   private static final String PECKAGE = "c";
+  private static final CallableDeclaration<?> REPRESENTED_NODE = new ConstructorDeclaration();
 
   @Test
   public void testNodeCall_minimum() {
@@ -72,8 +76,8 @@ public class NodeCallTest {
 
   @Test
   public void testEquals_Different() {
-    verifyEqualsDifferent(NodeCall.Builder::in, ParameterList.builder().name("x").build());
-    verifyEqualsDifferent(NodeCall.Builder::out, ParameterList.builder().name("x").build());
+    verifyEqualsDifferent(NodeCall.Builder::in, ParameterList.builder().representedNode(REPRESENTED_NODE).build());
+    verifyEqualsDifferent(NodeCall.Builder::out, ParameterList.builder().representedNode(REPRESENTED_NODE).build());
     verifyEqualsDifferent(NodeCall.Builder::calledMethod, DataFlowMethod.builder().name("x").build());
     verifyEqualsDifferent(NodeCall.Builder::claz, "b");
     verifyEqualsDifferent(NodeCall.Builder::peckage, "d");
@@ -89,8 +93,8 @@ public class NodeCallTest {
 
   @Test
   public void testHashCode_Different() {
-    verifyHashCode_Different(NodeCall.Builder::in, ParameterList.builder().name("x").build());
-    verifyHashCode_Different(NodeCall.Builder::out, ParameterList.builder().name("x").build());
+    verifyHashCode_Different(NodeCall.Builder::in, ParameterList.builder().representedNode(REPRESENTED_NODE).build());
+    verifyHashCode_Different(NodeCall.Builder::out, ParameterList.builder().representedNode(REPRESENTED_NODE).build());
     verifyHashCode_Different(NodeCall.Builder::calledMethod, DataFlowMethod.builder().name("x").build());
     verifyHashCode_Different(NodeCall.Builder::claz, "b");
     verifyHashCode_Different(NodeCall.Builder::peckage, "d");
