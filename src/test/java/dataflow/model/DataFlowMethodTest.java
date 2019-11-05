@@ -12,7 +12,6 @@ package dataflow.model;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.junit.Assert;
@@ -31,10 +30,6 @@ public class DataFlowMethodTest {
   private static final ParameterList INPUT_PARAMETERS = new ParameterList(DataFlowNode.builder().build());
   private static final List<DataFlowNode> INPUT_FIELDS = Collections.singletonList(DataFlowNode.builder().name("b").build());
   private static final List<DataFlowNode> CHANGED_FIELDS = Collections.singletonList(DataFlowNode.builder().name("a").build());
-  private static final Map<DataFlowNode, DataFlowMethod> INPUT_METHODS =
-      Collections.singletonMap(DataFlowNode.builder().name("g").build(), DataFlowMethod.builder().name("f").build());
-  private static final Map<DataFlowNode, DataFlowMethod> OUTPUT_METHODS =
-      Collections.singletonMap(DataFlowNode.builder().name("e").build(), DataFlowMethod.builder().name("q").build());
   private static final String NAME = "a";
   private static final CallableDeclaration<?> REPRESENTED_NODE = new ConstructorDeclaration();
   private static final DataFlowNode RETURN_NODE = DataFlowNode.builder().name("d").build();
@@ -70,7 +65,7 @@ public class DataFlowMethodTest {
     verifyHashCode_Different(DataFlowMethod.Builder::name, "b");
     verifyHashCode_Different(DataFlowMethod.Builder::representedNode, new MethodDeclaration());
     verifyHashCode_Different(DataFlowMethod.Builder::returnNode, DataFlowNode.builder().build());
-    verifyHashCode_Different(DataFlowMethod.Builder::inputParameters, ParameterList.builder().name("x").build());
+    verifyHashCode_Different(DataFlowMethod.Builder::inputParameters, ParameterList.builder().representedNode(REPRESENTED_NODE).build());
     verifyHashCode_Different(DataFlowMethod.Builder::inputFields, Collections.singletonList(DataFlowNode.builder().build()));
     verifyHashCode_Different(DataFlowMethod.Builder::changedFields, Collections.singletonList(DataFlowNode.builder().build()));
   }
@@ -88,7 +83,7 @@ public class DataFlowMethodTest {
     verifyEqualsDifferent(DataFlowMethod.Builder::name, "b");
     verifyEqualsDifferent(DataFlowMethod.Builder::representedNode, new MethodDeclaration());
     verifyEqualsDifferent(DataFlowMethod.Builder::returnNode, DataFlowNode.builder().build());
-    verifyEqualsDifferent(DataFlowMethod.Builder::inputParameters, ParameterList.builder().name("x").build());
+    verifyEqualsDifferent(DataFlowMethod.Builder::inputParameters, ParameterList.builder().representedNode(REPRESENTED_NODE).build());
   }
 
   private DataFlowMethod.Builder createAndFillBuilder() {
