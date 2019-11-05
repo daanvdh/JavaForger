@@ -77,10 +77,16 @@ public class MethodDefinitionFactory {
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
     List<VariableDefinition> params = getParameters(md);
-    return MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations).parameters(params) //
+    Builder builder = MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations).parameters(params) //
         .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)) //
         .column(md.getBegin().map(p -> p.column).orElse(-1)) //
         .callSignature(createCallSignature(md.getNameAsString(), params));
+    if (md instanceof MethodDeclaration) {
+      builder.type(((MethodDeclaration) md).getTypeAsString());
+    } else {
+      builder.type(md.getNameAsString());
+    }
+    return builder;
   }
 
   private String createCallSignature(String name, List<VariableDefinition> params) {
