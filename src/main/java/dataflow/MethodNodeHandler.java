@@ -24,6 +24,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -68,6 +69,7 @@ public class MethodNodeHandler {
    *         be empty.
    */
   public Optional<DataFlowNode> handleNode(DataFlowGraph graph, DataFlowMethod method, Map<Node, DataFlowNode> overriddenValues, Node n, OwnedNode<?> owner) {
+    LOG.trace("handling node {}", n);
     Optional<DataFlowNode> created = Optional.empty();
     if (n instanceof BlockStmt) {
       created = handleBlockStmt(graph, method, overriddenValues, (BlockStmt) n, owner);
@@ -87,9 +89,12 @@ public class MethodNodeHandler {
       created = handleVariableDeclarator(graph, method, overriddenValues, (VariableDeclarator) n, owner);
     } else if (n instanceof FieldAccessExpr) {
       created = handleFieldAccessExpr(graph, method, overriddenValues, (FieldAccessExpr) n, owner);
+    } else if (n instanceof LineComment) {
+      // do nothing for comments
     } else {
       LOG.warn("In method {} could not handle node [{}] of type {}", method.getName(), n, n.getClass());
     }
+    LOG.trace("created: {}", created);
     return created;
   }
 
