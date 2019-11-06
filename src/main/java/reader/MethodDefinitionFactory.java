@@ -73,7 +73,7 @@ public class MethodDefinitionFactory {
   }
 
   private MethodDefinition.Builder parseCallable(CallableDeclaration<?> md) {
-    Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::asString).collect(Collectors.toSet());
+    Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::toString).map(String::trim).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
     List<VariableDefinition> params = getParameters(md);

@@ -20,7 +20,7 @@ package configuration;
 import java.io.File;
 import java.io.IOException;
 
-import com.github.javaparser.JavaParser;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
@@ -119,7 +119,7 @@ public class StaticJavaForgerConfiguration {
 
   public final void setSymbolSolver(JavaSymbolSolver symbolSolver) {
     this.symbolSolver = symbolSolver;
-    JavaParser.getStaticConfiguration().setSymbolResolver(symbolSolver);
+    StaticJavaParser.getConfiguration().setSymbolResolver(symbolSolver);
   }
 
   public JavaSymbolSolver getSymbolSolver() {

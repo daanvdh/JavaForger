@@ -17,7 +17,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.github.javaparser.JavaParser;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 
@@ -53,7 +53,7 @@ public class NodeCallFactoryTest {
             "    sb.append(a);\n" + //
             "  }\n" + //
             "}"; //
-    CompilationUnit cu = JavaParser.parse(claz);
+    CompilationUnit cu = StaticJavaParser.parse(claz);
     List<MethodCallExpr> methodCalls = cu.findAll(MethodCallExpr.class);
     DataFlowMethod method = DataFlowMethod.builder().name("met").build();
     MethodCallExpr node = methodCalls.get(0);

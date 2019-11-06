@@ -19,7 +19,6 @@ package merger;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -29,6 +28,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -147,23 +147,24 @@ public class NodeComparator implements Comparator<Node> {
   private Integer compareModifiers(Node a, Node b) {
     Integer compare = null;
     if (NodeWithAccessModifiers.class.isAssignableFrom(a.getClass()) && NodeWithAccessModifiers.class.isAssignableFrom(b.getClass())) {
-      EnumSet<Modifier> modA = ((NodeWithAccessModifiers<?>) a).getModifiers();
-      EnumSet<Modifier> modB = ((NodeWithAccessModifiers<?>) b).getModifiers();
-      if (modA.contains(Modifier.PUBLIC)) {
+      NodeList<Modifier> modA = ((NodeWithAccessModifiers<?>) a).getModifiers();
+      NodeList<Modifier> modB = ((NodeWithAccessModifiers<?>) b).getModifiers();
+      if (modA.contains(Modifier.publicModifier())) {
         compare = -1;
-      } else if (modA.contains(Modifier.PROTECTED)) {
-        compare = !modB.contains(Modifier.PUBLIC) && !isDefaultModifier(modB) ? -1 : 1;
-      } else if (modA.contains(Modifier.PRIVATE)) {
-        compare = modB.contains(Modifier.PRIVATE) ? -1 : 1;
+      } else if (modA.contains(Modifier.protectedModifier())) {
+        compare = !modB.contains(Modifier.publicModifier()) && !isDefaultModifier(modB) ? -1 : 1;
+      } else if (modA.contains(Modifier.privateModifier())) {
+        compare = modB.contains(Modifier.privateModifier()) ? -1 : 1;
       } else {
-        compare = !modB.contains(Modifier.PUBLIC) ? -1 : 1;
+        compare = !modB.contains(Modifier.publicModifier()) ? -1 : 1;
       }
     }
     return compare;
   }
 
-  private boolean isDefaultModifier(EnumSet<Modifier> modifiers) {
-    return !modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.PROTECTED) && !modifiers.contains(Modifier.PRIVATE);
+  private boolean isDefaultModifier(NodeList<Modifier> modifiers) {
+    return !modifiers.contains(Modifier.publicModifier()) && !modifiers.contains(Modifier.protectedModifier())
+        && !modifiers.contains(Modifier.privateModifier());
   }
 
 }

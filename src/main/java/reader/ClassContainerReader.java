@@ -26,16 +26,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.github.javaparser.JavaParser;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
-import dataflow.DataFlowException;
 import dataflow.DataFlowGraphFactory;
 import dataflow.model.DataFlowGraph;
 import generator.JavaForgerException;
@@ -66,7 +67,7 @@ public class ClassContainerReader {
   private CompilationUnit getCompilationUnit(String inputClass) throws IOException {
     CompilationUnit cu = null;
     try (FileInputStream in = new FileInputStream(inputClass)) {
-      cu = JavaParser.parse(in);
+      cu = StaticJavaParser.parse(in);
       in.close();
     } catch (FileNotFoundException e) {
       throw new JavaForgerException(e, "Could not parse " + inputClass);
@@ -114,13 +115,13 @@ public class ClassContainerReader {
   private ClassContainer parseClass(TypeDeclaration<?> type) {
     ClassOrInterfaceDeclaration cd = (ClassOrInterfaceDeclaration) type;
     Set<String> annotations = cd.getAnnotations().stream().map(annotation -> annotation.getName().toString()).collect(Collectors.toSet());
-    Set<String> accessModifiers = cd.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet());
-    List<String> interfaces = cd.getImplementedTypes().stream().map(i -> i.getNameAsString()).collect(Collectors.toList());
-    String extend = cd.getExtendedTypes().stream().findFirst().map(e -> e.getNameAsString()).orElse(null);
+    Set<String> accessModifiers = cd.getModifiers().stream().map(Modifier::toString).map(String::trim).collect(Collectors.toSet());
+    List<String> interfaces = cd.getImplementedTypes().stream().map(ClassOrInterfaceType::getNameAsString).collect(Collectors.toList());
+    String extend = cd.getExtendedTypes().stream().findFirst().map(ClassOrInterfaceType::getNameAsString).orElse(null);
 
-    ClassDefinition def = ClassDefinition.builder().name(cd.getNameAsString()).type(cd.getNameAsString())
-        .lineNumber(cd.getBegin().map(p -> p.line).orElse(-1)).column(cd.getBegin().map(p -> p.column).orElse(-1)).annotations(annotations)
-        .accessModifiers(accessModifiers).extend(extend).interfaces(interfaces).build();
+    ClassDefinition def = ClassDefinition.builder().name(cd.getNameAsString()).type(cd.getNameAsString()).lineNumber(cd.getBegin().map(p -> p.line).orElse(-1))
+        .column(cd.getBegin().map(p -> p.column).orElse(-1)).annotations(annotations).accessModifiers(accessModifiers).extend(extend).interfaces(interfaces)
+        .build();
     return new ClassContainer(def);
   }
 

@@ -32,7 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.github.javaparser.JavaParser;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -72,7 +72,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_setter() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  private String s;\n" + //
             "  public void setS(String a) {\n" + //
@@ -93,7 +93,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_setterMultipleInput() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  private String s,t;\n" + //
             "  public void setS(String a, String b) {\n" + //
@@ -122,7 +122,7 @@ public class DataFlowGraphFactoryTest {
   @Test
   public void testCreate_setterAssignFieldTwice() {
 
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  private String s;\n" + //
             "  public void setS(String a, String b) {\n" + //
@@ -149,7 +149,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_setterAssignFieldToField() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  private String s,t;\n" + //
             "  public void setS(String a) {\n" + //
@@ -176,7 +176,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_return() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  public int called(int a) {\n" + //
             "    return a;\n" + //
@@ -197,7 +197,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_methodCallingMethod() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  public int caller(int a) {\n" + //
             "    return called(a);\n" + //
@@ -230,7 +230,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_createVar() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  public int met(int a) {\n" + //
             "    int b = a;\n" + //
@@ -254,7 +254,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_inputMethods() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  StringBuilder sb = new StringBuilder(); \n" + //
             "  public StringBuilder met(String a) {\n" + //
@@ -280,7 +280,7 @@ public class DataFlowGraphFactoryTest {
 
   @Test
   public void testCreate_methodInMethodCall() {
-    CompilationUnit cu = JavaParser.parse(//
+    CompilationUnit cu = StaticJavaParser.parse(//
         "public class Claz {\n" + //
             "  StringBuilder sb = new StringBuilder(); \n" + //
             "  StringBuilder sb1 = new StringBuilder(); \n" + //

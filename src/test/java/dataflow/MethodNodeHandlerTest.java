@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.github.javaparser.JavaParser;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -56,7 +56,7 @@ public class MethodNodeHandlerTest {
             "    return sb.append(a);\n" + //
             "  }\n" + //
             "}"; //
-    CompilationUnit cu = JavaParser.parse(claz);
+    CompilationUnit cu = StaticJavaParser.parse(claz);
     MethodCallExpr node = cu.findAll(MethodCallExpr.class).iterator().next();
 
     DataFlowMethod method = DataFlowMethod.builder().build();
@@ -84,7 +84,7 @@ public class MethodNodeHandlerTest {
             "    sb.append(a);\n" + //
             "  }\n" + //
             "}"; //
-    CompilationUnit cu = JavaParser.parse(claz);
+    CompilationUnit cu = StaticJavaParser.parse(claz);
     MethodCallExpr node = cu.findAll(MethodCallExpr.class).iterator().next();
 
     DataFlowMethod method = DataFlowMethod.builder().build();

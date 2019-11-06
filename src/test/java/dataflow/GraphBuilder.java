@@ -19,12 +19,12 @@ package dataflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -135,7 +135,7 @@ public class GraphBuilder {
 
   private DataFlowMethod getOrCreateMethod(DataFlowGraph graph, Map<String, DataFlowMethod> methods, String methodName) {
     if (!methods.containsKey(methodName)) {
-      CallableDeclaration<?> node = new MethodDeclaration(EnumSet.of(Modifier.PUBLIC), new ClassOrInterfaceType(), methodName);
+      CallableDeclaration<?> node = new MethodDeclaration(NodeList.nodeList(Modifier.publicModifier()), new ClassOrInterfaceType(), methodName);
       DataFlowMethod method = new DataFlowMethod(methodName, node);
       graph.addMethod(method);
       methods.put(methodName, method);

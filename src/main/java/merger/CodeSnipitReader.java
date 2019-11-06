@@ -26,6 +26,7 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParseStart;
 import com.github.javaparser.Provider;
 import com.github.javaparser.Providers;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -153,7 +154,7 @@ public class CodeSnipitReader {
   protected CompilationUnit read(String className) throws IOException {
     CompilationUnit cu = null;
     try (FileInputStream in = new FileInputStream(className)) {
-      cu = JavaParser.parse(in);
+      cu = StaticJavaParser.parse(in);
       in.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -101,13 +102,13 @@ public class VariableDefintionFactory {
     if (FieldDeclaration.class.isAssignableFrom(n.getClass())) {
       fd = Optional.of((FieldDeclaration) n);
     } else if (n instanceof VariableDeclarator) {
-      Optional<Node> parentNode = n.getParentNode().filter(node -> FieldDeclaration.class.isAssignableFrom(node.getClass())).map(FieldDeclaration.class::cast);
+      Optional<Node> parentNode = n.getParentNode().filter(FieldDeclaration.class::isInstance).map(FieldDeclaration.class::cast);
       if (!fd.isPresent()) {
         LOG.warn("VariableDeclarator {} did not have a valid parent, resulting VariableDefinition will only have a name. Parent was {} of type {}", n,
             parentNode.orElse(null), parentNode.map(Node::getClass).orElse(null));
       }
     }
-    fd.ifPresent(f -> fieldBuilder.accessModifiers(f.getModifiers().stream().map(modifier -> modifier.asString()).collect(Collectors.toSet())));
+    fd.ifPresent(f -> fieldBuilder.accessModifiers(f.getModifiers().stream().map(Modifier::toString).map(String::trim).collect(Collectors.toSet())));
   }
 
   private void addAnnotations(Node n, VariableDefinition.Builder<?> fieldBuilder) {

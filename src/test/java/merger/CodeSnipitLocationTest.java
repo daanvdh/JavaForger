@@ -64,7 +64,11 @@ public class CodeSnipitLocationTest {
 
   @Test
   public void testOf_NodeInputAnnotation() {
-    String field = "@Anno1\n@Anno2\n@Anno3\nprivate String someField;\n";
+    String field = //
+        "@Anno1\n" //
+            + "@Anno2\n" //
+            + "@Anno3\n" //
+            + "private String someField;\n"; //
     Node node = wrapInsideCompilationUnit(field);
 
     CodeSnipitLocation location = CodeSnipitLocation.of(node);
@@ -84,7 +88,13 @@ public class CodeSnipitLocationTest {
 
   @Test
   public void testOf_NodeInputWithAnnotationAndJavaDoc() {
-    String field = "@Anno1\n@Anno2\n/**\n Very nice javadoc.\n * With mulitple lines.\n */\nprivate String someField;\n";
+    String field = //
+        "@Anno1\n@Anno2\n" //
+            + "/**\n " //
+            + "Very nice javadoc.\n " //
+            + "* With mulitple lines.\n " //
+            + "*/\n" //
+            + "private String someField;\n"; //
     Node node = wrapInsideCompilationUnit(field);
 
     CodeSnipitLocation location = CodeSnipitLocation.of(node);
@@ -102,7 +112,7 @@ public class CodeSnipitLocationTest {
   private Node wrapInsideCompilationUnit(String field) {
     String code = "import my.impord;\nimport my.secondimpord;\n\npublic class ClassToMerge {\n\n" + field + "\n}";
     CompilationUnit cu = parser.parse(code);
-    Node node = cu.getChildNodes().get(2).getChildNodes().get(1);
+    Node node = cu.getChildNodes().get(2).getChildNodes().get(2);
     return node;
   }
 
