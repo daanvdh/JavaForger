@@ -1,7 +1,9 @@
 package dataflow;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,8 @@ public class ParserUtil {
       resolved = resolvable.resolve();
     } catch (Exception e) {
       LOG.warn(e.getMessage());
+      LOG.trace(
+          Stream.of(e.getStackTrace()).map(StackTraceElement::toString).reduce((str1, str2) -> StringUtils.join(new String[] {str1, str2}, '\n')).orElse(""));
     }
     return resolved;
   }
