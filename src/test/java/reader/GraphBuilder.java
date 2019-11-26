@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dataflow;
+package reader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,8 +37,10 @@ import dataflow.model.ParameterList;
 /**
  * Builder for {@link DataFlowGraph}, only to be used for test purposes.
  *
- * @author User
+ * @author Daan
+ * @deprecated This class can only build simple graphs, use the normal setters, constructors and builders of the JavaDataFlow classes.
  */
+@Deprecated
 public class GraphBuilder {
 
   private List<NodeBuilder> startNodes = new ArrayList<>();
