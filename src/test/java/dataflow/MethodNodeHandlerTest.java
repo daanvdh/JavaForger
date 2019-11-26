@@ -49,58 +49,61 @@ public class MethodNodeHandlerTest {
 
   @Test
   public void testHandleMethodCallExpr_inputMethod() {
-    String claz = //
-        "public class Claz {\n" + //
-            "  StringBuilder sb = new StringBuilder(); \n" + //
+    CompilationUnit cu = createCompilationUnit( //
+        "  StringBuilder sb = new StringBuilder(); \n" + //
             "  public StringBuilder met(String a) {\n" + //
             "    return sb.append(a);\n" + //
-            "  }\n" + //
-            "}"; //
-    CompilationUnit cu = StaticJavaParser.parse(claz);
+            "  }\n");
+
     MethodCallExpr node = cu.findAll(MethodCallExpr.class).iterator().next();
-
-    DataFlowMethod method = DataFlowMethod.builder().build();
-    DataFlowGraph graph = DataFlowGraph.builder().build();
-    HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
-
     DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
+    DataFlowMethod method = DataFlowMethod.builder().build();
     Mockito.when(nodeCallFactory.create(method, node)).thenReturn(Optional.of(methodCall));
 
-    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node, method);
+    Optional<DataFlowNode> resultNode = execute(node, method);
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
     Assert.assertEquals(Arrays.asList(methodCall), method.getNodeCalls());
   }
 
+  private CompilationUnit createCompilationUnit(String code) {
+    CompilationUnit cu = StaticJavaParser.parse(//
+        "public class Claz {\n" + //
+            code + //
+            "}");
+    return cu;
+  }
+
   @Test
   public void testHandleMethodCallExpr_outputMethod() {
-    String claz = //
-        "public class Claz {\n" + //
-            "  StringBuilder sb = new StringBuilder(); \n" + //
+    CompilationUnit cu = createCompilationUnit( //
+        "  StringBuilder sb = new StringBuilder(); \n" + //
             "  public void met(String a) {\n" + //
             "    sb.append(a);\n" + //
-            "  }\n" + //
-            "}"; //
-    CompilationUnit cu = StaticJavaParser.parse(claz);
+            "}");
+
     MethodCallExpr node = cu.findAll(MethodCallExpr.class).iterator().next();
-
-    DataFlowMethod method = DataFlowMethod.builder().build();
-    DataFlowGraph graph = DataFlowGraph.builder().build();
-    HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
-
     DataFlowNode returnNode = DataFlowNode.builder().name("niceName").build();
     NodeCall methodCall = NodeCall.builder().in(ParameterList.builder().nodes(Arrays.asList(DataFlowNode.builder().name("param1").build())).build())
         .returnNode(returnNode).build();
+    DataFlowMethod method = DataFlowMethod.builder().build();
     Mockito.when(nodeCallFactory.create(method, node)).thenReturn(Optional.of(methodCall));
 
-    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node, method);
+    Optional<DataFlowNode> resultNode = execute(node, method);
 
     Assert.assertTrue(resultNode.isPresent());
     Assert.assertEquals(returnNode, resultNode.get());
     Assert.assertEquals(Arrays.asList(methodCall), method.getNodeCalls());
+  }
+
+  private Optional<DataFlowNode> execute(MethodCallExpr node, DataFlowMethod method) {
+    DataFlowGraph graph = DataFlowGraph.builder().build();
+    HashMap<Node, DataFlowNode> overriddenValues = new HashMap<>();
+    Optional<DataFlowNode> resultNode = sut.handleNode(graph, method, overriddenValues, node, method);
+    return resultNode;
   }
 
 }
