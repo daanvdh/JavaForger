@@ -41,7 +41,7 @@ public class ClassWithEverythingTest {
     
     sut.setS(a);
 
-    Mockito.verify(sb).indexOf(a);
+    Mockito.verify(nodeCall_indexOf_return).indexOf(a);
     
   }
 

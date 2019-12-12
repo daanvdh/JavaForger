@@ -41,9 +41,9 @@ public class ClassWithEverythingTest {
 
 
     StringBuilder nodeCall_indexOf_return = StringBuilder.builder().build();
-    Mockito.when(sb.indexOf(a)).thenReturn(nodeCall_indexOf_return);
+    Mockito.when(nodeCall_indexOf_return.indexOf(a)).thenReturn(nodeCall_indexOf_return);
     StringBuilder nodeCall_append_return = StringBuilder.builder().build();
-    Mockito.when(sb1.append(nodeCall_indexOf_return)).thenReturn(nodeCall_append_return);
+    Mockito.when(nodeCall_append_return.append(nodeCall_indexOf_return)).thenReturn(nodeCall_append_return);
     
     StringBuilder return_setS = sut.setS(a);
     

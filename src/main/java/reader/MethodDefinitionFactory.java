@@ -151,8 +151,7 @@ public class MethodDefinitionFactory {
     StringBuilder callSignature = createCallSignature(dataFlowMethod, call);
     method.setCallSignature(callSignature.toString());
 
-    // TODO if the instance is a method return value, we have to handle it differently.
-    call.getInstanceName().ifPresent(method::setInstance);
+    call.getReturnNode().map(DataFlowNode::getName).ifPresent(method::setInstance);
 
     String expectedReturn = createExpecedReturn(newMethod, dataFlowMethod, call, returnSignature);
     newMethod.setExpectedReturn(expectedReturn);
