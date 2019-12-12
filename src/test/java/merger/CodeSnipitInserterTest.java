@@ -69,7 +69,7 @@ public class CodeSnipitInserterTest extends AbstractFileChangingTest {
 
   private void executeAndVerify(String expectedClass, boolean override, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations)
       throws IOException {
-    inserter.insert(JavaForgerConfiguration.builder().withOverride(override).build(), INPUT_CLASS, "this is the new Code 1\nthis is the new Code 2\n",
+    inserter.insert(JavaForgerConfiguration.builder().override(override).build(), INPUT_CLASS, "this is the new Code 1\nthis is the new Code 2\n",
         newCodeInsertionLocations);
     verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_CLASS);
   }

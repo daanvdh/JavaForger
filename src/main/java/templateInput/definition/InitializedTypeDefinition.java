@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import templateInput.StringConverter;
@@ -118,7 +119,7 @@ public class InitializedTypeDefinition extends TypeDefinition {
   }
 
   public String getGetter() {
-    String prefix = this.type.toString().equals("boolean") ? "is" : "get";
+    String prefix = Objects.equals(this.type == null ? "null" : this.type.toString(), "boolean") ? "is" : "get";
     return prefix + getName().getUpperFirst();
   }
 
@@ -170,58 +171,77 @@ public class InitializedTypeDefinition extends TypeDefinition {
     protected Builder() {
     }
 
-    public T withName(String name) {
+    public T copy(InitializedTypeDefinition copy) {
+      this.name = copy.name;
+      this.type = copy.getType().toString();
+      this.lineNumber = copy.getLineNumber();
+      this.column = copy.getColumn();
+      this.annotations = copy.getAnnotations();
+      this.accessModifiers = copy.getAccessModifiers();
+      this.init1 = copy.getInit1();
+      this.init2 = copy.getInit2();
+      this.noInit = copy.getNoInit();
+      this.typeImports = copy.getTypeImports();
+      return (T) this;
+    }
+
+    public T name(String name) {
       this.name = new StringConverter(name);
       return (T) this;
     }
 
-    public T withType(String type) {
+    public T type(String type) {
       this.type = type;
       return (T) this;
     }
 
-    public T withLineNumber(int lineNumber) {
+    public T lineNumber(int lineNumber) {
       this.lineNumber = lineNumber;
       return (T) this;
     }
 
-    public T withColumn(int column) {
+    public T column(int column) {
       this.column = column;
       return (T) this;
     }
 
-    public T withAnnotations(Set<String> annotations) {
+    public T annotations(Set<String> annotations) {
       this.annotations = annotations;
       return (T) this;
     }
 
-    public T withAccessModifiers(Set<String> accessModifiers) {
+    public T accessModifiers(Set<String> accessModifiers) {
       this.accessModifiers = accessModifiers;
       return (T) this;
     }
 
-    public T withInit1(String init1) {
+    public T init1(String init1) {
       this.init1 = init1;
       return (T) this;
     }
 
-    public T withInit2(String init2) {
+    public T init2(String init2) {
       this.init2 = init2;
       return (T) this;
     }
 
-    public T withNoInit(String noInit) {
+    public T noInit(String noInit) {
       this.noInit = noInit;
       return (T) this;
     }
 
-    public T withTypeImport(String typeImport) {
+    public T typeImport(String typeImport) {
       this.typeImports.add(typeImport);
       return (T) this;
     }
 
-    public T withTypeImports(String... imports) {
+    public T typeImports(String... imports) {
       this.typeImports.addAll(Arrays.asList(imports));
+      return (T) this;
+    }
+
+    public T typeImports(List<String> imports) {
+      this.typeImports.addAll(imports);
       return (T) this;
     }
 

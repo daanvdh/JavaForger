@@ -33,11 +33,39 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class MethodDefinition extends InitializedTypeDefinition {
 
-  private List<VariableDefinition> parameters;
+  private List<VariableDefinition> parameters = new ArrayList<>();
+  /** The fields that might be changed after this method call */
+  private List<FlowReceiverDefinition> changedFields = new ArrayList<>();
+  /** The methods called from this method, where the return value is used. */
+  private List<MethodDefinition> inputMethods = new ArrayList<>();
+  /** The methods called from this method, where the return value is not used. */
+  private List<MethodDefinition> outputMethods = new ArrayList<>();
+
+  /**
+   * The complete signature for calling this method, e.g. product.setName(name) for Product::setName. If this {@link MethodDefinition} is constructed from a
+   * method call inside another method, the input variables used might depend on other variables defined in the method, e.g. a parameter or a return value given
+   * by another method. If this {@link MethodDefinition} was constructed as part of parsing a class, the methodSignature input variables will be filled with
+   * random constants.
+   */
+  private String callSignature;
+  /**
+   * If this {@link MethodDefinition} represents a method call from inside a parsed method, this holds the name of the variable to which it was assigned. This
+   * will be null otherwise.
+   */
+  private String returnSignature;
+  /** The name of the variable that was expected as return value. */
+  private String expectedReturn;
+  /** The name of the instance of this MethodCallDefinition */
+  private String instance;
 
   private MethodDefinition(Builder builder) {
     super(builder);
     this.parameters = builder.parameters;
+    this.changedFields = builder.changedFields == null ? this.changedFields : builder.changedFields;
+    this.inputMethods = builder.inputMethods == null ? this.inputMethods : builder.inputMethods;
+    this.outputMethods = builder.outputMethods == null ? this.outputMethods : builder.outputMethods;
+    this.callSignature = builder.callSignature == null ? this.callSignature : builder.callSignature;
+    this.returnSignature = builder.returnSignature == null ? this.returnSignature : builder.returnSignature;
   }
 
   public List<VariableDefinition> getParameters() {
@@ -46,6 +74,70 @@ public class MethodDefinition extends InitializedTypeDefinition {
 
   public void setParameters(List<VariableDefinition> parameters) {
     this.parameters = parameters;
+  }
+
+  public List<FlowReceiverDefinition> getChangedFields() {
+    return changedFields;
+  }
+
+  public void setChangedFields(List<FlowReceiverDefinition> changedFields) {
+    this.changedFields = changedFields;
+  }
+
+  public List<MethodDefinition> getInputMethods() {
+    return inputMethods;
+  }
+
+  public void setInputMethods(List<MethodDefinition> inputMethods) {
+    this.inputMethods = inputMethods;
+  }
+
+  public void addInputMethod(MethodDefinition inputMethod) {
+    this.inputMethods.add(inputMethod);
+  }
+
+  public List<MethodDefinition> getOutputMethods() {
+    return outputMethods;
+  }
+
+  public void setOutputMethods(List<MethodDefinition> outputMethods) {
+    this.outputMethods = outputMethods;
+  }
+
+  public void addOutputMethod(MethodDefinition method) {
+    this.outputMethods.add(method);
+  }
+
+  public String getCallSignature() {
+    return callSignature;
+  }
+
+  public void setCallSignature(String callSignature) {
+    this.callSignature = callSignature;
+  }
+
+  public String getReturnSignature() {
+    return returnSignature;
+  }
+
+  public void setReturnSignature(String returnSignature) {
+    this.returnSignature = returnSignature;
+  }
+
+  public String getExpectedReturn() {
+    return expectedReturn;
+  }
+
+  public void setExpectedReturn(String expectedReturn) {
+    this.expectedReturn = expectedReturn;
+  }
+
+  public String getInstance() {
+    return instance;
+  }
+
+  public void setInstance(String instance) {
+    this.instance = instance;
   }
 
   @Override
@@ -80,6 +172,11 @@ public class MethodDefinition extends InitializedTypeDefinition {
    */
   public static final class Builder extends InitializedTypeDefinition.Builder<MethodDefinition.Builder> {
     private List<VariableDefinition> parameters = new ArrayList<>();
+    private List<FlowReceiverDefinition> changedFields = new ArrayList<>();
+    private List<MethodDefinition> inputMethods = new ArrayList<>();
+    private List<MethodDefinition> outputMethods = new ArrayList<>();
+    private String callSignature;
+    private String returnSignature;
 
     private Builder() {
     }
@@ -88,13 +185,41 @@ public class MethodDefinition extends InitializedTypeDefinition {
       return new MethodDefinition(this);
     }
 
-    public Builder withParameters(List<VariableDefinition> parameters) {
+    public Builder parameters(List<VariableDefinition> parameters) {
       this.parameters = parameters;
       return this;
     }
 
-    public Builder withParameters(VariableDefinition... parameters) {
+    public Builder parameters(VariableDefinition... parameters) {
       this.parameters = Arrays.asList(parameters);
+      return this;
+    }
+
+    public Builder changedFields(List<FlowReceiverDefinition> changedFields) {
+      this.changedFields.clear();
+      this.changedFields.addAll(changedFields);
+      return this;
+    }
+
+    public Builder inputMethods(List<MethodDefinition> inputMethods) {
+      this.inputMethods.clear();
+      this.inputMethods.addAll(inputMethods);
+      return this;
+    }
+
+    public Builder outputMethods(List<MethodDefinition> outputMethods) {
+      this.outputMethods.clear();
+      this.outputMethods.addAll(outputMethods);
+      return this;
+    }
+
+    public Builder callSignature(String callSignature) {
+      this.callSignature = callSignature;
+      return this;
+    }
+
+    public Builder returnSignature(String returnSignature) {
+      this.returnSignature = returnSignature;
       return this;
     }
 

@@ -23,7 +23,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -104,8 +103,8 @@ public class JavaParserMerger extends CodeSnipitMerger {
     int index = 0;
     for (int i = 0; i < existingMembers.size(); i++) {
       if (existingMembers.get(i).getClass().equals(member.getClass())) {
-        Optional<EnumSet<Modifier>> modNew = findModifiers(member);
-        Optional<EnumSet<Modifier>> modExist = findModifiers(existingMembers.get(i));
+        Optional<NodeList<Modifier>> modNew = findModifiers(member);
+        Optional<NodeList<Modifier>> modExist = findModifiers(existingMembers.get(i));
         if (modNew.isPresent() && modExist.isPresent()) {
           if (hasHigherPriorityModifier(modExist.get(), modNew.get())) {
             index = i + 1;
@@ -118,26 +117,27 @@ public class JavaParserMerger extends CodeSnipitMerger {
     return index;
   }
 
-  private boolean hasHigherPriorityModifier(EnumSet<Modifier> modExist, EnumSet<Modifier> modNew) {
+  private boolean hasHigherPriorityModifier(NodeList<Modifier> modExist, NodeList<Modifier> modNew) {
     boolean hasHigherPrio;
-    if (modExist.contains(Modifier.PUBLIC)) {
+    if (modExist.contains(Modifier.publicModifier())) {
       hasHigherPrio = true;
-    } else if (modExist.contains(Modifier.PROTECTED)) {
-      hasHigherPrio = !modNew.contains(Modifier.PUBLIC) && !isDefaultModifier(modNew);
-    } else if (modExist.contains(Modifier.PRIVATE)) {
-      hasHigherPrio = modNew.contains(Modifier.PRIVATE);
+    } else if (modExist.contains(Modifier.protectedModifier())) {
+      hasHigherPrio = !modNew.contains(Modifier.publicModifier()) && !isDefaultModifier(modNew);
+    } else if (modExist.contains(Modifier.privateModifier())) {
+      hasHigherPrio = modNew.contains(Modifier.privateModifier());
     } else {
-      hasHigherPrio = !modNew.contains(Modifier.PUBLIC);
+      hasHigherPrio = !modNew.contains(Modifier.publicModifier());
     }
     return hasHigherPrio;
   }
 
-  private boolean isDefaultModifier(EnumSet<Modifier> modifiers) {
-    return !modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.PROTECTED) && !modifiers.contains(Modifier.PRIVATE);
+  private boolean isDefaultModifier(NodeList<Modifier> modifiers) {
+    return !modifiers.contains(Modifier.publicModifier()) && !modifiers.contains(Modifier.protectedModifier())
+        && !modifiers.contains(Modifier.privateModifier());
   }
 
-  private Optional<EnumSet<Modifier>> findModifiers(BodyDeclaration<?> member) {
-    EnumSet<Modifier> modifiers = null;
+  private Optional<NodeList<Modifier>> findModifiers(BodyDeclaration<?> member) {
+    NodeList<Modifier> modifiers = null;
     if (FieldDeclaration.class.isAssignableFrom(member.getClass())) {
       FieldDeclaration d = (FieldDeclaration) member;
       modifiers = d.getModifiers();

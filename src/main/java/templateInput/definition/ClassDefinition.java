@@ -133,42 +133,42 @@ public class ClassDefinition extends TypeDefinition {
       this.interfaces = copy.interfaces;
     }
 
-    public Builder withName(String name) {
+    public Builder name(String name) {
       this.name = new StringConverter(name);
       return this;
     }
 
-    public Builder withType(String type) {
+    public Builder type(String type) {
       this.type = type;
       return this;
     }
 
-    public Builder withLineNumber(int lineNumber) {
+    public Builder lineNumber(int lineNumber) {
       this.lineNumber = lineNumber;
       return this;
     }
 
-    public Builder withColumn(int column) {
+    public Builder column(int column) {
       this.column = column;
       return this;
     }
 
-    public Builder withAnnotations(Set<String> annotations) {
+    public Builder annotations(Set<String> annotations) {
       this.annotations = annotations;
       return this;
     }
 
-    public Builder withAccessModifiers(Set<String> accessModifiers) {
+    public Builder accessModifiers(Set<String> accessModifiers) {
       this.accessModifiers = accessModifiers;
       return this;
     }
 
-    public Builder withInterfaces(List<String> interfaces) {
+    public Builder interfaces(List<String> interfaces) {
       this.interfaces = interfaces;
       return this;
     }
 
-    public Builder withExtend(String extend) {
+    public Builder extend(String extend) {
       this.extend = extend;
       return this;
     }

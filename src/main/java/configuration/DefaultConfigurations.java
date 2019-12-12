@@ -17,8 +17,6 @@
  */
 package configuration;
 
-import configuration.JavaForgerConfiguration.Builder;
-
 /**
  * Class containing default {@link JavaForgerConfiguration}s for a set of templates.
  *
@@ -64,18 +62,45 @@ public class DefaultConfigurations {
     return defaultConfig("toString/complete.javat");
   }
 
+  /**
+   * Create a unit test for a class that state. This template is work in progress mainly depending on the JavaDataFlow project.
+   *
+   * @return A {@link JavaForgerConfiguration} containing the settings for the state-full class test template.
+   */
+  public static JavaForgerConfiguration forStateFullClassTest() {
+    return defaultBuilder("test/generic/stateFullClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+  }
+
+  /**
+   * Create a unit test for a class that has no state. This template is work in progress mainly depending on the JavaDataFlow project.
+   *
+   * @return A {@link JavaForgerConfiguration} containing the settings for the state-less class test template.
+   */
+  public static JavaForgerConfiguration forStatelessClassTest() {
+    return defaultBuilder("test/generic/statelessClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput())
+        .configIfFileDoesNotExist(emptyTestFile()).build();
+  }
+
   protected static JavaForgerConfiguration defaultConfig(String template) {
     return defaultBuilder(template).build();
   }
 
   protected static JavaForgerConfiguration defaultConfiguration(String template, String testTemplate) {
-    return defaultBuilder(template).withChildConfig(defaultBuilder(testTemplate).withMergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build())
-        .build();
+    return defaultBuilder(template).childConfig(defaultTestConfiguration(testTemplate)).build();
   }
 
-  protected static Builder defaultBuilder(String template) {
-    return JavaForgerConfiguration.builder().withTemplate(template).withMergeClassProvider(new ClassProvider())
-        .withParameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
+  private static JavaForgerConfiguration defaultTestConfiguration(String testTemplate) {
+    return defaultBuilder(testTemplate).mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).configIfFileDoesNotExist(emptyTestFile()).build();
+  }
+
+  private static JavaForgerConfiguration emptyTestFile() {
+    return JavaForgerConfiguration.builder().template("test/common/emptyTestClass.javat").createFileIfNotExists(true)
+        .mergeClassProvider(ClassProvider.fromParentMergeClass()).build();
+  }
+
+  protected static JavaForgerConfiguration.Builder defaultBuilder(String template) {
+    return JavaForgerConfiguration.builder().template(template).mergeClassProvider(new ClassProvider())
+        .parameterAdjusters(DefaultAdjusters.removeDepracatedFields(), DefaultAdjusters.removeStaticFields());
   }
 
 }

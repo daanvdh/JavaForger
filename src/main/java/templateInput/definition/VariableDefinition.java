@@ -44,7 +44,7 @@ public class VariableDefinition extends InitializedTypeDefinition {
     super(var);
   }
 
-  private VariableDefinition(Builder builder) {
+  protected VariableDefinition(Builder<?> builder) {
     super(builder);
     this.originalInit = builder.originalInit;
   }
@@ -87,28 +87,36 @@ public class VariableDefinition extends InitializedTypeDefinition {
    *
    * @return created builder
    */
-  public static Builder builder() {
-    return new Builder();
+  public static Builder<?> builder() {
+    return new Builder<>();
   }
 
   /**
    * Builder to build {@link VariableDefinition}.
    */
-  public static final class Builder extends InitializedTypeDefinition.Builder<VariableDefinition.Builder> {
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends VariableDefinition.Builder<?>> extends InitializedTypeDefinition.Builder<T> {
     private String originalInit;
 
-    private Builder() {
+    protected Builder() {
       super();
     }
 
-    public Builder originalInit(String originalInit) {
+    public T originalInit(String originalInit) {
       this.originalInit = originalInit;
-      return this;
+      return (T) this;
+    }
+
+    public T copy(VariableDefinition field) {
+      super.copy(field);
+      this.originalInit = field.getOriginalInit();
+      return (T) this;
     }
 
     public VariableDefinition build() {
       return new VariableDefinition(this);
     }
+
   }
 
 }
