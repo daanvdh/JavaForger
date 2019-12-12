@@ -19,10 +19,18 @@ package configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import freemarker.cache.FileTemplateLoader;
@@ -41,6 +49,7 @@ import reader.ClassContainerReader;
  * @author Daan
  */
 public class StaticJavaForgerConfiguration {
+  private static final Logger LOG = LoggerFactory.getLogger(StaticJavaForgerConfiguration.class);
 
   private ClassContainerReader reader;
   private InitializationService initializer;
@@ -124,6 +133,23 @@ public class StaticJavaForgerConfiguration {
 
   public JavaSymbolSolver getSymbolSolver() {
     return symbolSolver;
+  }
+
+  /**
+   * Sets the project paths to be used to find classes related to an input class for {@link JavaForger}. This can be used to find imports, types or other data
+   * that can then be used in templates. Note that these paths should be the full path to the source folder, typically ending with ".../src/main/java" for maven
+   * projects. This method will override anything set by the method {@link StaticJavaForgerConfiguration#setSymbolSolver(JavaSymbolSolver)}.
+   *
+   * @param paths The full paths to source folders where JavaForger needs to look for classes that any input class depends on.
+   */
+  public void setProjectPaths(String... paths) {
+    Stream.of(paths).filter(p -> !Files.exists(new File(p).toPath())).forEach(p -> LOG.error("Could not find the folder located at: " + p));
+    JavaParserTypeSolver[] solvers =
+        Stream.of(paths).filter(p -> Files.exists(new File(p).toPath())).map(JavaParserTypeSolver::new).toArray(JavaParserTypeSolver[]::new);
+    TypeSolver[] reflTypeSolver = {new ReflectionTypeSolver()};
+    TypeSolver typeSolver = new CombinedTypeSolver(ArrayUtils.addAll(reflTypeSolver, solvers));
+    JavaSymbolSolver symbolSolver = new JavaSymbolSolver(typeSolver);
+    setSymbolSolver(symbolSolver);
   }
 
   private final void setupSymbolSolver() {

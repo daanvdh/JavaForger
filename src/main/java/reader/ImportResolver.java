@@ -72,7 +72,8 @@ public class ImportResolver {
         ResolvedType resolve = type.resolve();
         imports.addAll(getImportsFromResolvedType(resolve));
       } catch (Exception e) {
-        LOG.error("Could not resolve import for {}, received exception with message: {}" + type.asString(), e.getMessage());
+        LOG.error("Could not resolve import for {}, check if symbol server is correctly setup using StaticJavaForgerConfiguration::setProjectPaths. "
+            + "Received exception with message: {}", type.asString(), e.getMessage());
       }
     }
     return imports;
