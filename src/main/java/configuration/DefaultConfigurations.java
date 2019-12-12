@@ -57,7 +57,8 @@ public class DefaultConfigurations {
   }
 
   public static JavaForgerConfiguration forStatelessClassTest() {
-    return defaultBuilder("test/generic/statelessClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+    return defaultBuilder("test/generic/statelessClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput())
+        .configIfFileDoesNotExist(emptyTestFile()).build();
   }
 
   public static JavaForgerConfiguration forExtendableBuilderAndTest() {

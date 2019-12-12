@@ -138,7 +138,9 @@ public class MethodDefinitionFactory {
   }
 
   private void addMethodCall(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call) {
-    Builder builder = call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
+    // TODO code below is not used, this is a bug.
+    MethodDefinition.Builder builder =
+        call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
     String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
     builder.name(call.getName()).type(type);
 
@@ -149,6 +151,7 @@ public class MethodDefinitionFactory {
     StringBuilder callSignature = createCallSignature(dataFlowMethod, call);
     method.setCallSignature(callSignature.toString());
 
+    // TODO if the instance is a method return value, we have to handle it differently.
     call.getInstanceName().ifPresent(method::setInstance);
 
     String expectedReturn = createExpecedReturn(newMethod, dataFlowMethod, call, returnSignature);
