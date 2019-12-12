@@ -52,15 +52,6 @@ public class DefaultConfigurations {
     return config;
   }
 
-  public static JavaForgerConfiguration forStateFullClassTest() {
-    return defaultBuilder("test/generic/stateFullClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
-  }
-
-  public static JavaForgerConfiguration forStatelessClassTest() {
-    return defaultBuilder("test/generic/statelessClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput())
-        .configIfFileDoesNotExist(emptyTestFile()).build();
-  }
-
   public static JavaForgerConfiguration forExtendableBuilderAndTest() {
     JavaForgerConfiguration config = defaultConfiguration("extendableInnerBuilder.javat", "innerBuilderTest.javat");
     config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
@@ -69,6 +60,25 @@ public class DefaultConfigurations {
 
   public static JavaForgerConfiguration forToString() {
     return defaultConfig("toString/complete.javat");
+  }
+
+  /**
+   * Create a unit test for a class that state. This template is work in progress mainly depending on the JavaDataFlow project.
+   *
+   * @return A {@link JavaForgerConfiguration} containing the settings for the state-full class test template.
+   */
+  public static JavaForgerConfiguration forStateFullClassTest() {
+    return defaultBuilder("test/generic/stateFullClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput()).build();
+  }
+
+  /**
+   * Create a unit test for a class that has no state. This template is work in progress mainly depending on the JavaDataFlow project.
+   *
+   * @return A {@link JavaForgerConfiguration} containing the settings for the state-less class test template.
+   */
+  public static JavaForgerConfiguration forStatelessClassTest() {
+    return defaultBuilder("test/generic/statelessClassTest.javat").mergeClassProvider(ClassProvider.forMavenUnitTestFromInput())
+        .configIfFileDoesNotExist(emptyTestFile()).build();
   }
 
   protected static JavaForgerConfiguration defaultConfig(String template) {
