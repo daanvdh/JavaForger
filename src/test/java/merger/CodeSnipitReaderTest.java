@@ -59,8 +59,8 @@ public class CodeSnipitReaderTest {
     Assert.assertTrue(result.getChildNodes().get(0) instanceof ClassOrInterfaceDeclaration);
     ClassOrInterfaceDeclaration claz = (ClassOrInterfaceDeclaration) result.getChildNodes().get(0);
     Assert.assertEquals("Claz", claz.getNameAsString());
-    Assert.assertEquals(2, claz.getChildNodes().size());
-    Assert.assertTrue(claz.getChildNodes().get(1) instanceof FieldDeclaration);
+    Assert.assertEquals(3, claz.getChildNodes().size());
+    Assert.assertTrue(claz.getChildNodes().get(2) instanceof FieldDeclaration);
   }
 
   @Test

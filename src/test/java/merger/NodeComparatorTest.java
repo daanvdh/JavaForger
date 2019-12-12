@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -65,10 +65,10 @@ public class NodeComparatorTest {
 
   @Test
   public void testCompare_modifiers() {
-    FieldDeclaration f1 = createField("f1", Modifier.PUBLIC);
+    FieldDeclaration f1 = createField("f1", Keyword.PUBLIC);
     FieldDeclaration f2 = createField("f2", null);
-    FieldDeclaration f3 = createField("f3", Modifier.PROTECTED);
-    FieldDeclaration f4 = createField("f4", Modifier.PRIVATE);
+    FieldDeclaration f3 = createField("f3", Keyword.PROTECTED);
+    FieldDeclaration f4 = createField("f4", Keyword.PRIVATE);
 
     List<Node> nodes = Arrays.asList(f4, f2, f1, f3);
     List<Node> expected = Arrays.asList(f1, f2, f3, f4);
@@ -114,7 +114,7 @@ public class NodeComparatorTest {
     Assert.assertEquals(-1, comparator.compare(CLASS2, CLASS));
   }
 
-  private FieldDeclaration createField(String name, Modifier modifier) {
+  private FieldDeclaration createField(String name, Keyword modifier) {
     FieldDeclaration f = new FieldDeclaration().addVariable(new VariableDeclarator().setName(new SimpleName(name)));
     if (modifier != null) {
       f.setModifier(modifier, true);

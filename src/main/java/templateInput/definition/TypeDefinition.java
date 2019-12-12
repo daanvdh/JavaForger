@@ -39,6 +39,10 @@ import templateInput.StringConverter;
 public class TypeDefinition implements Comparable<TypeDefinition> {
 
   protected StringConverter name;
+  /**
+   * The class name representing the type of this {@link TypeDefinition}. In case of {@link MethodDefinition}s this represents the return type, can also be
+   * "void".
+   */
   protected StringConverter type;
   /** The imports required for this type. This list is sorted on insertion order so that template generation is consistent. */
   protected LinkedHashSet<String> typeImports = new LinkedHashSet<>();

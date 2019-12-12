@@ -272,61 +272,61 @@ public class JavaForgerConfiguration {
       this.adjusters = new ArrayList<>(config.adjusters);
     }
 
-    public Builder withTemplate(String template) {
+    public Builder template(String template) {
       this.template = template;
       return this;
     }
 
-    public Builder withInputParameters(TemplateInputParameters inputParameters) {
+    public Builder inputParameters(TemplateInputParameters inputParameters) {
       this.inputParameters = inputParameters;
       return this;
     }
 
-    public Builder withMergeClass(String mergeClass) {
+    public Builder mergeClass(String mergeClass) {
       this.mergeClassProvider = new ClassProvider(mergeClass);
       return this;
     }
 
-    public Builder withChildConfig(JavaForgerConfiguration... configs) {
+    public Builder childConfig(JavaForgerConfiguration... configs) {
       this.childConfigs.clear();
       this.childConfigs.addAll(Arrays.asList(configs));
       return this;
     }
 
-    public JavaForgerConfiguration build() {
-      return new JavaForgerConfiguration(this);
-    }
-
-    public Builder withParameterAdjusters(ClassContainerAdjuster... adjusters) {
+    public Builder parameterAdjusters(ClassContainerAdjuster... adjusters) {
       this.adjusters.clear();
       this.adjusters.addAll(Arrays.asList(adjusters));
       return this;
     }
 
-    public Builder withMergeClassProvider(ClassProvider mergeClassProvider) {
+    public Builder mergeClassProvider(ClassProvider mergeClassProvider) {
       this.mergeClassProvider = mergeClassProvider;
       return this;
     }
 
-    public Builder withCreateFileIfNotExists(boolean createFileIfNotExists) {
+    public Builder createFileIfNotExists(boolean createFileIfNotExists) {
       this.createFileIfNotExists = createFileIfNotExists;
       return this;
     }
 
-    public Builder withInputClassProvider(ClassProvider classProvider) {
+    public Builder inputClassProvider(ClassProvider classProvider) {
       this.inputClassProvider = classProvider;
       return this;
     }
 
-    public Builder withConfigIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
+    public Builder configIfFileDoesNotExist(JavaForgerConfiguration configIfFileDoesNotExist) {
       this.createFileIfNotExists = true;
       this.configIfFileDoesNotExist = configIfFileDoesNotExist;
       return this;
     }
 
-    public Builder withOverride(boolean override) {
+    public Builder override(boolean override) {
       this.override = override;
       return this;
+    }
+
+    public JavaForgerConfiguration build() {
+      return new JavaForgerConfiguration(this);
     }
 
   }

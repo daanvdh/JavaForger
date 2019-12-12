@@ -82,7 +82,7 @@ public class JavaForger {
   public static CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String outputClass) {
     Exception caught = null;
     try {
-      JavaForgerConfiguration copy = JavaForgerConfiguration.builder(config).withMergeClass(outputClass).build();
+      JavaForgerConfiguration copy = JavaForgerConfiguration.builder(config).mergeClass(outputClass).build();
       return generator.execute(copy, inputClass);
     } catch (IOException e) {
       caught = e;

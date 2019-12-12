@@ -32,11 +32,22 @@ public class InitValue {
   private final String value;
   private final List<String> imports = new ArrayList<>();
 
+  /**
+   * Constructor for {@link InitValue}.
+   *
+   * @param value The value to be assigned to a variable.
+   * @param imports The imports required for that value assignments.
+   */
   public InitValue(String value, String... imports) {
     this.value = value;
     this.imports.addAll(Arrays.asList(imports));
   }
 
+  /**
+   * Constructor for {@link InitValue}.
+   *
+   * @param value The value to be assigned to a variable.
+   */
   public InitValue(String value) {
     this.value = value;
   }

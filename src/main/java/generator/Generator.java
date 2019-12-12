@@ -55,7 +55,7 @@ public class Generator {
   }
 
   public CodeSnipit execute(String template, String inputClass, TemplateInputParameters inputParameters) throws IOException, TemplateException {
-    return execute(JavaForgerConfiguration.builder().withInputParameters(inputParameters).withTemplate(template).build(), inputClass);
+    return execute(JavaForgerConfiguration.builder().inputParameters(inputParameters).template(template).build(), inputClass);
   }
 
   public CodeSnipit execute(JavaForgerConfiguration genConfig) throws IOException, TemplateException {

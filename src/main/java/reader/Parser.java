@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import generator.CodeSnipit;
@@ -44,7 +45,7 @@ public class Parser {
   public static CompilationUnit parse(String code) {
     CompilationUnit cu;
     try {
-      cu = JavaParser.parse(code);
+      cu = StaticJavaParser.parse(code);
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("The following could not be parsed:");
