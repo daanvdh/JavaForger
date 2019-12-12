@@ -18,6 +18,9 @@
 package inputClassesForTests;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 /**
  * Input class for unit tests.

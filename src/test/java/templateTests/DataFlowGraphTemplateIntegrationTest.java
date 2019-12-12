@@ -19,7 +19,6 @@ package templateTests;
 
 import java.io.IOException;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import common.AbstractFileChangingTest;
@@ -95,10 +94,6 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
-
-    // This statement prevents the main method from accidently being executed.
-    // Assert.fail();
-
     DataFlowGraphTemplateIntegrationTest test = new DataFlowGraphTemplateIntegrationTest() {
       @Override
       protected void verifyFileEqual(String expectedPath, String actualPath) throws IOException {
@@ -114,7 +109,5 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
     test.setup();
     test.testStatelessClassTest_outputMethodCall();
     test.tearDown();
-
-    Assert.fail();
   }
 }
