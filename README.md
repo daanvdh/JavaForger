@@ -50,7 +50,7 @@ Add the dependency below to the pom of your project.
 	<dependency>
 	  <groupId>com.github.daanvdh.javaforger</groupId>
 	  <artifactId>JavaForger</artifactId>
-	  <version>2.0.0</version>
+	  <version>2.0.1</version>
 	</dependency>
 
 ## Settings and Dependencies 

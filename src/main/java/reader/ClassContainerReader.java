@@ -26,6 +26,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -38,6 +41,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import dataflow.DataFlowGraphFactory;
+import dataflow.NodeCallFactory;
 import dataflow.model.DataFlowGraph;
 import generator.JavaForgerException;
 import templateInput.ClassContainer;
@@ -52,6 +56,8 @@ import templateInput.definition.VariableDefinition;
  */
 public class ClassContainerReader {
 
+  private static final Logger LOG = LoggerFactory.getLogger(NodeCallFactory.class);
+
   private DataFlowGraphFactory dfgFactory = new DataFlowGraphFactory();
   private MethodDefinitionFactory methodFactory = new MethodDefinitionFactory();
   private VariableDefintionFactory fieldFactory = new VariableDefintionFactory();
@@ -59,7 +65,11 @@ public class ClassContainerReader {
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);
     DataFlowGraph dfg = null;
-    dfg = dfgFactory.create(cu);
+    try {
+      dfg = dfgFactory.create(cu);
+    } catch (Exception e) {
+      LOG.error("Error creating dataFlowGraph: {}", e);
+    }
     ClassContainer claz = readCompilationUnit(cu, dfg);
     return claz;
   }
