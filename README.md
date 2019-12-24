@@ -50,8 +50,12 @@ Add the dependency below to the pom of your project.
 	<dependency>
 	  <groupId>com.github.daanvdh.javaforger</groupId>
 	  <artifactId>JavaForger</artifactId>
-	  <version>1.0.2</version>
+	  <version>2.0.0</version>
 	</dependency>
+
+To use all the features of JavaForger you also have to set the path to the project you are using as input for the templates. This is mostly needed for finding imports so that these can be used in templates, but can in the future also be needed for other things. The path has to be pointing to the source folder (for maven typically ending with src/main/java). It can be setup as follows: 
+
+	StaticJavaForgerConfiguration.getConfig().setProjectPaths("absolutePathToProject/src/main/java");
 
 ## Settings and Dependencies 
 	
