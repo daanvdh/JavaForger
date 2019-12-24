@@ -58,7 +58,9 @@ public class InitializationService {
     } else {
       // TODO the stuff below should be replaced by a call to the Generator with a custom "builderUsage.javat" file defining the start and end of a builder.
       String init = var.getType() + ".builder().build()";
-      var.setInit1(init);
+      if (var.getInit1() != null) {
+        var.setInit1(init);
+      }
       var.setInit2(init);
       var.setNoInit(defaults.getNoInitFor(var.getType().toString()));
     }

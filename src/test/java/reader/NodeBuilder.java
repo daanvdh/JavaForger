@@ -24,7 +24,7 @@ import java.util.List;
 
 import com.github.javaparser.ast.expr.SimpleName;
 
-import dataflow.model.DataFlowNode;
+import model.DataFlowNode;
 
 /**
  * Builder for {@link DataFlowNode}, only to be used for test purposes.

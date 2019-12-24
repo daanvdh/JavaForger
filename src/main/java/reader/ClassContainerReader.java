@@ -40,10 +40,10 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
-import dataflow.DataFlowGraphFactory;
-import dataflow.NodeCallFactory;
-import dataflow.model.DataFlowGraph;
+import factory.DataFlowGraphFactory;
+import factory.NodeCallFactory;
 import generator.JavaForgerException;
+import model.DataFlowGraph;
 import templateInput.ClassContainer;
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;

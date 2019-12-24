@@ -107,7 +107,9 @@ public class InitializedTypeDefinition extends TypeDefinition {
   }
 
   public void setInit1(String init1) {
-    this.init1 = init1;
+    if (this.init1 == null) {
+      this.init1 = init1;
+    }
   }
 
   public String getInit2() {

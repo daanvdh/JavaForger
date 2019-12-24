@@ -24,8 +24,8 @@ import org.junit.Test;
 import common.AbstractFileChangingTest;
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
-import dataflow.model.DataFlowGraph;
 import generator.JavaForger;
+import model.DataFlowGraph;
 
 /**
  * Integration test for templates that require a {@link DataFlowGraph} to be constructed, such as stateFullClassTest.javat
@@ -79,6 +79,22 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
     executeAndVerify(DefaultConfigurations.forStatelessClassTest(), claz, expectedClass);
   }
 
+  @Test
+  public void testStatelessClassTest_methodCallOnParameter() throws IOException {
+    String claz = //
+        "import java.util.LinkedList;\n" + //
+            "public class Claz {\n" + //
+            "  StringBuilder sb = new StringBuilder(); \n" + //
+            "  String a = \"something\"; \n" + //
+            "  public StringBuilder setS(LinkedList ll) {\n" + //
+            "    sb.append(ll.getFirst());\n" + //
+            "  }\n" + //
+            "}"; //
+
+    String expectedClass = "verify-statelessClassTest_methodCallOnParameter.txt";
+    executeAndVerify(DefaultConfigurations.forStatelessClassTest(), claz, expectedClass);
+  }
+
   private void executeAndVerify(JavaForgerConfiguration config, String claz, String expectedClass) throws IOException {
     stringToFile(INPUT_CLASS, claz);
     JavaForger.execute(config, INPUT_CLASS);
@@ -108,6 +124,8 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
     test.testStatelessClassTest_facade();
     test.setup();
     test.testStatelessClassTest_outputMethodCall();
+    test.setup();
+    test.testStatelessClassTest_methodCallOnParameter();
     test.tearDown();
   }
 }

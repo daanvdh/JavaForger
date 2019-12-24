@@ -31,17 +31,17 @@ public class ClassWithEverythingTest {
   @Mock
   private StringBuilder sb; 
   @Mock
-  private StringBuilder sb1; 
+  private String a; 
   @InjectMocks
   private Claz sut; 
   @Test
   public void testSetS() {
 
-    String a = "a"; 
+    LinkedList ll = LinkedList.builder().build(); 
 
 
     
-    sut.setS(a);
+    sut.setS(ll);
 
     
   }

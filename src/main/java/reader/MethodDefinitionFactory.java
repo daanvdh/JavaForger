@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,17 +38,17 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
-import dataflow.GraphUtil;
-import dataflow.model.DataFlowGraph;
-import dataflow.model.DataFlowMethod;
-import dataflow.model.DataFlowNode;
-import dataflow.model.NodeCall;
-import dataflow.model.ParameterList;
+import model.DataFlowGraph;
+import model.DataFlowMethod;
+import model.DataFlowNode;
+import model.NodeCall;
+import model.ParameterList;
 import templateInput.StringConverter;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
 import templateInput.definition.VariableDefinition;
+import util.GraphUtil;
 
 /**
  * Factory for creating {@link MethodDefinition}.
@@ -62,7 +63,7 @@ public class MethodDefinitionFactory {
 
   public MethodDefinition createMethod(Node node, DataFlowGraph dfg) {
     MethodDeclaration md = (MethodDeclaration) node;
-    MethodDefinition method = parseCallable(md).build();
+    MethodDefinition method = parseCallable(md, dfg).build();
     method.setType(md.getTypeAsString());
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
     if (dfg != null) {
@@ -74,16 +75,16 @@ public class MethodDefinitionFactory {
 
   public MethodDefinition createConstructor(Node node) {
     ConstructorDeclaration md = (ConstructorDeclaration) node;
-    MethodDefinition method = parseCallable(md).build();
+    MethodDefinition method = parseCallable(md, null).build();
     method.setType(md.getNameAsString());
     return method;
   }
 
-  private MethodDefinition.Builder parseCallable(CallableDeclaration<?> md) {
+  private MethodDefinition.Builder parseCallable(CallableDeclaration<?> md, DataFlowGraph dfg) {
     Set<String> accessModifiers = md.getModifiers().stream().map(Modifier::toString).map(String::trim).collect(Collectors.toSet());
     Set<String> annotations = md.getAnnotations().stream().map(AnnotationExpr::getNameAsString).collect(Collectors.toSet());
 
-    List<VariableDefinition> params = getParameters(md);
+    List<VariableDefinition> params = getParameters(md, dfg);
     Builder builder = MethodDefinition.builder().name(md.getNameAsString()).accessModifiers(accessModifiers).annotations(annotations).parameters(params) //
         .lineNumber(md.getBegin().map(p -> p.line).orElse(-1)) //
         .column(md.getBegin().map(p -> p.column).orElse(-1)) //
@@ -101,12 +102,42 @@ public class MethodDefinitionFactory {
     return name + "(" + paramNames + ")";
   }
 
-  private List<VariableDefinition> getParameters(CallableDeclaration<?> md) {
+  private List<VariableDefinition> getParameters(CallableDeclaration<?> md, DataFlowGraph dfg) {
     LinkedHashMap<Parameter, VariableDefinition> params = new LinkedHashMap<>();
     md.getParameters().stream().forEach(p -> params.put(p, VariableDefinition.builder().name(p.getNameAsString()).type(p.getTypeAsString()).build()));
     params.entrySet().forEach(p -> importResolver.resolveAndSetImport(p.getKey().getType(), p.getValue()));
+
+    if (dfg != null) {
+      DataFlowMethod dataFlowMethod = dfg.getMethod(md);
+      if (dataFlowMethod != null) {
+        Map<Node, List<NodeCall>> nodeCallsPerParameter = dataFlowMethod.getParameters().getNodes().stream()
+            .collect(Collectors.toMap(DataFlowNode::getRepresentedNode, dfn -> dfn.collectNodeCalls(dfg::owns)));
+
+        for (Parameter param : params.keySet()) {
+          List<NodeCall> nodeCalls = nodeCallsPerParameter.get(param);
+          VariableDefinition varDef = params.get(param);
+
+          String calls = nodeCalls.stream().map(call -> nameToBuilderInput(call.getName())) //
+              // TODO remove the cap, handle "is", handle anything by traversing the path of the returned variable
+              // .map(s -> s.contains("get") ? s.substring(s.indexOf("get")) : s) //
+              // .map(s -> "." + s + "(" + ")") // TODO fill in the builder with NodeCall::getType
+              .reduce("", String::concat);
+          String init1 = varDef.getType() + ".builder()" + calls + ".build()";
+
+          varDef.setInit1(init1);
+        }
+      }
+
+    }
+
     List<VariableDefinition> parameters = params.values().stream().collect(Collectors.toList());
     return parameters;
+  }
+
+  private String nameToBuilderInput(String name) {
+    String s = name.contains("get") ? name.substring(name.indexOf("get") + 3) : name;
+    s = "." + s + "(" + ")";
+    return s;
   }
 
   private void addChangedFields(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
@@ -133,14 +164,16 @@ public class MethodDefinitionFactory {
 
   private void addMethodsCalls(MethodDefinition newMethod, DataFlowMethod dataFlowMethod) {
     for (NodeCall call : dataFlowMethod.getNodeCalls()) {
-      addMethodCall(newMethod, dataFlowMethod, call);
+      if (!call.getInstance().isPresent()) {
+        addMethodCall(newMethod, dataFlowMethod, call);
+      }
     }
   }
 
   private void addMethodCall(MethodDefinition newMethod, DataFlowMethod dataFlowMethod, NodeCall call) {
     // TODO code below is not used, this is a bug.
     MethodDefinition.Builder builder =
-        call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(this::parseCallable).orElse(MethodDefinition.builder());
+        call.getCalledMethod().map(DataFlowMethod::getRepresentedNode).map(x -> parseCallable(x, null)).orElse(MethodDefinition.builder());
     String type = call.getReturnNode().map(DataFlowNode::getType).orElse("void");
     builder.name(call.getName()).type(type);
 
@@ -198,7 +231,7 @@ public class MethodDefinitionFactory {
     MethodDefinition method = null;
     if (call.getCalledMethod().isPresent()) {
       // TODO fuck private methods for now, just add them.
-      method = parseCallable(call.getCalledMethod().get().getRepresentedNode()).build();
+      method = parseCallable(call.getCalledMethod().get().getRepresentedNode(), null).build();
       // TODO is this needed?
       // String type = dfm.getReturnNode().map(DataFlowNode::getType).orElse("void");
       // method.setName(dfm.getName());
