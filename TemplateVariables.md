@@ -59,6 +59,7 @@ StringConverter
 |- lowerFirst		Lower case the first character. 
 |- upperFirst		Upper case the first character. 
 |- snakeCase		Snake case the characters. 
-|- lowerSpace		Add spaces before each uppercase character and then lower case all. 
+|- lowerSpace		Add a space before each uppercase character and then lower case all. 
+|- lowerDash		Add a dash before each uppercase character and then lower case all. 
 
 ```
