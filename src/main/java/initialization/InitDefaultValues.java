@@ -158,10 +158,10 @@ public class InitDefaultValues {
     emptyInit.put("Collection", new InitValue("new ArrayList<>()"));
     emptyInit.put("Optional", new InitValue("Optional.empty()"));
     emptyInit.put("List", new InitValue("new ArrayList<>()"));
-    emptyInit.put("HashMap", new InitValue("new HashMap<>()"));
-    emptyInit.put("Map", new InitValue("new HashMap<>()"));
-    emptyInit.put("Set", new InitValue("new HashSet<>()"));
-    emptyInit.put("HashSet", new InitValue("new HashSet<>()"));
+    emptyInit.put("HashMap", new InitValue("new HashMap<>()", "java.util.HashMap"));
+    emptyInit.put("Map", new InitValue("new HashMap<>()", "java.util.HashMap"));
+    emptyInit.put("Set", new InitValue("new HashSet<>()", "java.util.HashSet"));
+    emptyInit.put("HashSet", new InitValue("new HashSet<>()", "java.util.HashSet"));
     emptyInit.put("ArrayListValuedHashMap", new InitValue("new ArrayListValuedHashMap<>()"));
   }
 
