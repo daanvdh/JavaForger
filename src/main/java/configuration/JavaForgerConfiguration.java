@@ -49,7 +49,11 @@ public class JavaForgerConfiguration {
   /** Determines if the generated code should be merged with the class given by the mergeClassProvider. */
   private boolean merge = true;
 
-  /** With this you can define a sequence of templates to be executed. */
+  /**
+   * The {@link JavaForgerConfiguration} that will be executed after this configuration is executed. The {@link JavaForgerConfiguration#inputClassProvider} can
+   * be used to determine the input class. Typically childConfigurations will need the merge class of the parent as input, this can be done by using
+   * {@link ClassProvider#fromParentMergeClass} as {@link JavaForgerConfiguration#inputClassProvider}.
+   */
   private final List<JavaForgerConfiguration> childConfigs = new ArrayList<>();
 
   /** With these consumers you can make changes to the input parameters for the template after parsing is done in the {@link Generator} */
@@ -115,6 +119,9 @@ public class JavaForgerConfiguration {
     this.mergeClassProvider = mergeClass == null ? null : new ClassProvider(mergeClass);
   }
 
+  /**
+   * @return {@link JavaForgerConfiguration#childConfigs}
+   */
   public List<JavaForgerConfiguration> getChildConfigs() {
     return childConfigs;
   }
@@ -287,6 +294,9 @@ public class JavaForgerConfiguration {
       return this;
     }
 
+    /**
+     * @param configs {@link JavaForgerConfiguration#childConfigs}
+     */
     public Builder childConfig(JavaForgerConfiguration... configs) {
       this.childConfigs.clear();
       this.childConfigs.addAll(Arrays.asList(configs));
@@ -309,6 +319,9 @@ public class JavaForgerConfiguration {
       return this;
     }
 
+    /**
+     * @param classProvider {@link JavaForgerConfiguration#inputClassProvider}
+     */
     public Builder inputClassProvider(ClassProvider classProvider) {
       this.inputClassProvider = classProvider;
       return this;
