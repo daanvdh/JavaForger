@@ -59,7 +59,7 @@ public class DefaultConfigurations {
   }
 
   public static JavaForgerConfiguration forToString() {
-    return defaultConfig("toString/complete.javat");
+    return defaultConfig("toString.javat");
   }
 
   /**
