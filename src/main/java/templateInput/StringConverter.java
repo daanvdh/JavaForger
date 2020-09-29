@@ -17,8 +17,9 @@
  */
 package templateInput;
 
-import templateInput.definition.TypeDefinition;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import templateInput.definition.TypeDefinition;
 
 /**
  * Class for template input, contains frequently used string conversions of the name of {@link TypeDefinition}, like uppercasing the first char, or snake casing
@@ -63,14 +64,20 @@ public class StringConverter {
   public String getLowerSpace() {
     String regex = "([A-Z])";
     String replacement = " $1";
-    return string.replaceAll(regex, replacement).toLowerCase();
+    return getLowerFirst().replaceAll(regex, replacement).toLowerCase();
+  }
+
+  public String getLowerDash() {
+    String regex = "([A-Z])";
+    String replacement = "-$1";
+    return getLowerFirst().replaceAll(regex, replacement).toLowerCase();
   }
 
   @Override
   public String toString() {
     return string;
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     boolean equals = false;
@@ -78,11 +85,9 @@ public class StringConverter {
       equals = true;
     } else if (obj != null && getClass() == obj.getClass()) {
       StringConverter other = (StringConverter) obj;
-      equals = new EqualsBuilder()
-        .append(string, other.string)
-        .isEquals();
-      }
-      return equals;
+      equals = new EqualsBuilder().append(string, other.string).isEquals();
     }
+    return equals;
+  }
 
 }

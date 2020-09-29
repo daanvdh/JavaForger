@@ -58,8 +58,22 @@ public class DefaultConfigurations {
     return config;
   }
 
+  /**
+   * @return {@link JavaForgerConfiguration} for creating a toString method in the input class.
+   */
   public static JavaForgerConfiguration forToString() {
-    return defaultConfig("toString/complete.javat");
+    return defaultConfig("toString.javat");
+  }
+
+  /**
+   * This {@link JavaForgerConfiguration} can only be used as {@link JavaForgerConfiguration#getChildConfigs()}.
+   *
+   * @return {@link JavaForgerConfiguration} for creating a toString method in the merge class from the parent.
+   */
+  public static JavaForgerConfiguration forChildToString() {
+    JavaForgerConfiguration conf = forToString();
+    conf.setInputClassProvider(ClassProvider.fromParentMergeClass());
+    return conf;
   }
 
   /**
