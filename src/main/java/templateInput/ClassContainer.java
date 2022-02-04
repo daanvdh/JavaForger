@@ -18,10 +18,15 @@
 package templateInput;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import templateInput.definition.ClassDefinition;
 import templateInput.definition.MethodDefinition;
+import templateInput.definition.TypeDefinition;
 import templateInput.definition.VariableDefinition;
 
 /**
@@ -62,12 +67,48 @@ public class ClassContainer extends ClassDefinition {
     this.methods = methods;
   }
 
+  public List<? extends MethodDefinition> getGetters() {
+    return methods.stream().filter(this::isGetter).collect(Collectors.toList());
+  }
+
+  public List<? extends MethodDefinition> getSetters() {
+    return methods.stream().filter(this::isSetter).collect(Collectors.toList());
+  }
+
   public List<? extends MethodDefinition> getConstructors() {
     return constructors;
   }
 
   public void setConstructors(List<MethodDefinition> constructors) {
     this.constructors = constructors;
+  }
+
+  public List<String> getFieldImports() {
+    return getTypeImports(fields);
+  }
+
+  public List<String> getMethodImports() {
+    return getTypeImports(methods);
+  }
+
+  public Set<String> getImports() {
+    Set<String> set = new HashSet<>();
+    set.addAll(getMethodImports());
+    set.addAll(getFieldImports());
+    return set;
+  }
+
+  private List<String> getTypeImports(final List<? extends TypeDefinition> methods2) {
+    return methods2.stream().map(TypeDefinition::getTypeImports).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+  }
+
+  private boolean isGetter(MethodDefinition m) {
+    String n = m.getName().toString();
+    return n.startsWith("get") || n.startsWith("is");
+  }
+
+  private boolean isSetter(MethodDefinition m) {
+    return m.getName().toString().startsWith("set");
   }
 
 }

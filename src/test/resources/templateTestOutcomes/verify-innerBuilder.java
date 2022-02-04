@@ -91,6 +91,15 @@ public class ClassWithEverything {
     private Builder() {
       // Builder should only be constructed via the parent class
     }
+    
+    public Builder copy(ClassWithEverything original) {
+            this.prod.clear();
+            this.prod.addAll(original.getProd());
+            this.i = original.getI();
+            this.c = original.getC();
+            this.s = original.getS();
+        return this;
+    }
 
     public Builder prod(Set<Product> prod) {
       this.prod.clear();

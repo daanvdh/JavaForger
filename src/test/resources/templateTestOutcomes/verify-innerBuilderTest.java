@@ -45,7 +45,14 @@ public class ClassWithEverythingTest {
   @Test 
   public void testClassWithEverything_maximum() {
     ClassWithEverything classWithEverything = createAndFillBuilder().build(); 
-
+    assertMaximum(classWithEverything);
+  }
+  @Test
+  public void testClassWithEverything_Copy() {
+    ClassWithEverything classWithEverything = ClassWithEverything.builder().copy(createAndFillBuilder().build()).build(); 
+    assertMaximum(classWithEverything);
+  }
+  private void assertMaximum(ClassWithEverything classWithEverything) {
     Assert.assertEquals("Unexpected prod", PROD, classWithEverything.getProd());
     Assert.assertEquals("Unexpected i", I, classWithEverything.getI());
     Assert.assertEquals("Unexpected c", C, classWithEverything.getC());

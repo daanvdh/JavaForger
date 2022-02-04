@@ -25,7 +25,16 @@ import org.junit.Test;
   @Test 
   public void test${class.name}_maximum() {
     ${class.name} ${class.name.lowerFirst} = createAndFillBuilder().build(); 
-
+    assertMaximum(${class.name.lowerFirst});
+  }
+  
+  @Test
+  public void test${class.name}_Copy() {
+    ${class.name} ${class.name.lowerFirst} = ${class.name}.builder().copy(createAndFillBuilder().build()).build(); 
+    assertMaximum(${class.name.lowerFirst});
+  }
+  
+  private void assertMaximum(${class.name} ${class.name.lowerFirst}) {
 <#list fields as field>
 <#if field.type == "boolean">
     Assert.assertTrue("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());

@@ -30,6 +30,18 @@
     private Builder() {
       // Builder should only be constructed via the parent class
     }
+    
+    public Builder copy(${class.name} original) {
+        <#list fields as field>
+        <#if field.collection > 
+            this.${field.name}.clear();
+            this.${field.name}.addAll(original.get${field.name.upperFirst}());
+        <#else>
+            this.${field.name} = original.get${field.name.upperFirst}();
+        </#if>
+        </#list>
+        return this;
+    }
 
 <#list fields as field>
     public Builder ${field.name}(${field.type} ${field.name}) {
