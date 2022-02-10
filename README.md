@@ -1,6 +1,7 @@
 # JavaForger
 
 [![Build Status](https://travis-ci.com/daanvdh/JavaForger.svg?branch=master)](https://travis-ci.com/daanvdh/JavaForger)
+[![Join the chat at https://gitter.im/JavaForger/community](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/JavaForger/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 JavaForger can create source code from templates using existing java classes as input. 
 It reads field, methods and other class data to fill in variables in a template. 
