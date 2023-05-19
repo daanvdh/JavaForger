@@ -37,17 +37,17 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
-import dataflow.GraphUtil;
-import dataflow.model.DataFlowGraph;
-import dataflow.model.DataFlowMethod;
-import dataflow.model.DataFlowNode;
-import dataflow.model.NodeCall;
-import dataflow.model.ParameterList;
+import model.DataFlowGraph;
+import model.DataFlowMethod;
+import model.DataFlowNode;
+import model.NodeCall;
+import model.ParameterList;
 import templateInput.StringConverter;
 import templateInput.definition.FlowReceiverDefinition;
 import templateInput.definition.MethodDefinition;
 import templateInput.definition.MethodDefinition.Builder;
 import templateInput.definition.VariableDefinition;
+import util.GraphUtil;
 
 /**
  * Factory for creating {@link MethodDefinition}.
@@ -66,8 +66,21 @@ public class MethodDefinitionFactory {
     method.setType(md.getTypeAsString());
     importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
     if (dfg != null) {
-      addChangedFields(method, dfg.getMethod(md));
-      addMethodsCalls(method, dfg.getMethod(md));
+      DataFlowMethod flowMethod = dfg.getMethod(md);
+      addChangedFields(method, flowMethod);
+      addMethodsCalls(method, flowMethod);
+
+      // TODO
+      // We need a model to represent the different control flows through the currently analyzed method.
+      // For each control flow the DataFlowNode needs to be determined that will provide the actual value that will be returned.
+      // ---- flowMethod.getReturnNode().get().walkBackUntil(dfn -> dfn.isInputParameter(), flowMethod::owns);
+      // At this point we do not know the initialization of any MethodDefinition or VariableDefinition.
+      // Therefore we need to find the VariableDefinition that represents the DataFlowNode.
+      // This VariableDefinition should already be created before we reached this point.
+      // We probably need a way to easily lookup created VariableDefinitions based on the javaParser Node it represents.
+
+      flowMethod.getReturnNode().map(DataFlowNode::getRepresentedNode).map(fieldFactory::createSingle).ifPresent(method::setExpectedReturn);
+      // method.setExpectedReturn(fieldFactory.createSingle(returnNode));
     }
     return method;
   }
@@ -153,8 +166,9 @@ public class MethodDefinitionFactory {
 
     call.getReturnNode().map(DataFlowNode::getName).ifPresent(method::setInstance);
 
-    String expectedReturn = createExpecedReturn(newMethod, dataFlowMethod, call, returnSignature);
-    newMethod.setExpectedReturn(expectedReturn);
+    // TODO do we still need this?
+    // String expectedReturn = createExpecedReturn(newMethod, dataFlowMethod, call, returnSignature);
+    // newMethod.setExpectedReturn(expectedReturn);
 
     if (call.isReturnRead()) {
       newMethod.addInputMethod(method);
@@ -204,7 +218,7 @@ public class MethodDefinitionFactory {
       // method.setName(dfm.getName());
       // method.setType(type);
     } else {
-      method = MethodDefinition.builder().type(call.getClaz()).build();
+      method = MethodDefinition.builder().type(call.getReturnNode().map(DataFlowNode::getType).orElse(null)).build();
     }
     return method;
   }

@@ -32,6 +32,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
+import com.github.javaparser.ast.nodeTypes.NodeWithType;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
 
 import templateInput.definition.VariableDefinition;
@@ -84,6 +85,7 @@ public class VariableDefintionFactory {
   private Builder<?> createVariable(Node n) {
     VariableDefinition.Builder<?> fieldBuilder = VariableDefinition.builder();
     addType(n, fieldBuilder);
+    addTypeImports(n, fieldBuilder);
     addName(n, fieldBuilder);
     addAnnotations(n, fieldBuilder);
     addOriginalInit(n, fieldBuilder);
@@ -92,11 +94,21 @@ public class VariableDefintionFactory {
     return fieldBuilder;
   }
 
+  private void addType(Node n, Builder<?> fieldBuilder) {
+    // TODO Auto-generated method stub
+    if (NodeWithType.class.isAssignableFrom(n.getClass())) {
+      NodeWithType<?, ?> md = (NodeWithType<?, ?>) n;
+      String type = md.getTypeAsString();
+      fieldBuilder.type(type);
+    }
+
+  }
+
   private void addLineAndColumn(Node n, VariableDefinition.Builder<?> fieldBuilder) {
     fieldBuilder.lineNumber(n.getBegin().map(p -> p.line).orElse(-1)).column(n.getBegin().map(p -> p.column).orElse(-1));
   }
 
-  private void addType(Node n, VariableDefinition.Builder<?> fieldBuilder) {
+  private void addTypeImports(Node n, VariableDefinition.Builder<?> fieldBuilder) {
     if (NodeWithVariables.class.isAssignableFrom(n.getClass())) {
       NodeWithVariables<?> cast = (NodeWithVariables<?>) n;
       List<String> imports = importResolver.resolveImport(cast.getElementType());

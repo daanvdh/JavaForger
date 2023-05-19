@@ -54,7 +54,7 @@ public class MethodDefinition extends InitializedTypeDefinition {
    */
   private String returnSignature;
   /** The name of the variable that was expected as return value. */
-  private String expectedReturn;
+  private VariableDefinition expectedReturn;
   /** The name of the instance of this MethodCallDefinition */
   private String instance;
 
@@ -124,11 +124,11 @@ public class MethodDefinition extends InitializedTypeDefinition {
     this.returnSignature = returnSignature;
   }
 
-  public String getExpectedReturn() {
+  public VariableDefinition getExpectedReturn() {
     return expectedReturn;
   }
 
-  public void setExpectedReturn(String expectedReturn) {
+  public void setExpectedReturn(VariableDefinition expectedReturn) {
     this.expectedReturn = expectedReturn;
   }
 

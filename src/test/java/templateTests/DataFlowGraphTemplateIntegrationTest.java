@@ -24,8 +24,8 @@ import org.junit.Test;
 import common.AbstractFileChangingTest;
 import configuration.DefaultConfigurations;
 import configuration.JavaForgerConfiguration;
-import dataflow.model.DataFlowGraph;
 import generator.JavaForger;
+import model.DataFlowGraph;
 
 /**
  * Integration test for templates that require a {@link DataFlowGraph} to be constructed, such as stateFullClassTest.javat
@@ -47,6 +47,20 @@ public class DataFlowGraphTemplateIntegrationTest extends AbstractFileChangingTe
             "}"; //
 
     String expectedClass = "verify-stateFullClassTest.java";
+    executeAndVerify(DefaultConfigurations.forStateFullClassTest(), claz, expectedClass);
+  }
+
+  @Test
+  public void testStateFullClassTest_getter() throws IOException {
+    String claz = //
+        "public class Claz {\n" + //
+            "  private String s;\n" + //
+            "  public String getS() {\n" + //
+            "    return this.s;\n" + //
+            "  }\n" + //
+            "}"; //
+
+    String expectedClass = "getter-verify-stateFullClassTest.java";
     executeAndVerify(DefaultConfigurations.forStateFullClassTest(), claz, expectedClass);
   }
 

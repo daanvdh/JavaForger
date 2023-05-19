@@ -42,7 +42,7 @@ import org.mockito.Mockito;
 <#if method.expectedReturn??>
     ${method.type} return_${method.name} = sut.${method.callSignature};
     
-    Assert.assertEquals("Unexpected ${method.name}", ${method.expectedReturn}, return_${method.name});
+    Assert.assertEquals("Unexpected return_${method.name}", ${method.expectedReturn.name}, return_${method.name});
 <#else>
     sut.${method.callSignature};
 </#if>

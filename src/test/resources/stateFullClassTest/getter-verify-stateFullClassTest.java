@@ -27,13 +27,13 @@ import org.junit.Test;
 public class ClassWithEverythingTest {
   private Claz sut = new Claz(); 
   @Test
-  public void testSetS() {
+  public void testGetS() {
 
-    String a = "c"; 
+    String a = "e"; 
 
     // TODO currently only works for void methods
-
-    sut.setS(
+ String string = 
+    sut.getS(
       a        );
     
     // TODO field has to be a new class FlowReceiverDefnition extends VariableDefinition

@@ -8,27 +8,86 @@
 import org.junit.Assert;
 import org.junit.Test;
   
-  private ${class.type} sut = new ${class.type}(); 
+<#include "/test/common/staticFieldInit.javat">
 
 <#list methods as method>
+
+<#-- Paths are not yet imlpemented 
+<#list method.paths as path>
+-->
+
   @Test
   public void test${method.name.upperFirst}() {
 
+<#-------------------------------------------------------------------------------------->
+<#-----------------------------initialize fields---------------------------------------->
+<#-------------------------------------------------------------------------------------->
+<#-- This whole block needs to be done recursively (with macros) once we support input 
+DTOs to be filled. For this JavaDataFlow must support connecting data flow graphs to 
+each other. >
+<#-- Only add stuff to the builder if it is different than the default -->
+<#--
+<#list path.fields as field>
+<#if field.init != field.default>
+        ${field.type} ${field.name} = ${field.init}; 
+</#if>
+</#list>
+-->
+    ${class.name} sut = createAndFillBuilder()
+<#-- Only add stuff to the builder if it is different than the default -->
+<#-- 
+<#list path.fields as field>
+<#if field.init != field.default>
+        .${field.name}(${field.name})
+</#if>
+</#list>
+-->
+        .build();
+
+<#-------------------------------------------------------------------------------------->
+<#-----------------------------initialize parameters------------------------------------>
+<#-------------------------------------------------------------------------------------->
+<#-- eventually the parameters have to come from the path, since they may be unique per 
+path. Beacuse of branching that might happen inside the method depending on the 
+parameters. 
+<#list path.parameters as parameter>
+-->
 <#list method.parameters as parameter>
-    ${parameter.type} ${parameter.name} = ${parameter.init1}; 
+    ${parameter.type} ${parameter.name} = ${parameter.init1};
 </#list>
 
-    // TODO currently only works for void methods
-    sut.${method.name}(
-<#list method.parameters as parameter>
-      ${parameter.name}<#sep>, 
-</#list>
-        );
+<#-------------------------------------------------------------------------------------->
+<#-----------------------------initialize additional variables-------------------------->
+<#-------------------------------------------------------------------------------------->
+<#-- If the method return value or any of the input values for called methods is 
+    constructed inside the scope of the test we need to define those variables here. -->
+
+<#-------------------------------------------------------------------------------------->
+<#-----------------------------call sut------------------------------------------------->
+<#-------------------------------------------------------------------------------------->
+<#if method.type != "void"> ${method.type} result = </#if> sut.${method.callSignature};
     
-    // TODO field has to be a new class FlowReceiverDefnition extends VariableDefinition
 <#list method.changedFields as field>
     Assert.assertEquals("Unexpected ${field.name}", ${field.receivedValue}, sut.${field.getter}());
 </#list>
+
+
+<#-------------------------------------------------------------------------------------->
+<#-----------------------------assert return value-------------------------------------->
+<#-------------------------------------------------------------------------------------->
+<#-- Eventually the return value will have to come from the path since it might be 
+    unique per path. 
+// TODO distinguish between field and parameter to know if we should "upperSnake" the name
+    -->
+<#if method.type != "void">
+    Assert.assertEquals("Unexpected result", ${method.expectedReturn.name}, result);
+</#if>
     
   }
+
+<#-- Paths are not yet implemented
 </#list>
+-->
+</#list>
+
+<#include "/test/common/createAndFillBuilderWithStaticFields.javat">

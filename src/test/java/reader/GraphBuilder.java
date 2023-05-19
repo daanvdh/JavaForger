@@ -29,10 +29,10 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
-import dataflow.model.DataFlowGraph;
-import dataflow.model.DataFlowMethod;
-import dataflow.model.DataFlowNode;
-import dataflow.model.ParameterList;
+import model.DataFlowGraph;
+import model.DataFlowMethod;
+import model.DataFlowNode;
+import model.ParameterList;
 
 /**
  * Builder for {@link DataFlowGraph}, only to be used for test purposes.
@@ -100,7 +100,7 @@ public class GraphBuilder {
       break;
     case METHOD_PARAMETER:
       method = getOrCreateMethod(graph, methods, nodeBuilder.getMethod());
-      if (method.getInputParameters() == null) {
+      if (method.getParameters() == null) {
         method.setInputParameters(ParameterList.builder().build());
       }
       // TODO if we want to influence the order of the parameters,
