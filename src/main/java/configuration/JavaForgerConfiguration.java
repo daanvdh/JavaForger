@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import configuration.merger.MergerConfiguration;
 import generator.Generator;
 import templateInput.TemplateInputParameters;
 
@@ -48,6 +49,15 @@ public class JavaForgerConfiguration {
 
   /** Determines if the generated code should be merged with the class given by the mergeClassProvider. */
   private boolean merge = true;
+
+  /** Determines how fine grained the merging will be done. */
+  private MergeLevel mergeLevel = MergeLevel.LINE;
+
+  /**
+   * Configuration for specific merger, note that the implementation that is used in the {@link StaticJavaForgerConfiguration} has to match the configuration
+   * used here.
+   */
+  private MergerConfiguration mergerConfiguration = new MergerConfiguration();
 
   /**
    * The {@link JavaForgerConfiguration} that will be executed after this configuration is executed. The {@link JavaForgerConfiguration#inputClassProvider} can
@@ -208,6 +218,14 @@ public class JavaForgerConfiguration {
     return override;
   }
 
+  public MergeLevel getMergeLevel() {
+    return this.mergeLevel;
+  }
+
+  public void setMergeLevel(MergeLevel mergeLevel) {
+    this.mergeLevel = mergeLevel;
+  }
+
   /**
    * Execute the given consumer on this {@link JavaForgerConfiguration} and all child configurations.
    *
@@ -253,6 +271,14 @@ public class JavaForgerConfiguration {
     return new Builder(config);
   }
 
+  public MergerConfiguration getMergerConfiguration() {
+    return mergerConfiguration;
+  }
+
+  public void setMergerConfiguration(MergerConfiguration mergerConfiguration) {
+    this.mergerConfiguration = mergerConfiguration;
+  }
+
   /**
    * Builder to build {@link JavaForgerConfiguration}.
    */
@@ -275,8 +301,12 @@ public class JavaForgerConfiguration {
       this.template = config.template;
       this.inputParameters = new TemplateInputParameters(config.inputParameters);
       this.mergeClassProvider = config.mergeClassProvider;
+      this.inputClassProvider = config.inputClassProvider;
       this.childConfigs = config.childConfigs.stream().map(JavaForgerConfiguration::builder).map(Builder::build).collect(Collectors.toList());
       this.adjusters = new ArrayList<>(config.adjusters);
+      this.createFileIfNotExists = config.createFileIfNotExists;
+      this.configIfFileDoesNotExist = config.configIfFileDoesNotExist;
+      this.override = config.override;
     }
 
     public Builder template(String template) {

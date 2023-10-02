@@ -24,6 +24,10 @@ package configuration;
  */
 public class DefaultConfigurations {
 
+  public static JavaForgerConfiguration forGetterSetter() {
+    return defaultConfig("getterSetter.javat");
+  }
+
   public static JavaForgerConfiguration forEquals() {
     return defaultConfig("equals.javat");
   }
@@ -53,7 +57,7 @@ public class DefaultConfigurations {
   }
 
   public static JavaForgerConfiguration forExtendableBuilderAndTest() {
-    JavaForgerConfiguration config = defaultConfiguration("extendableInnerBuilder.javat", "innerBuilderTest.javat");
+    JavaForgerConfiguration config = defaultConfiguration("extendableInnerBuilder.javat", "extendableInnerBuilderTest.javat");
     config.addParameterAdjusters(DefaultAdjusters.replaceFieldPrimitivesWithObjects());
     return config;
   }

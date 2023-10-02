@@ -15,7 +15,7 @@ More advanced expressions like conditionals can be found at [freemarker.apache.o
 |- methods		list<MethodDefinition>, usage: <#list methods as method> ... </#list>
 |- package		The package of the class to which the code will be merged
 ```
-The fields, constructors and methods of a class are accessible directly as well as via the class. 
+The fields, constructors, methods and imports of a class are accessible directly as well as via the class. 
 This is to support both easy access as well as using multiple classes as input for a template. 
 Note that a constructor is modelled as a method where the type and the name are equal. 
 The different types are described below. 
@@ -27,6 +27,7 @@ ClassDefinition
 |- fields		list<TypeDefinition>, usage: <#list class.fields as field> ... </#list>
 |- constructors		list<MethodDefinition>, usage: <#list class.constructors as constructor> ... </#list>
 |- methods		list<MethodDefinition>, usage: <#list class.methods as method> ... </#list>
+|- imports  list<String>, usage <#list class.imports as import> ... </#list>
 |- *TypeDefinition	The accessible Name and Type fields of the class are descibed under TypeDefinition. 
 
 VariableDefinition

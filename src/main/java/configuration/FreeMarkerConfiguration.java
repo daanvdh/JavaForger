@@ -67,6 +67,9 @@ public class FreeMarkerConfiguration {
     // This prevents special characters (like <>{}& ) from being escaped.
     config.setAutoEscapingPolicy(Configuration.DISABLE_AUTO_ESCAPING_POLICY);
 
+    // This has to be set so that boolean values are parsed (The space is a hack so that the stupid default not working is not triggered).
+    config.setBooleanFormat(" true, false");
+
     return config;
   }
 

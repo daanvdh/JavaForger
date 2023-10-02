@@ -1,0 +1,78 @@
+import org.junit.Assert;
+import org.junit.Test;
+
+<#include "/test/common/imports.javat">
+
+<#include "/test/common/staticFieldInit.javat">
+
+<#if class.accessModifiers?seq_contains("abstract")>
+<#assign classImpl = "${class.name}Impl">
+<#assign builderInit = "new ${class.name}Impl().testBuilder()">
+<#else>
+<#assign classImpl = class.name>
+<#assign builderInit = "${class.name}.builder()">
+</#if>
+
+  @Test 
+  public void test${class.name}_minimum() {
+    ${classImpl} ${class.name.lowerFirst} = ${builderInit}.build();
+
+<#list fields as field>
+<#if field.originalInit??>
+    Assert.assertEquals("Unexpected ${field.name}", ${field.originalInit}, ${class.name.lowerFirst}.${field.getter}());
+<#elseif field.noInit == "null">
+    Assert.assertNull("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());
+<#elseif field.type == "boolean">
+    Assert.assertFalse("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());
+<#elseif field.collection>
+    Assert.assertTrue("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}().isEmpty());
+<#else>
+    Assert.assertEquals("Unexpected ${field.name}", ${field.noInit}, ${class.name.lowerFirst}.${field.getter}());
+</#if>
+</#list>
+  }
+
+  @Test 
+  public void test${class.name}_maximum() {
+    ${classImpl} ${class.name.lowerFirst} = createAndFillBuilder().build(); 
+
+<#list fields as field>
+<#if field.type == "boolean">
+    Assert.assertTrue("Unexpected ${field.name}", ${class.name.lowerFirst}.${field.getter}());
+<#else>
+    Assert.assertEquals("Unexpected ${field.name}", ${field.name.snakeCase}, ${class.name.lowerFirst}.${field.getter}());
+</#if>
+</#list>
+  }
+
+  private ${classImpl}.Builder<?> createAndFillBuilder() {
+    return ${builderInit}
+<#list fields as field>
+    .${field.name}(${field.name.snakeCase})
+</#list>
+    ;
+  }
+  
+<#if class.accessModifiers?seq_contains("abstract")>
+  public class ${classImpl} extends ${class.name}<${classImpl}> {
+
+    public BaseEntityImpl() {
+      // Needed because we cannot create static methods in inner classes.
+    }
+
+    public ${classImpl}(Builder builder) {
+      super(builder);
+    }
+
+    public Builder testBuilder() {
+      return new Builder();
+    }
+
+    public class Builder extends ${class.name}.Builder<Builder> {
+
+      public ${classImpl} build() {
+        return new ${classImpl}(this);
+      }
+    }
+  }
+</#if>

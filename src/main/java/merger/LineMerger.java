@@ -37,12 +37,16 @@ public class LineMerger extends CodeSnipitMerger {
   private CodeSnipitReader reader = new CodeSnipitReader();
 
   @Override
-  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+  public boolean supports(JavaForgerConfiguration config) {
+    return config.getMergerConfiguration().getMergeType() == MergeType.DEFAULT_JAVA;
+  }
+
+  @Override
+  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath, String gitRepository)
+      throws IOException {
     CompilationUnit existingCode = reader.read(mergeClassPath);
     CompilationUnit newCode = reader.read(codeSnipit, mergeClassPath);
-    // TODO Currently there is a bug where the locator does not order the insertLocations if it overrides earlier defined code.
-    // Solution: let locator except normal unsorted hashmap and sort it inside.
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode);
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode, config);
     inserter.insert(config, mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
   }
 

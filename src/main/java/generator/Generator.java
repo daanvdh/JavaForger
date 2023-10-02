@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import configuration.ClassProvider;
@@ -33,6 +34,8 @@ import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateNotFoundException;
 import merger.CodeSnipitMerger;
+import merger.LineMerger;
+import merger.git.GitMerger;
 import templateInput.TemplateInputParameters;
 
 /**
@@ -42,7 +45,7 @@ import templateInput.TemplateInputParameters;
  */
 public class Generator {
 
-  private CodeSnipitMerger merger = StaticJavaForgerConfiguration.getMerger();
+  private List<CodeSnipitMerger> mergers = Arrays.asList(new GitMerger(this), new LineMerger());
   private TemplateInputParametersService inputService = new TemplateInputParametersService();
   private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
 

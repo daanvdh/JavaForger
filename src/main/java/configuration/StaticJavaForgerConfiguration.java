@@ -99,16 +99,7 @@ public class StaticJavaForgerConfiguration {
   public static void reset() {
     StaticJavaForgerConfiguration conf = StaticJavaForgerConfiguration.getConfig();
     conf.setReader(new ClassContainerReader());
-    conf.setMerger(new LineMerger());
     conf.setFreeMarkerConfiguration(FreeMarkerConfiguration.getDefaultConfig());
-  }
-
-  public static CodeSnipitMerger getMerger() {
-    return getConfig().merger;
-  }
-
-  public void setMerger(CodeSnipitMerger merger) {
-    getConfig().merger = merger;
   }
 
   public Configuration getFreeMarkerConfiguration() {
