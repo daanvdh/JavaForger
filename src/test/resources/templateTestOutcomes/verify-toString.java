@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 package inputClassesForTests;
-
-import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.Set;
 
 /**
  * Input class for unit tests.

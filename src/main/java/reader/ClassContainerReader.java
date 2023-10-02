@@ -29,8 +29,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -54,7 +56,7 @@ import templateInput.definition.VariableDefinition;
  *
  * @author Daan
  */
-public class ClassContainerReader {
+public class ClassContainerReader implements ClassContainerReaderInterface {
 
   private static final Logger LOG = LoggerFactory.getLogger(NodeCallFactory.class);
 
@@ -62,8 +64,27 @@ public class ClassContainerReader {
   private MethodDefinitionFactory methodFactory = new MethodDefinitionFactory();
   private VariableDefintionFactory fieldFactory = new VariableDefintionFactory();
 
+  @Override
   public ClassContainer read(String inputClass) throws IOException {
     CompilationUnit cu = getCompilationUnit(inputClass);
+    ClassContainer claz = createClassContainer(cu);
+    return claz;
+  }
+
+  @Override
+  public ClassContainer readFromFileContent(String inputContent) {
+    CompilationUnit cu = getCompilationUnitFromFileContent(inputContent);
+    ClassContainer claz = createClassContainer(cu);
+    return claz;
+  }
+
+  /**
+   * This can be overridden to create custom template input from a {@link JavaParser} {@link CompilationUnit}.
+   *
+   * @param cu {@link CompilationUnit}
+   * @return {@link ClassContainer}
+   */
+  protected ClassContainer createClassContainer(CompilationUnit cu) {
     DataFlowGraph dfg = null;
     try {
       dfg = dfgFactory.create(cu);
@@ -72,6 +93,10 @@ public class ClassContainerReader {
     }
     ClassContainer claz = readCompilationUnit(cu, dfg);
     return claz;
+  }
+
+  private CompilationUnit getCompilationUnitFromFileContent(String inputContent) {
+    return StaticJavaParser.parse(inputContent);
   }
 
   private CompilationUnit getCompilationUnit(String inputClass) throws IOException {
@@ -112,10 +137,13 @@ public class ClassContainerReader {
 
     Optional<String> typeImport = cu.getPackageDeclaration().map(pd -> pd.getNameAsString());
     if (typeImport.isPresent()) {
+      claz.setPackage(typeImport.get());
       claz.addTypeImport(typeImport.get() + "." + claz.getName());
       constructors.forEach(c -> c.addTypeImport(typeImport.get()));
     }
 
+    List<String> imports = cu.getImports().stream().map(ImportDeclaration::getNameAsString).collect(Collectors.toList());
+    claz.setImports(imports);
     claz.setFields(fields);
     claz.setMethods(methods);
     claz.setConstructors(constructors);

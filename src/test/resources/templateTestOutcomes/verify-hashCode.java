@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 package inputClassesForTests;
+import java.util.Objects;
 
 import java.util.Set;
-import java.util.Objects;
 
 /**
  * Input class for unit tests.

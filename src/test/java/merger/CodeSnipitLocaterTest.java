@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.github.javaparser.ast.CompilationUnit;
 
+import configuration.JavaForgerConfiguration;
 import reader.Parser;
 
 /**
@@ -82,7 +83,7 @@ public class CodeSnipitLocaterTest {
     CompilationUnit cu1 = parser.parse(existing);
     CompilationUnit cu2 = parser.parse(insert);
 
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = locater.locate(cu1, cu2);
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = locater.locate(cu1, cu2, JavaForgerConfiguration.builder().build());
 
     Assert.assertEquals("Expected the same size", expected.size(), locations.size());
 

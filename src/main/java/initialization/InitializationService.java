@@ -132,8 +132,9 @@ public class InitializationService {
   }
 
   private List<VariableDefinition> getSubTypes(InitializedTypeDefinition var) {
-    int indexOf = var.getType().toString().indexOf("<");
-    String subString = var.getType().toString().substring(indexOf + 1, var.getType().toString().length() - 1);
+    final String typeString = var.getType().toString();
+    int indexOf = typeString.indexOf("<");
+    String subString = typeString.substring(indexOf + 1, typeString.length() - 1);
     List<String> subVariableTypes = splitSubTypes(subString);
     List<VariableDefinition> subTypes =
         subVariableTypes.stream().map(subType -> VariableDefinition.builder().type(subType).build()).collect(Collectors.toList());

@@ -17,16 +17,27 @@
  */
 package merger;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.stmt.BlockStmt;
 
+import configuration.JavaForgerConfiguration;
+import configuration.MergeLevel;
 import generator.JavaForgerException;
 
 /**
@@ -49,8 +60,13 @@ public class CodeSnipitLocater {
    * @return An {@link LinkedHashMap} with as keys a {@link CodeSnipitLocation} of code to be added and as value a {@link CodeSnipitLocation} where in the
    *         existing class the code should be added. The map is ordered on increasing insert locations (map values).
    */
-  public LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locate(CompilationUnit existingCode, Node newCode) {
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = recursiveLocator(existingCode.getChildNodes(), newCode.getChildNodes());
+  public LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locate(CompilationUnit existingCode, Node newCode, JavaForgerConfiguration config) {
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = new LinkedHashMap<>();
+    if (MergeLevel.FILE.equals(config.getMergeLevel())) {
+      locations.put(CodeSnipitLocation.of(newCode), CodeSnipitLocation.of(existingCode));
+    } else {
+      locations = recursiveLocator(existingCode.getChildNodes(), newCode.getChildNodes(), config);
+    }
 
     // locations may not be sorted on increasing insertLocation if an existing code block will be overridden and occurs before the last determined insert
     // location. So we need to sort them here.
@@ -68,18 +84,24 @@ public class CodeSnipitLocater {
    * @param insertNodes The nodes from the class to be inserted. May not be empty.
    * @return The map of where insertion-code (from) needs to be inserted (to).
    */
-  protected LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> recursiveLocator(List<Node> existingNodes, List<Node> insertNodes) {
+  protected LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> recursiveLocator(List<Node> existingNodes, List<Node> insertNodes,
+      JavaForgerConfiguration config) {
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = new LinkedHashMap<>();
 
     // -1 indicates that the new node needs to be inserted before the first node within the existing nodes.
     int insertAfter = -1;
 
+    // TODO nodeTypeSupported does not do anything anymore, everything is supported.
     List<Node> supportedInsertNodes = insertNodes.stream().filter(comparator::nodeTypeIsSupported).collect(Collectors.toList());
 
+    int lastEqualNodeIndex = 0;
     for (Node insertNode : supportedInsertNodes) {
-      int equalNodeIndex = findEqualNode(existingNodes, insertNode);
-      if (equalNodeIndex >= 0) {
-        locations.putAll(handleEqualNodesRecursively(insertNode, existingNodes.get(equalNodeIndex)));
+      int equalNodeIndex = findEqualNode(existingNodes, insertNode, lastEqualNodeIndex);
+      if (equalNodeIndex >= 0) { // Found equal node
+        if (!(insertNode instanceof ImportDeclaration)) {
+          // lastEqualNodeIndex = equalNodeIndex;
+        }
+        locations.putAll(handleEqualNodesRecursively(insertNode, existingNodes.get(equalNodeIndex), config));
         insertAfter = Integer.max(insertAfter, equalNodeIndex);
       } else {
         insertAfter = findInsertAfterIndex(existingNodes, insertAfter, insertNode);
@@ -93,24 +115,104 @@ public class CodeSnipitLocater {
     return locations;
   }
 
-  private LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> handleEqualNodesRecursively(Node insertNode, Node existingNode) {
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> loc = new LinkedHashMap<>();
+  /**
+   * Finds insert locations for all nodes, keeps the ordering of nodes the same. Each node not equal to an existing node will be placed directly after the last
+   * found equal node, or at the start of the existing code block if no equal node was found yet. This method is not recursive, all nodes will be individually
+   * located within the existing nodes.
+   *
+   * @param existingNodes
+   * @param insertNodes
+   * @return
+   */
+  private LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> createCodeBlockLocationMap(List<Node> existingNodes, List<Node> insertNodes) {
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = new LinkedHashMap<>();
+    if (existingNodes.isEmpty()) {
+      // LOG.error("Cannot insert the following nodes in empty existing code block", insertNodes);
+      return locations;
+    }
+
+    // -1 indicates that the new node needs to be inserted before the first node within the existing nodes.
+    int previousMatchingExistingNodeIndex = -1;
+    for (Node insertNode : insertNodes) {
+      int equalNodeIndex = -1;
+      // Add one to the index so that we never compare the same node twice.
+      int searchIndex = previousMatchingExistingNodeIndex + 1;
+      if (searchIndex < existingNodes.size()) {
+        equalNodeIndex = findEqualNode(existingNodes, insertNode, searchIndex);
+      }
+      if (equalNodeIndex >= 0) {
+        Node existingNode = existingNodes.get(equalNodeIndex);
+        Optional<BlockStmt> innerBlockStmt = insertNode.findFirst(BlockStmt.class);
+        if (innerBlockStmt.isPresent()) {
+          BlockStmt insertBlockStmt = innerBlockStmt.get();
+          List<Node> insertChildren = insertBlockStmt.getChildNodes();
+          BlockStmt existingBlockStmt = existingNode.findFirst(BlockStmt.class).get();
+          List<Node> existingChildren = existingBlockStmt.getChildNodes();
+
+          if (insertChildren.isEmpty() || existingChildren.isEmpty()) {
+            locations.put(CodeSnipitLocation.of(insertBlockStmt), CodeSnipitLocation.of(existingBlockStmt));
+          } else {
+            // for readibillity we will show which part of the following statement is added on which line: if(x) {y;}
+            // if(x) {
+            locations.put(CodeSnipitLocation.fromUntil(insertNode, insertChildren.get(0)), CodeSnipitLocation.fromUntil(existingNode, existingChildren.get(0)));
+            // y;
+            locations.putAll(createCodeBlockLocationMap(existingChildren, insertChildren));
+            // }
+            locations.put(CodeSnipitLocation.fromAfterUntilIncluding(insertChildren.get(insertChildren.size() - 1), insertBlockStmt),
+                CodeSnipitLocation.fromAfterUntilIncluding(existingChildren.get(existingChildren.size() - 1), existingBlockStmt));
+          }
+
+        } else {
+          locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+          previousMatchingExistingNodeIndex = equalNodeIndex;
+        }
+      } else {
+        if (previousMatchingExistingNodeIndex < 0) {
+          locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.before(existingNodes.get(0)));
+        } else {
+          locations.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.after(existingNodes.get(previousMatchingExistingNodeIndex)));
+        }
+      }
+
+    }
+    return locations;
+  }
+
+  private LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> handleEqualNodesRecursively(Node insertNode, Node existingNode,
+      JavaForgerConfiguration config) {
+    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locationMap = new LinkedHashMap<>();
     if (isClass(existingNode) && isClass(insertNode)) {
-      List<Node> insertNodes = getChildNodes(insertNode);
-      List<Node> existingNodes = getChildNodes(existingNode);
+      List<Node> insertNodes = getClassChildNodes(insertNode);
+      List<Node> existingNodes = getClassChildNodes(existingNode);
       if (!insertNodes.isEmpty()) {
         if (existingNodes.isEmpty()) {
           CodeSnipitLocation firstInsertLocation = getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode);
-          loc = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> firstInsertLocation, (a, b) -> a, LinkedHashMap::new));
+          locationMap = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> firstInsertLocation, (a, b) -> a, LinkedHashMap::new));
         } else {
           // Recursive call
-          loc = recursiveLocator(existingNodes, insertNodes);
+          locationMap = recursiveLocator(existingNodes, insertNodes, config);
         }
       }
+    } else if (MergeLevel.LINE.isAsFineGrainedAs(config.getMergeLevel()) && isMethodOrConstructor(existingNode, insertNode)) {
+      // TODO this code is experimental, we might have to support much more types to be able to merge methods.
+      List<Node> insertNodes = getMethodChildNodes(insertNode);
+      List<Node> existingNodes = getMethodChildNodes(existingNode);
+      // TODO work in progress. all is copied from if statement above
+      if (!insertNodes.isEmpty()) {
+        if (existingNodes.isEmpty()) {
+          CodeSnipitLocation firstInsertLocation = getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode);
+          locationMap = insertNodes.stream().collect(Collectors.toMap(CodeSnipitLocation::of, c -> firstInsertLocation, (a, b) -> a, LinkedHashMap::new));
+        } else {
+          // TODO handle existingNodes.isEmpty()
+          locationMap = createCodeBlockLocationMap(existingNodes, insertNodes);
+        }
+      }
+      // TODO support annotations, javadoc and parameter naming to be inserted.
+
     } else {
-      loc.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
+      locationMap.put(CodeSnipitLocation.of(insertNode), CodeSnipitLocation.of(existingNode));
     }
-    return loc;
+    return locationMap;
   }
 
   private CodeSnipitLocation getFirstInsertLocation(ClassOrInterfaceDeclaration existingNode) {
@@ -126,14 +228,41 @@ public class CodeSnipitLocater {
     return ClassOrInterfaceDeclaration.class.isAssignableFrom(existingNode.getClass());
   }
 
+  private boolean isMethodOrConstructor(Node existingNode, Node insertNode) {
+    return CallableDeclaration.class.isAssignableFrom(existingNode.getClass()) && CallableDeclaration.class.isAssignableFrom(insertNode.getClass());
+  }
+
   /**
    * Gets the child nodes and strips off any nodes that are part of the definition of the parent node, such as the name of the class or what it extends.
    *
    * @param node
    * @return
    */
-  private List<Node> getChildNodes(Node node) {
-    return node.getChildNodes().stream().filter(comparator::nodeTypeIsSupported).collect(Collectors.toList());
+  private List<Node> getClassChildNodes(Node node) {
+    // return node.findFirst(BlockStmt.class).map(Node::getChildNodes).orElse(Collections.emptyList());
+    return node.getChildNodes().stream().filter(this::classNodeTypeIsSupported).collect(Collectors.toList());
+  }
+
+  private boolean classNodeTypeIsSupported(Node node) {
+    return Arrays.asList( //
+        ClassOrInterfaceDeclaration.class //
+        , BodyDeclaration.class //
+        , FieldDeclaration.class //
+        , BlockStmt.class //
+        , LineComment.class //
+    ).stream().anyMatch(claz -> claz.isAssignableFrom(node.getClass()));
+    // return true;
+  }
+
+  /**
+   * Gets the child nodes and strips off any nodes that are part of the definition of the parent node, such as the name of the class or what it extends.
+   *
+   * @param node
+   * @return
+   */
+  private List<Node> getMethodChildNodes(Node node) {
+    return node.getChildNodes().stream().filter(n -> BlockStmt.class.isAssignableFrom(n.getClass())).findFirst().map(Node::getChildNodes)
+        .orElse(new ArrayList<>());
   }
 
   /**
@@ -144,8 +273,25 @@ public class CodeSnipitLocater {
    * @return The index of the node equal to the insertNode if it exists, -1 otherwise.
    */
   private int findEqualNode(List<Node> existingNodes, Node insertNode) {
-    for (int index = 0; index < existingNodes.size(); index++) {
-      if (comparator.compare(existingNodes.get(index), insertNode) == 0) {
+    int startIndex = 0;
+    return findEqualNode(existingNodes, insertNode, startIndex);
+  }
+
+  /**
+   * Returns an index (integer) within existingNodes or -1 if it does not exist, so that we can set the existingIndex to that value if it's higher.
+   *
+   * @param existingNodes The nodes to check if one is equal to the insertNode.
+   * @param insertNode The node to check.
+   * @param startIndex The index from which to start the search in the existing nodes. This can be used if code needs to be inserted in order.
+   * @return The index of the node equal to the insertNode if it exists, -1 otherwise.
+   */
+  private int findEqualNode(List<Node> existingNodes, Node insertNode, int startIndex) {
+    if (existingNodes.size() <= startIndex || startIndex < 0) {
+      return -1;
+    }
+    for (int index = startIndex; index < existingNodes.size(); index++) {
+      Node existingNode = existingNodes.get(index);
+      if (comparator.compare(existingNode, insertNode) == 0) {
         return index;
       }
     }

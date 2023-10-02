@@ -59,7 +59,7 @@ public class JavaParserMergerTest extends AbstractFileChangingTest {
   }
 
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
-    new JavaParserMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS);
+    new JavaParserMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS, null, null);
 
     super.stringToFile(EXPECTED_CLASS, expected);
 

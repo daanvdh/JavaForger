@@ -34,14 +34,14 @@ import templateInput.StringConverter;
 public class InitializedTypeDefinition extends TypeDefinition {
 
   /** The default initialization for a field, especially used for initializing collections. */
-  protected String defaultInit;
+  protected String defaultInit; // TODO clearly document what the difference is between defaultInit and noInit or remove one
   /** init1 and init2 hold two distinct initialization values. */
   protected String init1;
   protected String init2;
   /** Holds the value to be used when testing if a variable is not initialized. */
   protected String noInit = "null";
   /** True if the variable is a collection, false otherwise */
-  protected boolean collection;
+  protected boolean collection; // TODO move to TypeDefinition // TODO rename to isCollection (breaking change)
   /** The imports required for initializing this variable. */
   protected LinkedHashSet<String> initImports = new LinkedHashSet<>();
 
@@ -66,8 +66,8 @@ public class InitializedTypeDefinition extends TypeDefinition {
   }
 
   protected InitializedTypeDefinition(Builder<?> builder) {
+    super(builder);
     this.name = builder.name;
-    this.type = new StringConverter(builder.type);
     this.lineNumber = builder.lineNumber;
     this.column = builder.column;
     this.annotations = builder.annotations;
@@ -121,17 +121,12 @@ public class InitializedTypeDefinition extends TypeDefinition {
   public String getGetter() {
     String prefix = Objects.equals(this.type == null ? "null" : this.type.toString(), "boolean") ? "is" : "get";
     return prefix + getName().getUpperFirst();
+    // TODO: change to below, but fix all templates first (breaking change)
+    // return prefix + getName().getUpperFirst() + "()";
   }
 
   public String getSetter() {
     return "set" + getName().getUpperFirst();
-  }
-
-  public String getTypeWithoutParameters() {
-    int indexOf = type.toString().indexOf("<");
-    indexOf = indexOf < 1 ? type.toString().length() : indexOf;
-    String mainType = type.toString().substring(0, indexOf);
-    return mainType;
   }
 
   public LinkedHashSet<String> getInitImports() {
@@ -156,9 +151,8 @@ public class InitializedTypeDefinition extends TypeDefinition {
    * @param <T> The class extending this builder
    */
   @SuppressWarnings("unchecked")
-  public static class Builder<T extends Builder<?>> {
+  public static class Builder<T extends InitializedTypeDefinition.Builder<?>> extends TypeDefinition.Builder<T> {
     private StringConverter name;
-    private String type;
     private int lineNumber;
     private int column;
     private Set<String> annotations = new HashSet<>();
@@ -169,11 +163,13 @@ public class InitializedTypeDefinition extends TypeDefinition {
     private LinkedHashSet<String> typeImports = new LinkedHashSet<>();
 
     protected Builder() {
+      super();
     }
 
+    @Override
     public T copy(InitializedTypeDefinition copy) {
+      super.copy(copy);
       this.name = copy.name;
-      this.type = copy.getType().toString();
       this.lineNumber = copy.getLineNumber();
       this.column = copy.getColumn();
       this.annotations = copy.getAnnotations();
@@ -190,11 +186,6 @@ public class InitializedTypeDefinition extends TypeDefinition {
       return (T) this;
     }
 
-    public T type(String type) {
-      this.type = type;
-      return (T) this;
-    }
-
     public T lineNumber(int lineNumber) {
       this.lineNumber = lineNumber;
       return (T) this;
@@ -205,11 +196,13 @@ public class InitializedTypeDefinition extends TypeDefinition {
       return (T) this;
     }
 
+    @Override
     public T annotations(Set<String> annotations) {
       this.annotations = annotations;
       return (T) this;
     }
 
+    @Override
     public T accessModifiers(Set<String> accessModifiers) {
       this.accessModifiers = accessModifiers;
       return (T) this;

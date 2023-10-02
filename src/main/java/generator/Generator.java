@@ -74,13 +74,32 @@ public class Generator {
 
     TemplateInputParameters inputParameters = inputService.getInputParameters(config, inputClass, mergeClassPath);
     CodeSnipit codeSnipit = processTemplate(config, inputParameters);
-    merge(config, codeSnipit, mergeClassPath, inputParameters);
+    merge(config, codeSnipit, mergeClassPath, inputParameters, inputClass);
     executeChildren(config, inputClass, codeSnipit, mergeClassPath);
     return codeSnipit;
   }
 
-  private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, TemplateInputParameters inputParameters)
+  /**
+   * Note that this does not execute any children yet. It also does not support merging yet.
+   *
+   * @param config
+   * @param inputContent The full class to be used as input represented as String.
+   * @param inputClass
+   * @return {@link CodeSnipit}
+   * @throws IOException
+   * @throws TemplateException
+   */
+  public CodeSnipit executeFromContent(JavaForgerConfiguration config, String inputContent, String inputClass, String mergeClassPath)
       throws IOException, TemplateException {
+    TemplateInputParameters inputParameters = inputService.getInputParametersFromFileContent(config, inputContent, mergeClassPath);
+    CodeSnipit codeSnipit = processTemplate(config, inputParameters);
+    // merge(config, codeSnipit, mergeClassPath, inputParameters);
+    // executeChildren(config, inputClass, codeSnipit, mergeClassPath);
+    return codeSnipit;
+  }
+
+  private void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, TemplateInputParameters inputParameters,
+      String inputFilePath) throws IOException, TemplateException {
     if (mergeClassPath != null && config.isMerge()) {
       boolean exists = new File(mergeClassPath).exists();
       if (!exists) {
@@ -93,18 +112,18 @@ public class Generator {
         } else {
           CodeSnipit codeSnipitInit = processTemplate(config.getConfigIfFileDoesNotExist(), inputParameters);
           createAndFillFile(mergeClassPath, codeSnipitInit);
-          executeMerge(config, codeSnipit, mergeClassPath);
+          executeMerge(config, codeSnipit, mergeClassPath, inputFilePath);
         }
       } else {
-        executeMerge(config, codeSnipit, mergeClassPath);
+        executeMerge(config, codeSnipit, mergeClassPath, inputFilePath);
       }
     }
   }
 
-  private void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+  private void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath) {
     boolean success = false;
     try {
-      merger.merge(config, codeSnipit, mergeClassPath);
+      mergers.stream().filter(m -> m.supports(config)).findFirst().ifPresent(m -> m.merge(config, codeSnipit, mergeClassPath, inputFilePath));
       success = true;
     } finally {
       if (!success) {

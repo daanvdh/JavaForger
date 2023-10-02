@@ -37,7 +37,7 @@ import generator.JavaForger;
  *
  * @author Daan
  */
-public class TemplateIntegrationTest extends AbstractFileChangingTest {
+public class TemplateIntegrationTest2 extends AbstractFileChangingTest {
 
   private static final String EXPECTED_RESULTS_PATH = "src/test/resources/templateTestOutcomes/";
 
@@ -96,9 +96,8 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
    * This main method will force the whole test to be green again, by replacing all verify files with the actual result.
    *
    * @param args
-   * @throws IOException
    */
-  public static void mainsfdg(String[] args) throws IOException {
+  public static void main(String[] args) {
 
     // This statement prevents the main method from accidently being executed.
     // Assert.fail();
@@ -111,19 +110,24 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
       }
     };
 
-    test.setup();
-    test.testEquals();
-    test.setup();
-    test.testInnerBuilder();
-    test.setup();
-    test.testHashCode();
-    test.setup();
-    test.testInnerBuilder();
-    test.setup();
-    test.testExtendableInnerBuilder();
-    test.setup();
-    test.testToString();
-    test.tearDown();
+    try {
+      test.setup();
+      test.testEquals();
+      test.setup();
+      test.testInnerBuilder();
+      test.setup();
+      test.testHashCode();
+      test.setup();
+      test.testInnerBuilder();
+      test.setup();
+      test.testExtendableInnerBuilder();
+      test.setup();
+      test.testToString();
+      test.tearDown();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 
     Assert.fail();
   }

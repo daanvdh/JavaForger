@@ -32,7 +32,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
-import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
 
 import templateInput.definition.VariableDefinition;
 import templateInput.definition.VariableDefinition.Builder;
@@ -42,10 +41,8 @@ import templateInput.definition.VariableDefinition.Builder;
  *
  * @author Daan
  */
-public class VariableDefintionFactory {
+public class VariableDefintionFactory extends TypeDefinitionFactory {
   private static final Logger LOG = LoggerFactory.getLogger(VariableDefintionFactory.class);
-
-  private ImportResolver importResolver = new ImportResolver();
 
   /**
    * Creates a {@link VariableDefinition} from a {@link FieldDeclaration} or a {@link VariableDeclarator} with {@link FieldDeclaration} as a parent. Will return
@@ -61,8 +58,6 @@ public class VariableDefintionFactory {
       FieldDeclaration fd = (FieldDeclaration) node;
       VariableDefinition.Builder<?> fieldBuilder = createVariable(fd);
       fd.getVariables().stream().map(VariableDeclarator::getNameAsString).map(fieldBuilder::name).map(VariableDefinition.Builder::build).forEach(fields::add);
-    } else if (node instanceof VariableDeclarator) {
-      fields.add(createSingle(node));
     } else {
       fields.add(createVariable(node).build());
     }
@@ -96,14 +91,6 @@ public class VariableDefintionFactory {
     fieldBuilder.lineNumber(n.getBegin().map(p -> p.line).orElse(-1)).column(n.getBegin().map(p -> p.column).orElse(-1));
   }
 
-  private void addType(Node n, VariableDefinition.Builder<?> fieldBuilder) {
-    if (NodeWithVariables.class.isAssignableFrom(n.getClass())) {
-      NodeWithVariables<?> cast = (NodeWithVariables<?>) n;
-      List<String> imports = importResolver.resolveImport(cast.getElementType());
-      fieldBuilder.typeImports(imports).type(cast.getElementType().asString());
-    }
-  }
-
   private void addAccessModifiers(Node n, VariableDefinition.Builder<?> fieldBuilder) {
     Optional<FieldDeclaration> fd = Optional.empty();
     if (FieldDeclaration.class.isAssignableFrom(n.getClass())) {
@@ -135,15 +122,11 @@ public class VariableDefintionFactory {
   }
 
   private void addOriginalInit(Node n, VariableDefinition.Builder<?> fieldBuilder) {
-    Optional<String> originalInit = depthFirstSearch(n, Expression.class);
-    fieldBuilder.originalInit(originalInit.orElse(null));
-  }
-
-  private Optional<String> depthFirstSearch(Node node, Class<Expression> claz) {
-    if (claz.isAssignableFrom(node.getClass())) {
-      return Optional.of(node.toString());
+    if (n instanceof FieldDeclaration) {
+      VariableDeclarator field = ((FieldDeclaration) n).getVariable(0);
+      Optional<String> originalInit = field.findFirst(VariableDeclarator.class).flatMap(vd -> vd.findFirst(Expression.class)).map(Object::toString);
+      fieldBuilder.originalInit(originalInit.orElse(null));
     }
-    return node.getChildNodes().stream().map(n -> depthFirstSearch(n, claz)).filter(Optional::isPresent).map(Optional::get).map(Object::toString).findFirst();
   }
 
 }

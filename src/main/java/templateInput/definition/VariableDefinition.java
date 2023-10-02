@@ -113,6 +113,7 @@ public class VariableDefinition extends InitializedTypeDefinition {
       return (T) this;
     }
 
+    @Override
     public VariableDefinition build() {
       return new VariableDefinition(this);
     }

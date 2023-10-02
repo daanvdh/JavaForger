@@ -16,13 +16,6 @@
  * limitations under the License.
  */
 package inputClassesForTests;
-import java.util.function.BiFunction;
-import org.junit.Assert;
-import org.junit.Test;
-import inputClassesForTests.Product;
-import java.util.Set;
-import java.util.Collections;
-import inputClassesForTests.ClassWithEverything;
 
 /**
  * Input class for unit tests.
@@ -64,3 +57,9 @@ public class ClassWithEverythingTest {
   }
 
 }
+import java.util.function.BiFunction;
+import org.junit.Assert;
+import org.junit.Test;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;

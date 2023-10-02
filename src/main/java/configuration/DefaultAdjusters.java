@@ -52,7 +52,7 @@ public class DefaultAdjusters {
    * @return Returns an {@link ClassContainerAdjuster} to replace all primitive types with their object version (e.g. int to Integer).
    */
   public static ClassContainerAdjuster replaceFieldPrimitivesWithObjects() {
-    return p -> changeVariable(p, var -> var.setType(InitDefaultValues.getObjectForPrimitive(var.getType().toString())));
+    return p -> changeVariable(p, var -> var.setType(InitDefaultValues.getObjectForPrimitive(var.getTypeWithoutParameters().toString())));
   }
 
   /**

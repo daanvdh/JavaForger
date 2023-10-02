@@ -37,6 +37,8 @@ public class ClassContainer extends ClassDefinition {
   private List<? extends MethodDefinition> methods = new ArrayList<>();
   /** The constructors defined within the class */
   private List<? extends MethodDefinition> constructors = new ArrayList<>();
+  /** All imports used within this class */
+  private List<String> imports = new ArrayList<>();
 
   public ClassContainer(ClassDefinition def) {
     super(builder(def));
@@ -68,6 +70,14 @@ public class ClassContainer extends ClassDefinition {
 
   public void setConstructors(List<MethodDefinition> constructors) {
     this.constructors = constructors;
+  }
+
+  public List<String> getImports() {
+    return imports;
+  }
+
+  public void setImports(List<String> imports) {
+    this.imports = imports;
   }
 
 }

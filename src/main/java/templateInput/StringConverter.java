@@ -35,6 +35,10 @@ public class StringConverter {
     this.string = string;
   }
 
+  protected StringConverter(StringConverter.Builder<?> builder) {
+    this.string = builder.string == null ? this.string : builder.string;
+  }
+
   public String getLower() {
     return string.toLowerCase();
   }
@@ -58,7 +62,8 @@ public class StringConverter {
   public String getSnakeCase() {
     String regex = "([A-Z])";
     String replacement = "_$1";
-    return string.replaceAll(regex, replacement).toUpperCase();
+    return string.length() <= 1 ? this.getUpperFirst()
+        : string.substring(0, 1).toUpperCase() + string.substring(1).replaceAll(regex, replacement).toUpperCase();
   }
 
   public String getLowerSpace() {
@@ -73,8 +78,16 @@ public class StringConverter {
     return getLowerFirst().replaceAll(regex, replacement).toLowerCase();
   }
 
+  public boolean containsString(CharSequence s) {
+    return this.string.contains(s);
+  }
+
   @Override
   public String toString() {
+    return string;
+  }
+
+  public String getString() {
     return string;
   }
 
@@ -88,6 +101,36 @@ public class StringConverter {
       equals = new EqualsBuilder().append(string, other.string).isEquals();
     }
     return equals;
+  }
+
+  /**
+   * Creates builder to build {@link StringConverter}.
+   * 
+   * @return created builder
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder to build {@link StringConverter}.
+   */
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends StringConverter.Builder<?>> {
+    private String string;
+
+    protected Builder() {
+      // Builder should only be used via the parent class or extending builder
+    }
+
+    public T string(String string) {
+      this.string = string;
+      return (T) this;
+    }
+
+    public <A extends StringConverter> StringConverter build() {
+      return new StringConverter(this);
+    }
   }
 
 }

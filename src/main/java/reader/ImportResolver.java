@@ -18,7 +18,7 @@
 package reader;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,9 +60,20 @@ public class ImportResolver {
    * @param type The {@link JavaParser} {@link Type}.
    * @return A {@link List} of {@link String} representing the imports.
    */
-  public List<String> resolveImport(Type type) {
+  public LinkedHashSet<String> resolveImport(Type type) {
     List<String> imports = resolve(type);
-    return !imports.isEmpty() ? imports.stream().filter(s -> !s.contains("?")).collect(Collectors.toList()) : Collections.emptyList();
+    return !imports.isEmpty() ? imports.stream().filter(s -> !s.contains("?")).collect(Collectors.toCollection(LinkedHashSet::new)) : new LinkedHashSet<>();
+  }
+
+  /**
+   * @param type The {@link Type} to get the package from.
+   * @return The resolved package.
+   */
+  public String resolvePackage(Type type) {
+    ResolvedType resolve = type.resolve();
+    String typeImport = getTypeImport(resolve);
+    int lastIndex = typeImport.lastIndexOf(".") < 0 ? typeImport.length() : typeImport.lastIndexOf(".");
+    return typeImport.substring(0, lastIndex);
   }
 
   private List<String> resolve(Type type) {
@@ -81,22 +92,31 @@ public class ImportResolver {
 
   private List<String> getImportsFromResolvedType(ResolvedType resolve) {
     List<String> imports = new ArrayList<>();
+    String imp = getTypeImport(resolve);
+    if (!imp.startsWith("java.lang.") && !resolve.isPrimitive()) {
+      imports.add(imp);
+    }
+    if (resolve.isReferenceType()) {
+      // This is a recursive call to resolve all imports of parameterized types
+      ResolvedReferenceType refType = resolve.asReferenceType();
+      ResolvedReferenceTypeDeclaration type = refType.getTypeDeclaration();
+      List<ResolvedType> innerResolvedTypes =
+          type.getTypeParameters().stream().map(tp -> refType.typeParametersMap().getValue(tp)).collect(Collectors.toList());
+      List<String> collect = innerResolvedTypes.stream().flatMap(t -> getImportsFromResolvedType(t).stream()).collect(Collectors.toList());
+      imports.addAll(collect);
+    }
+    return imports;
+  }
+
+  protected String getTypeImport(ResolvedType resolve) {
     String imp;
     if (resolve.isReferenceType()) {
       ResolvedReferenceType refType = resolve.asReferenceType();
       ResolvedReferenceTypeDeclaration type = refType.getTypeDeclaration();
       imp = type.getQualifiedName();
-      List<ResolvedType> innerResolvedTypes =
-          type.getTypeParameters().stream().map(tp -> refType.typeParametersMap().getValue(tp)).collect(Collectors.toList());
-      // This is a recursive call to resolve all imports of parameterized types
-      List<String> collect = innerResolvedTypes.stream().flatMap(t -> getImportsFromResolvedType(t).stream()).collect(Collectors.toList());
-      imports.addAll(collect);
     } else {
       imp = resolve.describe();
     }
-    if (!imp.startsWith("java.lang.") && !resolve.isPrimitive()) {
-      imports.add(imp);
-    }
-    return imports;
+    return imp;
   }
 }

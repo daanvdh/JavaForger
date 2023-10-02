@@ -17,6 +17,7 @@
  */
 package templateInput.definition;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +37,8 @@ import templateInput.StringConverter;
 public class ClassDefinition extends TypeDefinition {
 
   private String extend;
-  private List<String> interfaces;
+  /** All interfaces implemented by this class */
+  private List<String> interfaces = new ArrayList<>();
 
   public ClassDefinition() {
     // public constructor to make it possible to extend this class.
@@ -124,7 +126,7 @@ public class ClassDefinition extends TypeDefinition {
 
     private Builder(ClassDefinition copy) {
       this.name = copy.name;
-      this.type = copy.type.toString();
+      this.type = copy.getTypeWithoutParameters();
       this.lineNumber = copy.lineNumber;
       this.column = copy.column;
       this.annotations = copy.annotations;

@@ -16,12 +16,6 @@
  * limitations under the License.
  */
 package inputClassesForTests;
-import org.junit.Assert;
-import org.junit.Test;
-import inputClassesForTests.Product;
-import java.util.Set;
-import java.util.Collections;
-import inputClassesForTests.ClassWithEverything;
 
 /**
  * Input class for unit tests.
@@ -51,7 +45,7 @@ public class ClassWithEverythingTest {
     Assert.assertEquals("Unexpected c", C, classWithEverything.getC());
     Assert.assertEquals("Unexpected s", S, classWithEverything.getS());
   }
-  private ClassWithEverything.Builder createAndFillBuilder() {
+  private ClassWithEverything.Builder<?> createAndFillBuilder() {
     return ClassWithEverything.builder()
     .prod(PROD)
     .i(I)
@@ -61,3 +55,7 @@ public class ClassWithEverythingTest {
   }
 
 }
+import org.junit.Assert;
+import org.junit.Test;
+import java.util.Collections;
+import java.util.Set;

@@ -54,7 +54,7 @@ import templateInput.definition.VariableDefinition;
  *
  * @author Daan
  */
-public class MethodDefinitionFactory {
+public class MethodDefinitionFactory extends TypeDefinitionFactory {
   private static final Logger LOG = LoggerFactory.getLogger(MethodDefinitionFactory.class);
 
   private ImportResolver importResolver = new ImportResolver();
@@ -62,9 +62,13 @@ public class MethodDefinitionFactory {
 
   public MethodDefinition createMethod(Node node, DataFlowGraph dfg) {
     MethodDeclaration md = (MethodDeclaration) node;
-    MethodDefinition method = parseCallable(md).build();
-    method.setType(md.getTypeAsString());
-    importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
+    Builder builder = parseCallable(md);
+
+    super.addType(node, builder);
+    MethodDefinition method = builder.build();
+    // TODO remove this after confirmed working from super.addType()
+    // method.setType(md.getTypeAsString());
+    // importResolver.resolveImport(md.getType()).forEach(method::addTypeImport);
     if (dfg != null) {
       addChangedFields(method, dfg.getMethod(md));
       addMethodsCalls(method, dfg.getMethod(md));

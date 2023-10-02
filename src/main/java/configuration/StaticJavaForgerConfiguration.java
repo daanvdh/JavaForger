@@ -30,6 +30,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
@@ -39,9 +40,8 @@ import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import generator.JavaForger;
 import initialization.InitializationService;
-import merger.CodeSnipitMerger;
-import merger.LineMerger;
 import reader.ClassContainerReader;
+import reader.ClassContainerReaderInterface;
 
 /**
  * Contains all static configurations for {@link JavaForger}.
@@ -51,9 +51,21 @@ import reader.ClassContainerReader;
 public class StaticJavaForgerConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(StaticJavaForgerConfiguration.class);
 
+  // TODO: now that we start to need proxies we should really consider Spring
+  // private ClassContainerReaderInterface readerProxy = new ClassContainerReaderInterface() {
+  // @Override
+  // public ClassContainer read(String inputClass) throws IOException {
+  // return reader.read(inputClass);
+  // }
+  //
+  // @Override
+  // public ClassContainer readFromFileContent(String inputContent) {
+  // return reader.readFromFileContent(inputContent);
+  // }
+  //
+  // };
   private ClassContainerReader reader;
   private InitializationService initializer;
-  private CodeSnipitMerger merger;
   private Configuration freeMarkerConfiguration;
 
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
@@ -72,13 +84,13 @@ public class StaticJavaForgerConfiguration {
       config = new StaticJavaForgerConfiguration();
       config.reader = new ClassContainerReader();
       config.initializer = new InitializationService();
-      config.merger = new LineMerger();
     }
     return config;
   }
 
-  public static ClassContainerReader getReader() {
+  public static ClassContainerReaderInterface getReader() {
     return getConfig().reader;
+    // return getConfig().readerProxy;
   }
 
   public void setReader(ClassContainerReader classReader) {
@@ -132,12 +144,14 @@ public class StaticJavaForgerConfiguration {
    * projects. This method will override anything set by the method {@link StaticJavaForgerConfiguration#setSymbolSolver(JavaSymbolSolver)}.
    *
    * @param paths The full paths to source folders where JavaForger needs to look for classes that any input class depends on.
+   * @throws IOException
    */
-  public void setProjectPaths(String... paths) {
+  public void setProjectPaths(String... paths) throws IOException {
     Stream.of(paths).filter(p -> !Files.exists(new File(p).toPath())).forEach(p -> LOG.error("Could not find the folder located at: " + p));
     JavaParserTypeSolver[] solvers =
         Stream.of(paths).filter(p -> Files.exists(new File(p).toPath())).map(JavaParserTypeSolver::new).toArray(JavaParserTypeSolver[]::new);
-    TypeSolver[] reflTypeSolver = {new ReflectionTypeSolver()};
+    TypeSolver[] reflTypeSolver =
+        {new ReflectionTypeSolver(), new JarTypeSolver("C:\\Users\\daan.vandenheuvel\\.m2\\repository\\org\\slf4j\\slf4j-api\\1.7.32\\slf4j-api-1.7.32.jar")};
     TypeSolver typeSolver = new CombinedTypeSolver(ArrayUtils.addAll(reflTypeSolver, solvers));
     JavaSymbolSolver symbolSolver = new JavaSymbolSolver(typeSolver);
     setSymbolSolver(symbolSolver);

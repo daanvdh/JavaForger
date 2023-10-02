@@ -17,6 +17,7 @@
  */
 package templateInput.definition;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,15 +42,19 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   protected StringConverter name;
   /**
    * The class name representing the type of this {@link TypeDefinition}. In case of {@link MethodDefinition}s this represents the return type, can also be
-   * "void".
+   * "void". This will not contain any generics. To get the full type use ${field.fullType} instead.
    */
   protected StringConverter type;
+  /** The generics of this type. For instance contains [String, Integer] if original type was Map<String, Integer>. */
+  protected List<StringConverter> generics = new ArrayList<>();
   /** The imports required for this type. This list is sorted on insertion order so that template generation is consistent. */
   protected LinkedHashSet<String> typeImports = new LinkedHashSet<>();
   protected int lineNumber;
   protected int column;
   protected Set<String> annotations = new HashSet<>();
   protected Set<String> accessModifiers = new HashSet<>();
+  /** The package */
+  protected String pack;
 
   public TypeDefinition() {
     // Make default constructor visable.
@@ -67,6 +72,18 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.column = type.column;
     this.annotations = type.annotations;
     this.accessModifiers = type.accessModifiers;
+  }
+
+  protected TypeDefinition(TypeDefinition.Builder<?> builder) {
+    this.name = builder.name == null ? this.name : builder.name;
+    this.type = builder.type == null ? this.type : builder.type;
+    this.generics = builder.generics == null ? this.generics : builder.generics;
+    this.typeImports = builder.typeImports == null ? this.typeImports : builder.typeImports;
+    this.lineNumber = builder.lineNumber == null ? this.lineNumber : builder.lineNumber;
+    this.column = builder.column == null ? this.column : builder.column;
+    this.annotations = builder.annotations == null ? this.annotations : builder.annotations;
+    this.accessModifiers = builder.accessModifiers == null ? this.accessModifiers : builder.accessModifiers;
+    this.pack = builder.pack == null ? this.pack : builder.pack;
   }
 
   @Override
@@ -88,19 +105,61 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.name = new StringConverter(name);
   }
 
-  public StringConverter getType() {
+  public String getTypeWithoutParameters() {
+    if (this.type == null || this.type.toString() == null) {
+      return null;
+    }
+    int indexOf = type.toString().indexOf("<");
+    indexOf = indexOf < 1 ? type.toString().length() : indexOf;
+    String mainType = type.toString().substring(0, indexOf);
+    return mainType;
+  }
+
+  public List<StringConverter> getGenerics() {
+    return generics;
+  }
+
+  public void setGenerics(List<StringConverter> generics) {
+    this.generics = generics;
+  }
+
+  public String getGenericsFormatted() {
+    StringBuilder sb = new StringBuilder();
+    if (!this.getGenerics().isEmpty()) {
+      sb.append("<");
+      boolean first = true;
+      for (StringConverter generic : this.getGenerics()) {
+        if (!first) {
+          sb.append(", ");
+          first = false;
+        }
+        sb.append(generic);
+      }
+      sb.append(">");
+    }
+    return sb.toString();
+  }
+
+  public StringConverter getStrippedType() {
     return type;
   }
 
   public String getNonPrimitiveType() {
-    return InitDefaultValues.getObjectForPrimitive(type.toString());
+    return InitDefaultValues.getObjectForPrimitive(getType().toString());
   }
 
   public boolean isPrimitive() {
     return InitDefaultValues.isPrimitive(type.toString());
   }
 
+  public StringConverter getType() {
+    return new StringConverter(type + getGenericsFormatted());
+  }
+
   public void setType(String type) {
+    if (type.contains("<")) {
+      throw new RuntimeException("Should never contain generics");
+    }
     this.type = new StringConverter(type);
   }
 
@@ -154,6 +213,22 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     this.typeImports.addAll(imports);
   }
 
+  public String getPack() {
+    return pack;
+  }
+
+  public void setPack(String pack) {
+    this.pack = pack;
+  }
+
+  public String getPackage() {
+    return pack;
+  }
+
+  public void setPackage(String pack) {
+    this.pack = pack;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(name, type, annotations, lineNumber, column);
@@ -163,7 +238,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).appendSuper(super.toString()).append("name", name).append("type", type)
         .append("annotations", annotations).append("lineNumber", lineNumber).append("column", column).append("accessModifiers", accessModifiers)
-        .append("typeImports", typeImports).build();
+        .append("typeImports", typeImports).append("package", pack).append("generics", generics).build();
   }
 
   @Override
@@ -177,6 +252,100 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
           .append(annotations, other.annotations).append(accessModifiers, other.accessModifiers).append(typeImports, other.typeImports).isEquals();
     }
     return equals;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends Builder<?>> {
+    private StringConverter name;
+    private StringConverter type;
+    private List<StringConverter> generics = new ArrayList<>();
+    private LinkedHashSet<String> typeImports;
+    private Integer lineNumber;
+    private Integer column;
+    private Set<String> annotations = new HashSet<>();
+    private Set<String> accessModifiers = new HashSet<>();
+    private String pack;
+
+    protected Builder() {
+      // Builder should only be used via the parent class or extending builder
+    }
+
+    protected T copy(InitializedTypeDefinition builder) {
+      this.name = builder.name == null ? this.name : builder.name;
+      this.type = builder.type == null ? this.type : builder.type;
+      this.generics = builder.generics == null ? this.generics : builder.generics;
+      this.typeImports = builder.typeImports == null ? this.typeImports : builder.typeImports;
+      this.lineNumber = builder.lineNumber;
+      this.column = builder.column;
+      this.annotations = builder.annotations == null ? this.annotations : builder.annotations;
+      this.accessModifiers = builder.accessModifiers == null ? this.accessModifiers : builder.accessModifiers;
+      this.pack = builder.pack == null ? this.pack : builder.pack;
+      return (T) this;
+    }
+
+    public T name(StringConverter name) {
+      this.name = name;
+      return (T) this;
+    }
+
+    public T type(String type) {
+      this.type = new StringConverter(type);
+      return (T) this;
+    }
+
+    public T type(StringConverter type) {
+      this.type = type;
+      return (T) this;
+    }
+
+    public T generics(List<StringConverter> generics) {
+      this.generics.clear();
+      this.generics.addAll(generics);
+      return (T) this;
+    }
+
+    public T genericsFromString(List<String> generics) {
+      this.generics.clear();
+      generics.forEach(t -> this.generics.add(new StringConverter(t)));
+      return (T) this;
+    }
+
+    public T typeImports(LinkedHashSet<String> typeImports) {
+      this.typeImports = typeImports;
+      return (T) this;
+    }
+
+    public T lineNumber(Integer lineNumber) {
+      this.lineNumber = lineNumber;
+      return (T) this;
+    }
+
+    public T column(Integer column) {
+      this.column = column;
+      return (T) this;
+    }
+
+    public T annotations(Set<String> annotations) {
+      this.annotations.clear();
+      this.annotations.addAll(annotations);
+      return (T) this;
+    }
+
+    public T accessModifiers(Set<String> accessModifiers) {
+      this.accessModifiers.clear();
+      this.accessModifiers.addAll(accessModifiers);
+      return (T) this;
+    }
+
+    public T pack(String pack) {
+      this.pack = pack;
+      return (T) this;
+    }
+
+    public TypeDefinition build() {
+      return new TypeDefinition(this);
+    }
+
   }
 
 }

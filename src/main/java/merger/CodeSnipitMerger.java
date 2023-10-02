@@ -33,14 +33,24 @@ import generator.JavaForgerException;
  */
 public abstract class CodeSnipitMerger {
 
-  public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException {
+  /**
+   * @param config
+   * @return true if the input {@link JavaForgerConfiguration} is supported, false otherwise.
+   */
+  public abstract boolean supports(JavaForgerConfiguration config);
+
+  public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath) {
     if (validate(codeSnipit, mergeClassPath)) {
-      executeMerge(config, codeSnipit, mergeClassPath);
-      format(config, mergeClassPath);
+      try {
+        executeMerge(config, codeSnipit, mergeClassPath, inputFilePath);
+        format(config, mergeClassPath);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 
-  protected abstract void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath) throws IOException;
+  protected abstract void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFile) throws IOException;
 
   protected boolean validate(CodeSnipit codeSnipit, String mergeClassPath) {
     boolean success = true;

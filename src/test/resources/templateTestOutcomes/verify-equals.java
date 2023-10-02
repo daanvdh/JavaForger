@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 package inputClassesForTests;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.Set;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Input class for unit tests.

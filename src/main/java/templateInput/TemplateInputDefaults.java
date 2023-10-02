@@ -28,6 +28,7 @@ import generator.Generator;
 public enum TemplateInputDefaults {
   CLASS("class"),
   FIELDS("fields"),
+  IMPORTS("imports"),
   CONSTRUCTORS("constructors"),
   METHODS("methods"),
   PACKAGE("package"),

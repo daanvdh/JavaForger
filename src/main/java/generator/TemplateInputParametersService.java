@@ -23,7 +23,7 @@ import configuration.JavaForgerConfiguration;
 import configuration.PathConverter;
 import configuration.StaticJavaForgerConfiguration;
 import initialization.InitializationService;
-import reader.ClassContainerReader;
+import reader.ClassContainerReaderInterface;
 import templateInput.ClassContainer;
 import templateInput.TemplateInputDefaults;
 import templateInput.TemplateInputParameters;
@@ -35,7 +35,7 @@ import templateInput.TemplateInputParameters;
  */
 public class TemplateInputParametersService {
 
-  private ClassContainerReader reader = StaticJavaForgerConfiguration.getReader();
+  private ClassContainerReaderInterface reader = StaticJavaForgerConfiguration.getReader();
   private InitializationService initializer = StaticJavaForgerConfiguration.getInitializer();
 
   /**
@@ -55,24 +55,29 @@ public class TemplateInputParametersService {
       if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) || !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
           || !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
-
         ClassContainer claz = reader.read(inputClass);
-        initializer.init(claz);
-        config.getAdjuster().accept(claz);
-        if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
-          inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
-        }
-        if (!inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())) {
-          inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
-        }
-        if (!inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
-          inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
-        }
-        if (!inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
-          inputParameters.put(TemplateInputDefaults.CONSTRUCTORS.getName(), claz.getConstructors());
-        }
+        insertIntoTemplateInputParameters(config, inputParameters, claz);
       }
     }
+    insertPackageAndMergeClass(mergeClassPath, inputParameters);
+    return inputParameters;
+  }
+
+  public TemplateInputParameters getInputParametersFromFileContent(JavaForgerConfiguration config, String inputContent, String mergeClassPath) {
+    TemplateInputParameters inputParameters = config.getInputParameters();
+    if (inputContent != null && !inputContent.isEmpty()) {
+      if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName()) || !inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())
+          || !inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())
+          || !inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
+        ClassContainer claz = reader.readFromFileContent(inputContent);
+        insertIntoTemplateInputParameters(config, inputParameters, claz);
+      }
+    }
+    insertPackageAndMergeClass(mergeClassPath, inputParameters);
+    return inputParameters;
+  }
+
+  private void insertPackageAndMergeClass(String mergeClassPath, TemplateInputParameters inputParameters) {
     if (mergeClassPath != null) {
       if (!inputParameters.containsKey(TemplateInputDefaults.PACKAGE.getName())) {
         String pack = PathConverter.toPackage(mergeClassPath);
@@ -84,8 +89,26 @@ public class TemplateInputParametersService {
         inputParameters.put(TemplateInputDefaults.MERGE_CLASS_NAME.getName(), name);
       }
     }
+  }
 
-    return inputParameters;
+  private void insertIntoTemplateInputParameters(JavaForgerConfiguration config, TemplateInputParameters inputParameters, ClassContainer claz) {
+    initializer.init(claz);
+    config.getAdjuster().accept(claz);
+    if (!inputParameters.containsKey(TemplateInputDefaults.FIELDS.getName())) {
+      inputParameters.put(TemplateInputDefaults.FIELDS.getName(), claz.getFields());
+    }
+    if (!inputParameters.containsKey(TemplateInputDefaults.CLASS.getName())) {
+      inputParameters.put(TemplateInputDefaults.CLASS.getName(), claz);
+    }
+    if (!inputParameters.containsKey(TemplateInputDefaults.METHODS.getName())) {
+      inputParameters.put(TemplateInputDefaults.METHODS.getName(), claz.getMethods());
+    }
+    if (!inputParameters.containsKey(TemplateInputDefaults.CONSTRUCTORS.getName())) {
+      inputParameters.put(TemplateInputDefaults.CONSTRUCTORS.getName(), claz.getConstructors());
+    }
+    if (!inputParameters.containsKey(TemplateInputDefaults.IMPORTS.getName())) {
+      inputParameters.put(TemplateInputDefaults.IMPORTS.getName(), claz.getImports());
+    }
   }
 
 }

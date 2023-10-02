@@ -23,9 +23,34 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class StringConverterTest {
 
+  private static final String STRING = "a";
+
   @Test
   public void testGetLowerDash() {
     Assert.assertEquals("ab-cd", new StringConverter("AbCd").getLowerDash());
+  }
+
+  @Test
+  public void testGetSnakeCase_upperFirst() {
+    Assert.assertEquals("SOME_CLASS", new StringConverter("SomeClass").getSnakeCase());
+  }
+
+  @Test
+  public void testStringConverter_minimum() {
+    StringConverter stringConverter = StringConverter.builder().build();
+
+    Assert.assertNull("Unexpected string", stringConverter.getString());
+  }
+
+  @Test
+  public void testStringConverter_maximum() {
+    StringConverter stringConverter = createAndFillBuilder().build();
+
+    Assert.assertEquals("Unexpected string", STRING, stringConverter.getString());
+  }
+
+  private StringConverter.Builder<?> createAndFillBuilder() {
+    return StringConverter.builder().string(STRING);
   }
 
 }

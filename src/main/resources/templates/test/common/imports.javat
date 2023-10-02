@@ -6,3 +6,6 @@ import ${import};
 import ${import};
 </#list>
 </#list>
+<#list imports as import>
+import ${import};
+</#list>

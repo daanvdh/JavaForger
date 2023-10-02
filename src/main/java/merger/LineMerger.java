@@ -42,8 +42,7 @@ public class LineMerger extends CodeSnipitMerger {
   }
 
   @Override
-  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath, String gitRepository)
-      throws IOException {
+  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath) throws IOException {
     CompilationUnit existingCode = reader.read(mergeClassPath);
     CompilationUnit newCode = reader.read(codeSnipit, mergeClassPath);
     LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode, config);

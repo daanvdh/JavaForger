@@ -133,6 +133,19 @@ public class CodeSnipitReader {
     return code.toString();
   }
 
+  public CompilationUnit read(String className) throws IOException {
+    CompilationUnit cu = null;
+    try (FileInputStream in = new FileInputStream(className)) {
+      cu = StaticJavaParser.parse(in);
+      in.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    // Needed to preserve the original formatting
+    LexicalPreservingPrinter.setup(cu);
+    return cu;
+  }
+
   /**
    * @param codeSnipit The code to analyze
    * @return True if it has a class defined or fields, constructors or methods that should have been in the class.
@@ -146,19 +159,6 @@ public class CodeSnipitReader {
 
   protected CompilationUnit readClass(String completeClass) {
     CompilationUnit cu = Parser.parse(completeClass);
-    // Needed to preserve the original formatting
-    LexicalPreservingPrinter.setup(cu);
-    return cu;
-  }
-
-  protected CompilationUnit read(String className) throws IOException {
-    CompilationUnit cu = null;
-    try (FileInputStream in = new FileInputStream(className)) {
-      cu = StaticJavaParser.parse(in);
-      in.close();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
     // Needed to preserve the original formatting
     LexicalPreservingPrinter.setup(cu);
     return cu;

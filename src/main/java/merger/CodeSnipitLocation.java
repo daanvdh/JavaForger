@@ -25,7 +25,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.javadoc.Javadoc;
+
+import generator.CodeSnipit;
 
 /**
  * Defines the location of a code block with an inclusive start line number and an exclusive end line number.
@@ -60,6 +63,13 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
    */
   public int getEnd() {
     return end;
+  }
+
+  /**
+   * @return The number of lines represented by this {@link CodeSnipit}.
+   */
+  public int getNumberOfLines() {
+    return end - start;
   }
 
   /**
@@ -118,9 +128,7 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
    * @return new {@link CodeSnipitLocation}.
    */
   public static CodeSnipitLocation of(Node node) {
-    int javaDocLines = countJavaDocLines(node);
-    CodeSnipitLocation location = of(node.getBegin().get().line - javaDocLines, node.getEnd().get().line + 1);
-    return location;
+    return of(calculateStart(node), calculateEnd(node));
   }
 
   /**
@@ -140,7 +148,29 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
    * @return a new {@link CodeSnipitLocation}.
    */
   public static CodeSnipitLocation after(Node node) {
-    return of(node.getEnd().get().line + 1);
+    return of(calculateEnd(node));
+  }
+
+  /**
+   * Creates a new {@link CodeSnipitLocation} for the given {@link Node}s.
+   *
+   * @param inclusiveStart The beginning of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnipitLocation}.
+   * @param exclusiveEnd The beginning of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnipitLocation}.
+   * @return new {@link CodeSnipitLocation}.
+   */
+  public static CodeSnipitLocation fromUntil(Node inclusiveStart, Node exclusiveEnd) {
+    return of(calculateStart(inclusiveStart), calculateStart(exclusiveEnd));
+  }
+
+  /**
+   * Creates a new {@link CodeSnipitLocation} for the given {@link Node}s.
+   *
+   * @param exclusiveStart The end of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnipitLocation}.
+   * @param inclusiveEnd The end of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnipitLocation}.
+   * @return new {@link CodeSnipitLocation}.
+   */
+  public static CodeSnipitLocation fromAfterUntilIncluding(Node exclusiveStart, BlockStmt inclusiveEnd) {
+    return of(calculateEnd(exclusiveStart), calculateEnd(inclusiveEnd));
   }
 
   @Override
@@ -178,6 +208,16 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
   @Override
   public int compareTo(CodeSnipitLocation that) {
     return this.start - that.start;
+  }
+
+  private static int calculateEnd(Node node) {
+    return node.getEnd().get().line + 1;
+  }
+
+  private static int calculateStart(Node node) {
+    int javaDocLines = countJavaDocLines(node);
+    int calculatedStart = node.getBegin().get().line - javaDocLines;
+    return calculatedStart;
   }
 
   private static int countJavaDocLines(Node node) {
