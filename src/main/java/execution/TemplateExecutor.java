@@ -38,7 +38,7 @@ public final class TemplateExecutor {
 
   public static void main(String[] args) {
     setupSymbolSolver();
-    String inputClass = "/JavaForger/src/main/java/templateInput/StringConverter.java";
+    String inputClass = "/JavaForger/src/main/java/configuration/merger/MergerConfiguration.java";
     JavaForgerConfiguration config = DefaultConfigurations.forExtendableBuilderAndTest();
 
     // config.setMerge(false);
