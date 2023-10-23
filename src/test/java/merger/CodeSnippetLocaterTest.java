@@ -30,22 +30,22 @@ import configuration.JavaForgerConfiguration;
 import reader.Parser;
 
 /**
- * Unit test for {@link CodeSnipitLocater}
+ * Unit test for {@link CodeSnippetLocater}
  *
  * @author Daan
  */
-public class CodeSnipitLocaterTest {
+public class CodeSnippetLocaterTest {
 
   private Parser parser = new Parser();
 
-  private CodeSnipitLocater locater = new CodeSnipitLocater();
+  private CodeSnippetLocater locater = new CodeSnippetLocater();
 
   @Test
   public void testLocate() {
     String code = "import my.impord;\n\npublic class ClassToMerge {\n\n}";
 
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected = new LinkedHashMap<>();
-    expected.put(CodeSnipitLocation.of(1, 2), CodeSnipitLocation.of(2, 2));
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected = new LinkedHashMap<>();
+    expected.put(CodeSnippetLocation.of(1, 2), CodeSnippetLocation.of(2, 2));
 
     executeAndVerify(code, code, expected);
   }
@@ -55,8 +55,8 @@ public class CodeSnipitLocaterTest {
     String code1 = "public class ClassToMerge {\n\npublic class InnerClass1 {\n\n}\n}";
     String code2 = "public class ClassToMerge {\n\nclass InnerClass2 {\n\n}\n}";
 
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected = new LinkedHashMap<>();
-    expected.put(CodeSnipitLocation.of(3, 6), CodeSnipitLocation.of(6, 6));
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected = new LinkedHashMap<>();
+    expected.put(CodeSnippetLocation.of(3, 6), CodeSnippetLocation.of(6, 6));
 
     executeAndVerify(code1, code2, expected);
   }
@@ -72,23 +72,23 @@ public class CodeSnipitLocaterTest {
         + "public int a = 5; \n" //
         + "\n}";
 
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected = new LinkedHashMap<>();
-    expected.put(CodeSnipitLocation.of(4, 5), CodeSnipitLocation.of(3, 4));
-    expected.put(CodeSnipitLocation.of(3, 4), CodeSnipitLocation.of(5, 5));
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected = new LinkedHashMap<>();
+    expected.put(CodeSnippetLocation.of(4, 5), CodeSnippetLocation.of(3, 4));
+    expected.put(CodeSnippetLocation.of(3, 4), CodeSnippetLocation.of(5, 5));
 
     executeAndVerify(code1, code2, expected);
   }
 
-  private void executeAndVerify(String existing, String insert, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> expected) {
+  private void executeAndVerify(String existing, String insert, LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected) {
     CompilationUnit cu1 = parser.parse(existing);
     CompilationUnit cu2 = parser.parse(insert);
 
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> locations = locater.locate(cu1, cu2, JavaForgerConfiguration.builder().build());
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> locations = locater.locate(cu1, cu2, JavaForgerConfiguration.builder().build());
 
     Assert.assertEquals("Expected the same size", expected.size(), locations.size());
 
-    Iterator<Entry<CodeSnipitLocation, CodeSnipitLocation>> res = locations.entrySet().iterator();
-    Iterator<Entry<CodeSnipitLocation, CodeSnipitLocation>> exp = expected.entrySet().iterator();
+    Iterator<Entry<CodeSnippetLocation, CodeSnippetLocation>> res = locations.entrySet().iterator();
+    Iterator<Entry<CodeSnippetLocation, CodeSnippetLocation>> exp = expected.entrySet().iterator();
     int i = 0;
     while (res.hasNext()) {
       Assert.assertEquals("Expected the locations on index " + i++ + " to be equal", exp.next(), res.next());

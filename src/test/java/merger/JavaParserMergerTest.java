@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import common.AbstractFileChangingTest;
 import configuration.JavaForgerConfiguration;
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
  * Unit test for {@link JavaParserMerger}.
@@ -59,7 +59,7 @@ public class JavaParserMergerTest extends AbstractFileChangingTest {
   }
 
   private void executeAndVerify(JavaForgerConfiguration conf, String expected, String merge) throws IOException {
-    new JavaParserMerger().merge(conf, new CodeSnipit(merge), INPUT_CLASS, null);
+    new JavaParserMerger().merge(conf, new CodeSnippet(merge), INPUT_CLASS, null);
 
     super.stringToFile(EXPECTED_CLASS, expected);
 

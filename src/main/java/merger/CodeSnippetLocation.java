@@ -28,45 +28,57 @@ import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.javadoc.Javadoc;
 
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
  * Defines the location of a code block with an inclusive start line number and an exclusive end line number.
  *
  * @author Daan
  */
-public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
+public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
 
-  /** start of the {@link CodeSnipitLocation} (inclusive), first possible line number is '1' */
+  /** start of the {@link CodeSnippetLocation} (inclusive), first possible line number is '1' */
   private final int start;
-  /** end of the {@link CodeSnipitLocation} (exclusive) */
+  /** end of the {@link CodeSnippetLocation} (exclusive) */
   private final int end;
+  /** Mainly for debugging purposes, to easily see what this {@link CodeSnippetLocation} represents. */
+  private Node node;
 
   /**
-   * @param start {@link CodeSnipitLocation#start}
-   * @param end {@link CodeSnipitLocation#end}
+   * @param start {@link CodeSnippetLocation#start}
+   * @param end {@link CodeSnippetLocation#end}
    */
-  public CodeSnipitLocation(int start, int end) {
+  public CodeSnippetLocation(int start, int end) {
     this.start = start;
     this.end = end;
   }
+  
+  /**
+   * @param start {@link CodeSnippetLocation#start}
+   * @param end {@link CodeSnippetLocation#end}
+   */
+  public CodeSnippetLocation(int start, int end, Node node) {
+	  this.start = start;
+	  this.end = end;
+	  this.setNode(node); 
+  }
 
   /**
-   * @see CodeSnipitLocation#start
+   * @see CodeSnippetLocation#start
    */
   public int getStart() {
     return start;
   }
 
   /**
-   * @see CodeSnipitLocation#end
+   * @see CodeSnippetLocation#end
    */
   public int getEnd() {
     return end;
   }
 
   /**
-   * @return The number of lines represented by this {@link CodeSnipit}.
+   * @return The number of lines represented by this {@link CodeSnippet}.
    */
   public int getNumberOfLines() {
     return end - start;
@@ -94,82 +106,93 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
   }
 
   /**
-   * @return The total number of lines represented by this {@link CodeSnipitLocation}.
+   * @return The total number of lines represented by this {@link CodeSnippetLocation}.
    */
   public int size() {
     return end - start;
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation}.
+   * Creates a new {@link CodeSnippetLocation}.
    *
-   * @param start The {@link CodeSnipitLocation#start}
-   * @param end The {@link CodeSnipitLocation#end}
-   * @return new {@link CodeSnipitLocation}
+   * @param start The {@link CodeSnippetLocation#start}
+   * @param end The {@link CodeSnippetLocation#end}
+   * @return new {@link CodeSnippetLocation}
    */
-  public static CodeSnipitLocation of(int start, int end) {
-    return new CodeSnipitLocation(start, end);
+  public static CodeSnippetLocation of(int start, int end) {
+    return new CodeSnippetLocation(start, end, null);
+  }
+  
+  /**
+   * Creates a new {@link CodeSnippetLocation}.
+   *
+   * @param start The {@link CodeSnippetLocation#start}
+   * @param end The {@link CodeSnippetLocation#end}
+   * @return new {@link CodeSnippetLocation}
+   */
+  public static CodeSnippetLocation of(int start, int end, Node node) {
+	  return new CodeSnippetLocation(start, end, node);
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation} of a single line.
+   * Creates a new {@link CodeSnippetLocation} of a single line.
    *
-   * @param startEnd The {@link CodeSnipitLocation#start} and {@link CodeSnipitLocation#end}
-   * @return new {@link CodeSnipitLocation}
+   * @param startEnd The {@link CodeSnippetLocation#start} and {@link CodeSnippetLocation#end}
+   * @return new {@link CodeSnippetLocation}
    */
-  public static CodeSnipitLocation of(int startEnd) {
+  public static CodeSnippetLocation of(int startEnd) {
     return of(startEnd, startEnd);
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation} for the given {@link Node}.
+   * Creates a new {@link CodeSnippetLocation} for the given {@link Node}.
    *
    * @param node The {@link JavaParser} {@link Node} used to determine the beginning and end of the node. Javadoc is not taken into account.
-   * @return new {@link CodeSnipitLocation}.
+   * @return new {@link CodeSnippetLocation}.
    */
-  public static CodeSnipitLocation of(Node node) {
-    return of(calculateStart(node), calculateEnd(node));
+  public static CodeSnippetLocation of(Node node) {
+    return of(calculateStart(node), calculateEnd(node), node);
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation} representing the line directly above the given {@link JavaParser} {@link Node}.
+   * Creates a new {@link CodeSnippetLocation} representing the line directly above the given {@link JavaParser} {@link Node}.
    *
    * @param node the {@link JavaParser} {@link Node}.
-   * @return a new {@link CodeSnipitLocation}.
+   * @return a new {@link CodeSnippetLocation}.
    */
-  public static CodeSnipitLocation before(Node node) {
+  public static CodeSnippetLocation before(Node node) {
     return of(node.getBegin().get().line);
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation} representing the line directly below the given {@link JavaParser} {@link Node}.
+   * Creates a new {@link CodeSnippetLocation} representing the line directly below the given {@link JavaParser} {@link Node}.
    *
    * @param node the {@link JavaParser} {@link Node}.
-   * @return a new {@link CodeSnipitLocation}.
+   * @return a new {@link CodeSnippetLocation}.
    */
-  public static CodeSnipitLocation after(Node node) {
+  public static CodeSnippetLocation after(Node node) {
     return of(calculateEnd(node));
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation} for the given {@link Node}s.
+   * Creates a new {@link CodeSnippetLocation} for the given {@link Node}s.
    *
-   * @param inclusiveStart The beginning of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnipitLocation}.
-   * @param exclusiveEnd The beginning of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnipitLocation}.
-   * @return new {@link CodeSnipitLocation}.
+   * @param inclusiveStart The beginning of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnippetLocation}.
+   * @param exclusiveEnd The beginning of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnippetLocation}.
+   * @return new {@link CodeSnippetLocation}.
    */
-  public static CodeSnipitLocation fromUntil(Node inclusiveStart, Node exclusiveEnd) {
+  public static CodeSnippetLocation fromUntil(Node inclusiveStart, Node exclusiveEnd) {
     return of(calculateStart(inclusiveStart), calculateStart(exclusiveEnd));
   }
 
   /**
-   * Creates a new {@link CodeSnipitLocation} for the given {@link Node}s.
+   * Creates a new {@link CodeSnippetLocation} for the given {@link Node}s.
    *
-   * @param exclusiveStart The end of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnipitLocation}.
-   * @param inclusiveEnd The end of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnipitLocation}.
-   * @return new {@link CodeSnipitLocation}.
+   * @param exclusiveStart The end of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnippetLocation}.
+   * @param inclusiveEnd The end of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnippetLocation}.
+   * @return new {@link CodeSnippetLocation}.
    */
-  public static CodeSnipitLocation fromAfterUntilIncluding(Node exclusiveStart, BlockStmt inclusiveEnd) {
+  public static CodeSnippetLocation fromAfterUntilIncluding(Node exclusiveStart, BlockStmt inclusiveEnd) {
     return of(calculateEnd(exclusiveStart), calculateEnd(inclusiveEnd));
   }
 
@@ -190,7 +213,7 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    CodeSnipitLocation other = (CodeSnipitLocation) obj;
+    CodeSnippetLocation other = (CodeSnippetLocation) obj;
     if (end != other.end)
       return false;
     if (start != other.start)
@@ -201,12 +224,12 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
   @Override
   public String toString() {
     ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    builder.append("start", start).append("end", end);
+    builder.append("start", start).append("end", end).append("node", node);
     return builder.toString();
   }
 
   @Override
-  public int compareTo(CodeSnipitLocation that) {
+  public int compareTo(CodeSnippetLocation that) {
     return this.start - that.start;
   }
 
@@ -235,5 +258,13 @@ public class CodeSnipitLocation implements Comparable<CodeSnipitLocation> {
     }
     return javaDocLines;
   }
+
+public Node getNode() {
+	return node;
+}
+
+public void setNode(Node node) {
+	this.node = node;
+}
 
 }

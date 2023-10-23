@@ -23,18 +23,18 @@ import java.util.LinkedHashMap;
 import com.github.javaparser.ast.CompilationUnit;
 
 import configuration.JavaForgerConfiguration;
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
  * Class to merge new code into an existing class, on line per line basis.
  *
  * @author Daan
  */
-public class LineMerger extends CodeSnipitMerger {
+public class LineMerger extends CodeSnippetMerger {
 
-  private CodeSnipitLocater locater = new CodeSnipitLocater();
+  private CodeSnippetLocater locater = new CodeSnippetLocater();
   private CodeSnipitInserter inserter = new CodeSnipitInserter();
-  private CodeSnipitReader reader = new CodeSnipitReader();
+  private CodeSnippetReader reader = new CodeSnippetReader();
 
   @Override
   public boolean supports(JavaForgerConfiguration config) {
@@ -42,10 +42,10 @@ public class LineMerger extends CodeSnipitMerger {
   }
 
   @Override
-  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath) throws IOException {
+  protected void executeMerge(JavaForgerConfiguration config, CodeSnippet codeSnipit, String mergeClassPath, String inputFilePath) throws IOException {
     CompilationUnit existingCode = reader.read(mergeClassPath);
     CompilationUnit newCode = reader.read(codeSnipit, mergeClassPath);
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode, config);
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode, config);
     inserter.insert(config, mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
   }
 

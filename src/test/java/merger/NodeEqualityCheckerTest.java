@@ -36,11 +36,11 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 
 /**
- * Unit test for {@link NodeComparator}.
+ * Unit test for {@link NodeEqualityChecker}.
  *
  * @author Daan
  */
-public class NodeComparatorTest {
+public class NodeEqualityCheckerTest {
 
   private static final PackageDeclaration PACKAGE = new PackageDeclaration();
   private static final ImportDeclaration IMPORT = new ImportDeclaration("imp", false, false);
@@ -51,7 +51,7 @@ public class NodeComparatorTest {
   private static final ClassOrInterfaceDeclaration CLASS = new ClassOrInterfaceDeclaration().setName("class1");
   private static final ClassOrInterfaceDeclaration CLASS2 = new ClassOrInterfaceDeclaration().setName("class2");
 
-  private NodeComparator comparator = new NodeComparator();
+  private NodeEqualityChecker comparator = new NodeEqualityChecker();
 
   @Test
   public void testCompare_sorting() {

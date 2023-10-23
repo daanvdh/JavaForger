@@ -45,7 +45,7 @@ public class CodeSnipitInserter {
    * @throws IOException If path to existing class is invalid.
    */
   public void insert(JavaForgerConfiguration config, String mergeClassPath, String newCode,
-      LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) throws IOException {
+      LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations) throws IOException {
     List<String> existingLines = Files.readAllLines(Paths.get(mergeClassPath), StandardCharsets.UTF_8);
     List<String> newlines = Arrays.asList(newCode.split("\\r?\\n"));
     List<String> result = insert(config, existingLines, newlines, newCodeInsertionLocations);
@@ -53,13 +53,13 @@ public class CodeSnipitInserter {
   }
 
   private List<String> insert(JavaForgerConfiguration config, List<String> existingLines, List<String> newlines,
-      LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations) {
+      LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations) {
     // Because newCodeInsertionLocations is ordered, we keep track of the already added lines to determine the new insertion location
     int addedLines = 0;
 
-    for (Map.Entry<CodeSnipitLocation, CodeSnipitLocation> locations : newCodeInsertionLocations.entrySet()) {
-      CodeSnipitLocation codeLocation = locations.getKey();
-      CodeSnipitLocation insertLocation = locations.getValue();
+    for (Map.Entry<CodeSnippetLocation, CodeSnippetLocation> locations : newCodeInsertionLocations.entrySet()) {
+      CodeSnippetLocation codeLocation = locations.getKey();
+      CodeSnippetLocation insertLocation = locations.getValue();
 
       if (config.isOverride() || !insertLocation.containsLines()) {
         // Remove old lines

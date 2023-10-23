@@ -41,33 +41,33 @@ public class CodeSnipitInserterTest extends AbstractFileChangingTest {
 
   @Test
   public void testInsert_addPackageNoOverride() throws IOException {
-    executeAndVerify("verify-nothingHappend.java", false, CodeSnipitLocation.of(18, 19));
+    executeAndVerify("verify-nothingHappend.java", false, CodeSnippetLocation.of(18, 19));
   }
 
   @Test
   public void testInsert_addPackageOverride() throws IOException {
-    executeAndVerify("verify-overriden.java", true, CodeSnipitLocation.of(18, 19));
+    executeAndVerify("verify-overriden.java", true, CodeSnippetLocation.of(18, 19));
   }
 
   @Test
   public void testInsert_addImportNoOverride() throws IOException {
-    executeAndVerify("verify-inserted.java", false, CodeSnipitLocation.of(19));
+    executeAndVerify("verify-inserted.java", false, CodeSnippetLocation.of(19));
   }
 
   @Test
   public void testInsert_addImportOverride() throws IOException {
-    executeAndVerify("verify-inserted.java", true, CodeSnipitLocation.of(19));
+    executeAndVerify("verify-inserted.java", true, CodeSnippetLocation.of(19));
   }
 
-  private void executeAndVerify(String expectedClass, boolean override, CodeSnipitLocation... insertLocation) throws IOException {
-    LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations = new LinkedHashMap<>();
+  private void executeAndVerify(String expectedClass, boolean override, CodeSnippetLocation... insertLocation) throws IOException {
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations = new LinkedHashMap<>();
 
-    IntStream.range(0, insertLocation.length).forEach(i -> newCodeInsertionLocations.put(CodeSnipitLocation.of(1 + i, 2 + i), insertLocation[i]));
+    IntStream.range(0, insertLocation.length).forEach(i -> newCodeInsertionLocations.put(CodeSnippetLocation.of(1 + i, 2 + i), insertLocation[i]));
 
     executeAndVerify(expectedClass, override, newCodeInsertionLocations);
   }
 
-  private void executeAndVerify(String expectedClass, boolean override, LinkedHashMap<CodeSnipitLocation, CodeSnipitLocation> newCodeInsertionLocations)
+  private void executeAndVerify(String expectedClass, boolean override, LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations)
       throws IOException {
     inserter.insert(JavaForgerConfiguration.builder().override(override).build(), INPUT_CLASS, "this is the new Code 1\nthis is the new Code 2\n",
         newCodeInsertionLocations);

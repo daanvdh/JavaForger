@@ -26,7 +26,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
  * Parser using {@link JavaParser} to parse classes. If an exception is thrown within JavaParser, this class will output the input String so that everything can
@@ -49,7 +49,7 @@ public class Parser {
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("The following could not be parsed:");
-      new CodeSnipit(code).printWithLineNumbers();
+      new CodeSnippet(code).printWithLineNumbers();
       throw e;
     }
     return cu;

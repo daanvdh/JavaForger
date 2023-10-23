@@ -105,8 +105,10 @@ public abstract class AbstractFileChangingTest {
 
       while (equal && line1 != null) {
         equal = line1.equals(line2);
-        line1 = reader1.readLine();
-        line2 = reader2.readLine();
+        if (equal) {
+        	line1 = reader1.readLine();
+        	line2 = reader2.readLine();
+        }
       }
 
       equal = equal && line1 == null && line2 == null;

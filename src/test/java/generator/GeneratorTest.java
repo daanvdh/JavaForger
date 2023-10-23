@@ -134,18 +134,18 @@ public class GeneratorTest {
   }
 
   private void executeAndVerify(String template, String inputClass, TemplateInputParameters map, String expected) throws IOException, TemplateException {
-    CodeSnipit code = execute(template, inputClass, map);
+    CodeSnippet code = execute(template, inputClass, map);
     verifyEquals(expected, code.toString());
   }
 
-  private CodeSnipit execute(String template, String inputClass, TemplateInputParameters map) throws IOException, TemplateException {
+  private CodeSnippet execute(String template, String inputClass, TemplateInputParameters map) throws IOException, TemplateException {
     if (map != null) {
       genConfig.setInputParameters(map);
     }
     if (template != null) {
       genConfig.setTemplate(template);
     }
-    CodeSnipit code = gen.execute(genConfig, inputClass);
+    CodeSnippet code = gen.execute(genConfig, inputClass);
     return code;
   }
 

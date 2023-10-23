@@ -36,9 +36,9 @@ public class JavaForger {
    * configuration.
    *
    * @param config The Configuration containing the template and settings for how to process the input class to generate code.
-   * @return The {@link CodeSnipit} containing the generated code.
+   * @return The {@link CodeSnippet} containing the generated code.
    */
-  public static CodeSnipit execute(JavaForgerConfiguration config) {
+  public static CodeSnippet execute(JavaForgerConfiguration config) {
     Exception caught = null;
     try {
       return generator.execute(config);
@@ -56,9 +56,9 @@ public class JavaForger {
    *
    * @param config The Configuration containing the template and settings for how to process the input class to generate code.
    * @param inputClass The full path to the class to be used as input for the template.
-   * @return The {@link CodeSnipit} containing the generated code.
+   * @return The {@link CodeSnippet} containing the generated code.
    */
-  public static CodeSnipit execute(JavaForgerConfiguration config, String inputClass) {
+  public static CodeSnippet execute(JavaForgerConfiguration config, String inputClass) {
     Exception caught = null;
     try {
       return generator.execute(config, inputClass);
@@ -77,9 +77,9 @@ public class JavaForger {
    * @param config The Configuration containing the template and settings for how to process the input class to generate code.
    * @param inputClass The full path to the class to be used as input for the template.
    * @param outputClass The class to be used to merge the generated code with.
-   * @return The {@link CodeSnipit} containing the generated code.
+   * @return The {@link CodeSnippet} containing the generated code.
    */
-  public static CodeSnipit execute(JavaForgerConfiguration config, String inputClass, String outputClass) {
+  public static CodeSnippet execute(JavaForgerConfiguration config, String inputClass, String outputClass) {
     Exception caught = null;
     try {
       JavaForgerConfiguration copy = JavaForgerConfiguration.builder(config).mergeClass(outputClass).build();

@@ -98,7 +98,7 @@ public class TemplateIntegrationTest extends AbstractFileChangingTest {
    * @param args
    * @throws IOException
    */
-  public static void mainsfdg(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException {
 
     // This statement prevents the main method from accidently being executed.
     // Assert.fail();

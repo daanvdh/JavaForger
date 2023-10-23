@@ -24,22 +24,22 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
- * Unit test for {@link CodeSnipitReader}
+ * Unit test for {@link CodeSnippetReader}
  *
  * @author Daan
  */
-public class CodeSnipitReaderTest {
+public class CodeSnippetReaderTest {
 
-  private CodeSnipitReader sut = new CodeSnipitReader();
+  private CodeSnippetReader sut = new CodeSnippetReader();
 
   @Test
   public void testRead_withClass() {
     String code = "class Claz { \n\n" + "protected String prettyString = \"very pretty\";\n" + "\n}\n";
 
-    CompilationUnit result = sut.read(new CodeSnipit(code), "/path/to/Claz.java");
+    CompilationUnit result = sut.read(new CodeSnippet(code), "/path/to/Claz.java");
 
     Assert.assertEquals(1, result.getChildNodes().size());
     Assert.assertTrue(result.getChildNodes().get(0) instanceof ClassOrInterfaceDeclaration);
@@ -53,7 +53,7 @@ public class CodeSnipitReaderTest {
   public void testRead_WithoutClass() {
     String code = "protected String prettyString = \"very pretty\";";
 
-    CompilationUnit result = sut.read(new CodeSnipit(code), "/path/to/Claz.java");
+    CompilationUnit result = sut.read(new CodeSnippet(code), "/path/to/Claz.java");
 
     Assert.assertEquals(1, result.getChildNodes().size());
     Assert.assertTrue(result.getChildNodes().get(0) instanceof ClassOrInterfaceDeclaration);
@@ -67,7 +67,7 @@ public class CodeSnipitReaderTest {
   public void testToCompleteClass_onlyImport() {
     String code = "import my.impord;";
 
-    String claz = sut.toCompleteClass(new CodeSnipit(code), "The/Path\\To/MyClass.java");
+    String claz = sut.toCompleteClass(new CodeSnippet(code), "The/Path\\To/MyClass.java");
 
     Assert.assertEquals(claz, code, claz);
   }

@@ -34,25 +34,25 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 
 import configuration.PathConverter;
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 import reader.Parser;
 
 /**
- * Reads a {@link CodeSnipit} and turns it into a {@link CompilationUnit} by using {@link JavaParser}.
+ * Reads a {@link CodeSnippet} and turns it into a {@link CompilationUnit} by using {@link JavaParser}.
  *
  * @author Daan
  */
-public class CodeSnipitReader {
+public class CodeSnippetReader {
 
   /**
-   * Reads a {@link CodeSnipit} and turns it into a {@link CompilationUnit} by using {@link JavaParser}.
+   * Reads a {@link CodeSnippet} and turns it into a {@link CompilationUnit} by using {@link JavaParser}.
    *
-   * @param codeSnipit The {@link CodeSnipit} to be read.
-   * @param classPath The path to the class to which this is going to be merged. Needed to append the class name if the {@link CodeSnipit} has no class name
+   * @param codeSnipit The {@link CodeSnippet} to be read.
+   * @param classPath The path to the class to which this is going to be merged. Needed to append the class name if the {@link CodeSnippet} has no class name
    *          defined.
    * @return A {@link CompilationUnit} of the input code
    */
-  public CompilationUnit read(CodeSnipit codeSnipit, String classPath) {
+  public CompilationUnit read(CodeSnippet codeSnipit, String classPath) {
     CompilationUnit n;
     if (hasClassCodeDefined(codeSnipit)) {
       String completeClass = toCompleteClass(codeSnipit, classPath);
@@ -107,15 +107,15 @@ public class CodeSnipitReader {
   }
 
   /**
-   * Converts a {@link CodeSnipit} to a String representing a full class. If the codeSnipit does not have a class defined, the code is wrapped into a class
+   * Converts a {@link CodeSnippet} to a String representing a full class. If the codeSnipit does not have a class defined, the code is wrapped into a class
    * taking into account possible imports or package definition.
    *
-   * @param codeSnipit The {@link CodeSnipit} to convert.
+   * @param codeSnipit The {@link CodeSnippet} to convert.
    * @param mergeClassPath The path to the class to which this will eventually be merged. Needed to determine the class name if the codeSnipit does not contain
    *          one.
    * @return A String representing a full class.
    */
-  public String toCompleteClass(CodeSnipit codeSnipit, String mergeClassPath) {
+  public String toCompleteClass(CodeSnippet codeSnipit, String mergeClassPath) {
     String string = codeSnipit.toString();
     int index = firstIndexAfterImports(string);
 
@@ -150,7 +150,7 @@ public class CodeSnipitReader {
    * @param codeSnipit The code to analyze
    * @return True if it has a class defined or fields, constructors or methods that should have been in the class.
    */
-  private boolean hasClassCodeDefined(CodeSnipit codeSnipit) {
+  private boolean hasClassCodeDefined(CodeSnippet codeSnipit) {
     String string = codeSnipit.toString();
     int index = firstIndexAfterImports(string);
     String codeAfterImports = string.substring(index);

@@ -45,16 +45,16 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 
 import configuration.JavaForgerConfiguration;
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
- * Class for merging generated {@link CodeSnipit}s into java lass files.
+ * Class for merging generated {@link CodeSnippet}s into java lass files.
  *
  * @author Daan
  */
-public class JavaParserMerger extends CodeSnipitMerger {
+public class JavaParserMerger extends CodeSnippetMerger {
 
-  private CodeSnipitReader reader = new CodeSnipitReader();
+  private CodeSnippetReader reader = new CodeSnippetReader();
 
   @Override
   public boolean supports(JavaForgerConfiguration config) {
@@ -62,18 +62,18 @@ public class JavaParserMerger extends CodeSnipitMerger {
   }
 
   /**
-   * Merges the input {@link CodeSnipit} with the mergeClass given by the {@link JavaForgerConfiguration}. Currently only codeSnipits are supported that are not
+   * Merges the input {@link CodeSnippet} with the mergeClass given by the {@link JavaForgerConfiguration}. Currently only codeSnipits are supported that are not
    * a complete class. Imports are also not supported. Inside this method we wrap the code within the codeSnipit in a class and let {@link JavaParser} read it.
    * Then everything inside the wrapped class will be inserted into the inputClass. Variables with the same name and Methods with the same name and signature
    * will be replaced in the mergeClass. Changes will be written directly in the mergeClass.
    *
    * @param config The {@link JavaForgerConfiguration} containing merge settings and the path of the class to merge with.
-   * @param codeSnipit The {@link CodeSnipit} which will be merged into the input class.
+   * @param codeSnipit The {@link CodeSnippet} which will be merged into the input class.
    * @param mergeClassPath The path to the class to merge with
    * @throws IOException If the mergeClassPath does not exist
    */
   @Override
-  protected void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath) throws IOException {
+  protected void executeMerge(JavaForgerConfiguration config, CodeSnippet codeSnipit, String mergeClassPath, String inputFilePath) throws IOException {
     CompilationUnit existingCode = reader.read(mergeClassPath);
     String completeClass = reader.toCompleteClass(codeSnipit, mergeClassPath);
     CompilationUnit newCode = reader.readClass(completeClass);

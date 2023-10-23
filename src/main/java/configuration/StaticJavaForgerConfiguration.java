@@ -51,19 +51,6 @@ import reader.ClassContainerReaderInterface;
 public class StaticJavaForgerConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(StaticJavaForgerConfiguration.class);
 
-  // TODO: now that we start to need proxies we should really consider Spring
-  // private ClassContainerReaderInterface readerProxy = new ClassContainerReaderInterface() {
-  // @Override
-  // public ClassContainer read(String inputClass) throws IOException {
-  // return reader.read(inputClass);
-  // }
-  //
-  // @Override
-  // public ClassContainer readFromFileContent(String inputContent) {
-  // return reader.readFromFileContent(inputContent);
-  // }
-  //
-  // };
   private ClassContainerReader reader;
   private InitializationService initializer;
   private Configuration freeMarkerConfiguration;

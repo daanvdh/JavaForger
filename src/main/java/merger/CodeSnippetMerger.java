@@ -22,16 +22,16 @@ import java.io.IOException;
 
 import configuration.JavaForgerConfiguration;
 import configuration.StaticJavaForgerConfiguration;
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 import generator.JavaForgerException;
 
 /**
- * Responsible for merging {@link CodeSnipit}s into java classes. The current default implementation is {@link LineMerger}. The default can be changed within
+ * Responsible for merging {@link CodeSnippet}s into java classes. The current default implementation is {@link LineMerger}. The default can be changed within
  * {@link StaticJavaForgerConfiguration}.
  *
  * @author Daan
  */
-public abstract class CodeSnipitMerger {
+public abstract class CodeSnippetMerger {
 
   /**
    * @param config
@@ -39,7 +39,7 @@ public abstract class CodeSnipitMerger {
    */
   public abstract boolean supports(JavaForgerConfiguration config);
 
-  public void merge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFilePath) {
+  public void merge(JavaForgerConfiguration config, CodeSnippet codeSnipit, String mergeClassPath, String inputFilePath) {
     if (validate(codeSnipit, mergeClassPath)) {
       try {
         executeMerge(config, codeSnipit, mergeClassPath, inputFilePath);
@@ -50,9 +50,9 @@ public abstract class CodeSnipitMerger {
     }
   }
 
-  protected abstract void executeMerge(JavaForgerConfiguration config, CodeSnipit codeSnipit, String mergeClassPath, String inputFile) throws IOException;
+  protected abstract void executeMerge(JavaForgerConfiguration config, CodeSnippet codeSnipit, String mergeClassPath, String inputFile) throws IOException;
 
-  protected boolean validate(CodeSnipit codeSnipit, String mergeClassPath) {
+  protected boolean validate(CodeSnippet codeSnipit, String mergeClassPath) {
     boolean success = true;
     if (mergeClassPath == null) {
       throw new JavaForgerException("merge class path may not be null");

@@ -21,16 +21,16 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit test for the {@link CodeSnipit}
+ * Unit test for the {@link CodeSnippet}
  *
  * @author Daan
  */
-public class CodeSnipitTest {
+public class CodeSnippetTest {
 
   @Test
   public void testCodeSnipitConstructor() {
     String codeString = "a\nb\nc";
-    CodeSnipit codeSnipit = new CodeSnipit(codeString);
+    CodeSnippet codeSnipit = new CodeSnippet(codeString);
     Assert.assertEquals(codeString, codeSnipit.toString());
   }
 

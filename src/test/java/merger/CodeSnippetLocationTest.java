@@ -26,11 +26,11 @@ import com.github.javaparser.ast.Node;
 import reader.Parser;
 
 /**
- * Unit test for {@link CodeSnipitLocation}
+ * Unit test for {@link CodeSnippetLocation}
  *
  * @author Daan
  */
-public class CodeSnipitLocationTest {
+public class CodeSnippetLocationTest {
 
   private Parser parser = new Parser();
 
@@ -38,18 +38,18 @@ public class CodeSnipitLocationTest {
   public void testOf_NodeInput() {
     Node node = createNode();
 
-    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+    CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnipitLocation.of(2, 3), location);
+    Assert.assertEquals(CodeSnippetLocation.of(2, 3), location);
   }
 
   @Test
   public void testBefore_NodeInput() {
     Node node = createNode();
 
-    CodeSnipitLocation location = CodeSnipitLocation.before(node);
+    CodeSnippetLocation location = CodeSnippetLocation.before(node);
 
-    Assert.assertEquals(CodeSnipitLocation.of(2, 2), location);
+    Assert.assertEquals(CodeSnippetLocation.of(2, 2), location);
   }
 
   @Test
@@ -57,9 +57,9 @@ public class CodeSnipitLocationTest {
     String field = "/**\n Very nice javadoc.\n * With mulitple lines.\n */\nprivate String someField;\n";
     Node node = wrapInsideCompilationUnit(field);
 
-    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+    CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnipitLocation.of(6, 11), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 11), location);
   }
 
   @Test
@@ -71,9 +71,9 @@ public class CodeSnipitLocationTest {
             + "private String someField;\n"; //
     Node node = wrapInsideCompilationUnit(field);
 
-    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+    CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnipitLocation.of(6, 10), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 10), location);
   }
 
   @Test
@@ -81,9 +81,9 @@ public class CodeSnipitLocationTest {
     String field = "/**\n Very nice javadoc.\n * With mulitple lines.\n */\n@Anno1\n@Anno2\nprivate String someField;\n";
     Node node = wrapInsideCompilationUnit(field);
 
-    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+    CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnipitLocation.of(6, 13), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 13), location);
   }
 
   @Test
@@ -97,9 +97,9 @@ public class CodeSnipitLocationTest {
             + "private String someField;\n"; //
     Node node = wrapInsideCompilationUnit(field);
 
-    CodeSnipitLocation location = CodeSnipitLocation.of(node);
+    CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnipitLocation.of(6, 13), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 13), location);
   }
 
   private Node createNode() {

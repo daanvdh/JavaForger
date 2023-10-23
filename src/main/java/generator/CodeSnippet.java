@@ -27,11 +27,11 @@ import java.util.stream.IntStream;
  *
  * @author Daan
  */
-public class CodeSnipit {
+public class CodeSnippet {
 
   private String code;
 
-  public CodeSnipit(String codeString) {
+  public CodeSnippet(String codeString) {
     code = new String(codeString);
   }
 

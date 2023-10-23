@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import common.AbstractFileChangingTest;
 import configuration.JavaForgerConfiguration;
-import generator.CodeSnipit;
+import generator.CodeSnippet;
 
 /**
  * Unit test for {@link JavaParserMerger}.
@@ -81,7 +81,7 @@ public class LineMergerTest extends AbstractFileChangingTest {
   }
 
   private void executeAndVerify(String expectedClass, String code) throws IOException {
-    merger.merge(JavaForgerConfiguration.builder().override(true).build(), new CodeSnipit(code), INPUT_CLASS, null);
+    merger.merge(JavaForgerConfiguration.builder().override(true).build(), new CodeSnippet(code), INPUT_CLASS, null);
     verifyFileEqual(EXPECTED_RESULTS_PATH + expectedClass, INPUT_CLASS);
   }
 

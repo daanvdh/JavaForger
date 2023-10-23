@@ -1,12 +1,19 @@
 /*
- * Copyright (c) 2023 by Eyefreight BV (www.eyefreight.com). All rights reserved.
+ * Copyright 2023 by Daan van den Heuvel.
  *
- * This software is provided by the copyright holder and contributors "as is" and any express or implied warranties, including, but
- * not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall
- * Eyefreight BV or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages
- * (including, but not limited to, procurement of substitute goods or services; * loss of use, data, or profits; or business
- * interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including
- * negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
+ * This file is part of JavaForger.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package configuration.merger;
 
@@ -17,14 +24,70 @@ package configuration.merger;
  */
 public class GitMergerConfiguration extends MergerConfiguration {
 
-  private String gitRepository;
+  private String inputGitRepository;
+  private String templateGitRepository;
 
-  public String getGitRepository() {
-    return gitRepository;
+  public GitMergerConfiguration() {
+    // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
   }
 
-  public void setGitRepository(String gitRepository) {
-    this.gitRepository = gitRepository;
+  protected GitMergerConfiguration(GitMergerConfiguration.Builder<?> builder) {
+    super(builder);
+    this.inputGitRepository = builder.inputGitRepository == null ? this.inputGitRepository : builder.inputGitRepository;
+    this.templateGitRepository = builder.templateGitRepository == null ? this.templateGitRepository : builder.templateGitRepository;
+  }
+
+  public String getTemplateGitRepository() {
+    return templateGitRepository;
+  }
+
+  public void setTemplateGitRepository(String templateGitRepository) {
+    this.templateGitRepository = templateGitRepository;
+  }
+
+  public String getInputGitRepository() {
+    return inputGitRepository;
+  }
+
+  public void setInputGitRepository(String inputGitRepository) {
+    this.inputGitRepository = inputGitRepository;
+  }
+
+  /**
+   * Creates builder to build {@link GitMergerConfiguration}.
+   *
+   * @return created builder
+   */
+  public static Builder<?> builder() {
+    return new Builder<>();
+  }
+
+  /**
+   * Builder to build {@link GitMergerConfiguration}.
+   */
+  @SuppressWarnings("unchecked")
+  public static class Builder<T extends GitMergerConfiguration.Builder<?>> extends MergerConfiguration.Builder<T> {
+    private String inputGitRepository;
+    private String templateGitRepository;
+
+    protected Builder() {
+      // Builder should only be used via the parent class or extending builder
+    }
+
+    public T inputGitRepository(String inputGitRepository) {
+      this.inputGitRepository = inputGitRepository;
+      return (T) this;
+    }
+
+    public T templateGitRepository(String templateGitRepository) {
+      this.templateGitRepository = templateGitRepository;
+      return (T) this;
+    }
+
+    @Override
+    public GitMergerConfiguration build() {
+      return new GitMergerConfiguration(this);
+    }
   }
 
 }
