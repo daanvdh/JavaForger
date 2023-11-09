@@ -40,7 +40,7 @@ public class CodeSnippetLocationTest {
 
     CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnippetLocation.of(2, 3), location);
+    Assert.assertEquals(CodeSnippetLocation.of(2, 0, 3, 0), location);
   }
 
   @Test
@@ -49,7 +49,7 @@ public class CodeSnippetLocationTest {
 
     CodeSnippetLocation location = CodeSnippetLocation.before(node);
 
-    Assert.assertEquals(CodeSnippetLocation.of(2, 2), location);
+    Assert.assertEquals(CodeSnippetLocation.of(2, 0, 2, 0), location);
   }
 
   @Test
@@ -59,7 +59,7 @@ public class CodeSnippetLocationTest {
 
     CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnippetLocation.of(6, 11), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 0, 11, 0), location);
   }
 
   @Test
@@ -73,7 +73,7 @@ public class CodeSnippetLocationTest {
 
     CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnippetLocation.of(6, 10), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 0, 10, 0), location);
   }
 
   @Test
@@ -83,7 +83,7 @@ public class CodeSnippetLocationTest {
 
     CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnippetLocation.of(6, 13), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 0, 13, 0), location);
   }
 
   @Test
@@ -99,7 +99,7 @@ public class CodeSnippetLocationTest {
 
     CodeSnippetLocation location = CodeSnippetLocation.of(node);
 
-    Assert.assertEquals(CodeSnippetLocation.of(6, 13), location);
+    Assert.assertEquals(CodeSnippetLocation.of(6, 0, 13, 0), location);
   }
 
   private Node createNode() {

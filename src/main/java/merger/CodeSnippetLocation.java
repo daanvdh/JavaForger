@@ -21,8 +21,10 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.Position;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -37,30 +39,35 @@ import generator.CodeSnippet;
  */
 public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
 
+  // TODO rename to startLine
   /** start of the {@link CodeSnippetLocation} (inclusive), first possible line number is '1' */
   private final int start;
+  // TODO rename to endLine
   /** end of the {@link CodeSnippetLocation} (exclusive) */
   private final int end;
+
+  /** The start column of the {@link CodeSnippetLocation} (inclusive) */
+  private final int startCharacter;
+  /** The end column of the {@link CodeSnippetLocation} (exclusive) */
+  private final int endCharacter;
+
   /** Mainly for debugging purposes, to easily see what this {@link CodeSnippetLocation} represents. */
-  private Node node;
+  private final Node node;
 
   /**
    * @param start {@link CodeSnippetLocation#start}
    * @param end {@link CodeSnippetLocation#end}
    */
-  public CodeSnippetLocation(int start, int end) {
+  public CodeSnippetLocation(int start, int startCharacter, int end, int endCharacter, Node node) {
+    if (start > end || (start == end && startCharacter > endCharacter)) {
+      throw new RuntimeException(
+          "Start (" + start + ", " + startCharacter + ") cannot be bigger than end (" + end + ", " + endCharacter + ") for node " + node);
+    }
     this.start = start;
     this.end = end;
-  }
-  
-  /**
-   * @param start {@link CodeSnippetLocation#start}
-   * @param end {@link CodeSnippetLocation#end}
-   */
-  public CodeSnippetLocation(int start, int end, Node node) {
-	  this.start = start;
-	  this.end = end;
-	  this.setNode(node); 
+    this.startCharacter = startCharacter;
+    this.endCharacter = endCharacter;
+    this.node = node;
   }
 
   /**
@@ -70,11 +77,19 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     return start;
   }
 
+  public int getStartCharacter() {
+    return startCharacter;
+  }
+
   /**
    * @see CodeSnippetLocation#end
    */
   public int getEnd() {
     return end;
+  }
+
+  public int getEndCharacter() {
+    return endCharacter;
   }
 
   /**
@@ -112,36 +127,31 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     return end - start;
   }
 
-  /**
-   * Creates a new {@link CodeSnippetLocation}.
-   *
-   * @param start The {@link CodeSnippetLocation#start}
-   * @param end The {@link CodeSnippetLocation#end}
-   * @return new {@link CodeSnippetLocation}
-   */
-  public static CodeSnippetLocation of(int start, int end) {
-    return new CodeSnippetLocation(start, end, null);
-  }
-  
-  /**
-   * Creates a new {@link CodeSnippetLocation}.
-   *
-   * @param start The {@link CodeSnippetLocation#start}
-   * @param end The {@link CodeSnippetLocation#end}
-   * @return new {@link CodeSnippetLocation}
-   */
-  public static CodeSnippetLocation of(int start, int end, Node node) {
-	  return new CodeSnippetLocation(start, end, node);
+  public static CodeSnippetLocation of(int start, int startCharacter, int end, int endCharacter) {
+    return of(start, startCharacter, end, endCharacter, null);
   }
 
   /**
-   * Creates a new {@link CodeSnippetLocation} of a single line.
+   * Creates a new {@link CodeSnippetLocation}.
    *
-   * @param startEnd The {@link CodeSnippetLocation#start} and {@link CodeSnippetLocation#end}
+   * @param start The {@link CodeSnippetLocation#start}
+   * @param end The {@link CodeSnippetLocation#end}
    * @return new {@link CodeSnippetLocation}
    */
-  public static CodeSnippetLocation of(int startEnd) {
-    return of(startEnd, startEnd);
+  public static CodeSnippetLocation of(int start, int startCharacter, int end, int endCharacter, Node node) {
+    return new CodeSnippetLocation(start, startCharacter, end, endCharacter, node);
+  }
+
+  public static CodeSnippetLocation of(Pair<Integer, Integer> start, Pair<Integer, Integer> end) {
+    return of(start, end, null);
+  }
+
+  public static CodeSnippetLocation of(Pair<Integer, Integer> start, Pair<Integer, Integer> end, Node node) {
+    return of(start.getLeft(), start.getRight(), end.getLeft(), end.getRight(), node);
+  }
+
+  public static CodeSnippetLocation of(Pair<Integer, Integer> startEnd) {
+    return of(startEnd.getLeft(), startEnd.getRight(), startEnd.getLeft(), startEnd.getRight());
   }
 
   /**
@@ -161,7 +171,8 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
    * @return a new {@link CodeSnippetLocation}.
    */
   public static CodeSnippetLocation before(Node node) {
-    return of(node.getBegin().get().line);
+    Position position = node.getBegin().get();
+    return of(position.line, position.column, position.line, position.column, node);
   }
 
   /**
@@ -224,7 +235,7 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   @Override
   public String toString() {
     ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    builder.append("start", start).append("end", end).append("node", node);
+    builder.append("start", start).append("startCharacter", startCharacter).append("end", end).append("endCharacter", endCharacter).append("node", node);
     return builder.toString();
   }
 
@@ -233,14 +244,17 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     return this.start - that.start;
   }
 
-  private static int calculateEnd(Node node) {
-    return node.getEnd().get().line + 1;
+  private static Pair<Integer, Integer> calculateEnd(Node node) {
+    // TODO Should not do +1 anymore since we are working with columns now. Maybe +1 on the column?
+    return Pair.of(node.getEnd().get().line + 1, node.getEnd().get().column);
   }
 
-  private static int calculateStart(Node node) {
+  private static Pair<Integer, Integer> calculateStart(Node node) {
     int javaDocLines = countJavaDocLines(node);
     int calculatedStart = node.getBegin().get().line - javaDocLines;
-    return calculatedStart;
+    // TODO if javadoc lines are not empty, the column might not be correct.
+    // But maybe IF it has javadoc lines the column is always zero and it makes no difference.
+    return Pair.of(calculatedStart, node.getBegin().get().column);
   }
 
   private static int countJavaDocLines(Node node) {
@@ -259,12 +273,8 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     return javaDocLines;
   }
 
-public Node getNode() {
-	return node;
-}
-
-public void setNode(Node node) {
-	this.node = node;
-}
+  public Node getNode() {
+    return node;
+  }
 
 }

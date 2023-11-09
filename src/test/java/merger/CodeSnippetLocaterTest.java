@@ -45,7 +45,7 @@ public class CodeSnippetLocaterTest {
     String code = "import my.impord;\n\npublic class ClassToMerge {\n\n}";
 
     LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected = new LinkedHashMap<>();
-    expected.put(CodeSnippetLocation.of(1, 2), CodeSnippetLocation.of(2, 2));
+    expected.put(CodeSnippetLocation.of(1, 0, 2, 0), CodeSnippetLocation.of(2, 0, 2, 0));
 
     executeAndVerify(code, code, expected);
   }
@@ -56,7 +56,7 @@ public class CodeSnippetLocaterTest {
     String code2 = "public class ClassToMerge {\n\nclass InnerClass2 {\n\n}\n}";
 
     LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected = new LinkedHashMap<>();
-    expected.put(CodeSnippetLocation.of(3, 6), CodeSnippetLocation.of(6, 6));
+    expected.put(CodeSnippetLocation.of(3, 0, 6, 0), CodeSnippetLocation.of(6, 0, 6, 0));
 
     executeAndVerify(code1, code2, expected);
   }
@@ -73,8 +73,8 @@ public class CodeSnippetLocaterTest {
         + "\n}";
 
     LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> expected = new LinkedHashMap<>();
-    expected.put(CodeSnippetLocation.of(4, 5), CodeSnippetLocation.of(3, 4));
-    expected.put(CodeSnippetLocation.of(3, 4), CodeSnippetLocation.of(5, 5));
+    expected.put(CodeSnippetLocation.of(4, 0, 5, 0), CodeSnippetLocation.of(3, 0, 4, 0));
+    expected.put(CodeSnippetLocation.of(3, 0, 4, 0), CodeSnippetLocation.of(5, 0, 5, 0));
 
     executeAndVerify(code1, code2, expected);
   }

@@ -140,6 +140,10 @@ public class JavaForgerConfiguration {
     this.childConfigs.clear();
     this.childConfigs.addAll(configs);
   }
+  
+  public void clearChildConfigs() {
+	this.childConfigs.clear();
+  }
 
   public void addChildConfig(JavaForgerConfiguration config) {
     this.childConfigs.add(config);

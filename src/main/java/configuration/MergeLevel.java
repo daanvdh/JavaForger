@@ -26,7 +26,10 @@ public enum MergeLevel {
   /** Merge considering fields, methods and constructors independently. */
   METHOD(3),
   /** Merge based on individual lines. */
-  LINE(4);
+  LINE(4), 
+  /** Merge based on individual method calls or variable usages, for example: when inserting Entity.builder().a("a").b("b").c("c").build(); into 
+   * Entity.builder().a("a").c("c").d("d").build(); the result should be Entity.builder().a("a").b("b").c("c").d("d").build(); */
+  SUB_LINE(5);
 
   private int level;
 

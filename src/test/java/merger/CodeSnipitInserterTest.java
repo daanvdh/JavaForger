@@ -41,28 +41,28 @@ public class CodeSnipitInserterTest extends AbstractFileChangingTest {
 
   @Test
   public void testInsert_addPackageNoOverride() throws IOException {
-    executeAndVerify("verify-nothingHappend.java", false, CodeSnippetLocation.of(18, 19));
+    executeAndVerify("verify-nothingHappend.java", false, CodeSnippetLocation.of(18, 0, 19, 0));
   }
 
   @Test
   public void testInsert_addPackageOverride() throws IOException {
-    executeAndVerify("verify-overriden.java", true, CodeSnippetLocation.of(18, 19));
+    executeAndVerify("verify-overriden.java", true, CodeSnippetLocation.of(18, 0, 19, 0));
   }
 
   @Test
   public void testInsert_addImportNoOverride() throws IOException {
-    executeAndVerify("verify-inserted.java", false, CodeSnippetLocation.of(19));
+    executeAndVerify("verify-inserted.java", false, CodeSnippetLocation.of(19, 0, 19, 0));
   }
 
   @Test
   public void testInsert_addImportOverride() throws IOException {
-    executeAndVerify("verify-inserted.java", true, CodeSnippetLocation.of(19));
+    executeAndVerify("verify-inserted.java", true, CodeSnippetLocation.of(19, 0, 19, 0));
   }
 
   private void executeAndVerify(String expectedClass, boolean override, CodeSnippetLocation... insertLocation) throws IOException {
     LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations = new LinkedHashMap<>();
 
-    IntStream.range(0, insertLocation.length).forEach(i -> newCodeInsertionLocations.put(CodeSnippetLocation.of(1 + i, 2 + i), insertLocation[i]));
+    IntStream.range(0, insertLocation.length).forEach(i -> newCodeInsertionLocations.put(CodeSnippetLocation.of(1 + i, 0, 2 + i, 0), insertLocation[i]));
 
     executeAndVerify(expectedClass, override, newCodeInsertionLocations);
   }

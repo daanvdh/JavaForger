@@ -79,8 +79,10 @@ public class GitMerger extends CodeSnippetMerger {
       CompilationUnit currentMergeFileCu = reader.read(mergeClassPath);
       CompilationUnit newlyGeneratedCu = reader.read(codeSnipit, mergeClassPath);
 
-      LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocationsIntoCurrent = locater.locate(currentMergeFileCu, newlyGeneratedCu, config); // (x)
-      LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionsIntoPrevious = locater.locate(previouslyGeneratedCu, newlyGeneratedCu, config); // (y)
+      // (x)
+      LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocationsIntoCurrent = locater.locate(currentMergeFileCu, newlyGeneratedCu, config); 
+      // (y)
+      LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionsIntoPrevious = locater.locate(previouslyGeneratedCu, newlyGeneratedCu, config); 
 
       // Now we have both (x) where it should be inserted into the existing file and (y) where it would have been inserted in a file resulting from an unchanged
       // file generated from the input template. With this we can keep only the insertion locations from (x) for which the same new line from (y) is not a

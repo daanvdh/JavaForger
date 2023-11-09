@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -35,6 +36,8 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.utils.Log;
 
 import configuration.JavaForgerConfiguration;
 import configuration.MergeLevel;
@@ -49,12 +52,12 @@ import generator.JavaForgerException;
 public class CodeSnippetLocater {
 
   private NodeEqualityChecker equalityChecker = new NodeEqualityChecker();
-  private NodeComparator comparator = new NodeComparator(); 
+  private NodeComparator comparator = new NodeComparator();
 
   /**
    * Receives two {@link CompilationUnit}s and determines the location of a package, imports, fields, constructors, methods or inner classes. This method will
-   * retain the order of Nodes in both existing and new code. It can therefore happen that not all nodes are ordered according to the {@link NodeEqualityChecker} if
-   * the inserted code was also not ordered like that.
+   * retain the order of Nodes in both existing and new code. It can therefore happen that not all nodes are ordered according to the
+   * {@link NodeEqualityChecker} if the inserted code was also not ordered like that.
    *
    * @param existingCode {@link CompilationUnit} representing the existing class
    * @param newCode {@link CompilationUnit} representing the code to be added
@@ -92,11 +95,8 @@ public class CodeSnippetLocater {
     // -1 indicates that the new node needs to be inserted before the first node within the existing nodes.
     int insertAfter = -1;
 
-    // TODO nodeTypeSupported does not do anything anymore, everything is supported.
-    List<Node> supportedInsertNodes = insertNodes.stream().filter(equalityChecker::nodeTypeIsSupported).collect(Collectors.toList());
-
     int lastEqualNodeIndex = 0;
-    for (Node insertNode : supportedInsertNodes) {
+    for (Node insertNode : insertNodes) {
       int equalNodeIndex = findEqualNode(existingNodes, insertNode, lastEqualNodeIndex);
       if (equalNodeIndex >= 0) { // Found equal node
         if (!(insertNode instanceof ImportDeclaration)) {
@@ -123,9 +123,11 @@ public class CodeSnippetLocater {
    *
    * @param existingNodes
    * @param insertNodes
+   * @param config
    * @return
    */
-  private LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> createCodeBlockLocationMap(List<Node> existingNodes, List<Node> insertNodes) {
+  private LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> createCodeBlockLocationMap(List<Node> existingNodes, List<Node> insertNodes,
+      JavaForgerConfiguration config) {
     LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> locations = new LinkedHashMap<>();
     if (existingNodes.isEmpty()) {
       // LOG.error("Cannot insert the following nodes in empty existing code block", insertNodes);
@@ -153,11 +155,12 @@ public class CodeSnippetLocater {
           if (insertChildren.isEmpty() || existingChildren.isEmpty()) {
             locations.put(CodeSnippetLocation.of(insertBlockStmt), CodeSnippetLocation.of(existingBlockStmt));
           } else {
-            // for readibillity we will show which part of the following statement is added on which line: if(x) {y;}
+            // for readibillity we will show which part of the following example statement is added on which line: if(x) {y;}
             // if(x) {
-            locations.put(CodeSnippetLocation.fromUntil(insertNode, insertChildren.get(0)), CodeSnippetLocation.fromUntil(existingNode, existingChildren.get(0)));
+            locations.put(CodeSnippetLocation.fromUntil(insertNode, insertChildren.get(0)),
+                CodeSnippetLocation.fromUntil(existingNode, existingChildren.get(0)));
             // y;
-            locations.putAll(createCodeBlockLocationMap(existingChildren, insertChildren));
+            locations.putAll(createCodeBlockLocationMap(existingChildren, insertChildren, config));
             // }
             locations.put(CodeSnippetLocation.fromAfterUntilIncluding(insertChildren.get(insertChildren.size() - 1), insertBlockStmt),
                 CodeSnippetLocation.fromAfterUntilIncluding(existingChildren.get(existingChildren.size() - 1), existingBlockStmt));
@@ -167,28 +170,88 @@ public class CodeSnippetLocater {
           locations.put(CodeSnippetLocation.of(insertNode), CodeSnippetLocation.of(existingNode));
           previousMatchingExistingNodeIndex = equalNodeIndex;
         }
-      } else {
-    	  // No equal node is found, determine in between which nodes the insert node needs to be inserted. 
-    	  // Here we should use a comparator comparing the insertNode with the existingNodes, starting from the searchIndex. 
-    	  // Put the insertNode at the first location possible and update the searchIndex. 
-    	  CodeSnippetLocation newLocation = null; 
-    	  for (int i=Math.max(0, previousMatchingExistingNodeIndex); i< existingNodes.size(); i++) {
-    		  int compare = comparator.compare(insertNode, existingNodes.get(i));
-    		  if (compare <= 0) {
-    			  newLocation = CodeSnippetLocation.before(existingNodes.get(i));
-    			  previousMatchingExistingNodeIndex = i; 
-    			  break; 
-    		  }
-    	  }
-    	  if (newLocation == null) {
-    		  newLocation = CodeSnippetLocation.after(existingNodes.get(existingNodes.size()-1)); 
-    		  previousMatchingExistingNodeIndex = existingNodes.size(); 
-    	  }
-    	  locations.put(CodeSnippetLocation.of(insertNode), newLocation);
+      } else { // No equal node was found
+        // If a similar line exists, merge that line
+        Node mergeLineNode = findExistingNodeToMergeWith(config, existingNodes, insertNode, previousMatchingExistingNodeIndex);
+        if (mergeLineNode != null) {
+          // TODO experimental code that still needs to be tested. The CodeSnippetInserted does not support this yet.
+          LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> subLinelocations = mergeNodes(insertNode, mergeLineNode);
+          subLinelocations.keySet().stream().forEach(k -> locations.put(k, subLinelocations.get(k)));
+        } else {
+          // No equal node is found, determine in between which nodes the insert node needs to be inserted.
+          // Here we should use a comparator comparing the insertNode with the existingNodes, starting from the searchIndex.
+          // Put the insertNode at the first location possible and update the searchIndex.
+          CodeSnippetLocation newLocation = null;
+          for (int i = Math.max(0, previousMatchingExistingNodeIndex); i < existingNodes.size(); i++) {
+            int compare = comparator.compare(insertNode, existingNodes.get(i));
+            if (compare <= 0) {
+              newLocation = CodeSnippetLocation.before(existingNodes.get(i));
+              previousMatchingExistingNodeIndex = i;
+              break;
+            }
+          }
+          if (newLocation == null) {
+            newLocation = CodeSnippetLocation.after(existingNodes.get(existingNodes.size() - 1));
+            previousMatchingExistingNodeIndex = existingNodes.size();
+          }
+          locations.put(CodeSnippetLocation.of(insertNode), newLocation);
+        }
       }
-
     }
     return locations;
+  }
+
+  private LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> mergeNodes(Node insertNode, Node existingNode) {
+    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> subLinelocations = new LinkedHashMap<>();
+    int existingIndex = 0, insertIndex = 0;
+    List<Node> mergeLineChildNodes = existingNode.getChildNodes();
+    while (insertIndex < insertNode.getChildNodes().size()) {
+      Node insertSubLine = insertNode.getChildNodes().get(insertIndex);
+      Node existingSubLine = mergeLineChildNodes.get(existingIndex);
+      if (existingIndex < mergeLineChildNodes.size() && insertIndex < insertNode.getChildNodes().size()) {
+        // TODO first analyse the children of the node before analysing the node itself.
+        if (equalityChecker.isEqualIgnoreChildren(insertSubLine, existingSubLine)) {
+          // TODO This does put a way bigger location on both sides than intended, because all it's children are also incuded.
+          subLinelocations.put(CodeSnippetLocation.of(insertSubLine), CodeSnippetLocation.of(existingSubLine));
+          existingIndex++;
+          insertIndex++;
+        } else {
+          subLinelocations.put(CodeSnippetLocation.of(insertSubLine), CodeSnippetLocation.before(existingSubLine));
+          insertIndex++;
+        }
+      } else if (insertIndex < insertNode.getChildNodes().size()) {
+        subLinelocations.put(CodeSnippetLocation.of(insertSubLine), CodeSnippetLocation.after(mergeLineChildNodes.get(mergeLineChildNodes.size() - 1)));
+        insertIndex++;
+      }
+    }
+    return subLinelocations;
+  }
+
+  private Node findExistingNodeToMergeWith(JavaForgerConfiguration config, List<Node> existingNodes, Node insertNode, int previousMatchingExistingNodeIndex) {
+    Node mergeLineNode = null;
+    if (config.getMergeLevel().isAsFineGrainedAs(MergeLevel.SUB_LINE) && this.subLineMergeIsSupportedFor(insertNode)) {
+      // find first of same type where the first 'something' matches.
+      for (int i = Math.max(0, previousMatchingExistingNodeIndex); i < existingNodes.size() && mergeLineNode == null; i++) {
+        Node existingNode = existingNodes.get(i);
+        if (existingNode.getClass().equals(insertNode.getClass()) && !existingNode.getChildNodes().isEmpty() && !insertNode.getChildNodes().isEmpty()
+        // && existingNode.getChildNodes().get(0).toString().equals(insertNode.getChildNodes().get(0).toString())
+        ) {
+          Log.trace("Determined existing node {} and insert node {} to be equal enough to try and merge them", () -> existingNode, () -> insertNode);
+          mergeLineNode = existingNode;
+        }
+      }
+    }
+    return mergeLineNode;
+  }
+
+  /**
+   * Only return nodes are supported to be merged on sub_line level at the moment.
+   *
+   * @param node The {@link Node} to be checked.
+   * @return true if supported, false otherwise.
+   */
+  private boolean subLineMergeIsSupportedFor(Node node) {
+    return Set.of(ReturnStmt.class).contains(node.getClass());
   }
 
   private LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> handleEqualNodesRecursively(Node insertNode, Node existingNode,
@@ -215,7 +278,7 @@ public class CodeSnippetLocater {
           locationMap = insertNodes.stream().collect(Collectors.toMap(CodeSnippetLocation::of, c -> firstInsertLocation, (a, b) -> a, LinkedHashMap::new));
         } else {
           // TODO handle existingNodes.isEmpty()
-          locationMap = createCodeBlockLocationMap(existingNodes, insertNodes);
+          locationMap = createCodeBlockLocationMap(existingNodes, insertNodes, config);
         }
       }
       // TODO support annotations, javadoc and parameter naming to be inserted.

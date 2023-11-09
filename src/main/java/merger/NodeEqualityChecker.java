@@ -35,6 +35,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.comments.LineComment;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SimpleName;
@@ -51,7 +52,7 @@ import com.github.javaparser.ast.type.Type;
  * @author Daan
  */
 public class NodeEqualityChecker implements Comparator<Node> {
-	// TODO: remove the word comparator from this class. 
+	// TODO: remove the word comparator from this class. Make all methods return a boolean instead of an int
 
   /**
    * Set this value to false if any {@link Node} is only equal if also all it's inner {@link BlockStmt}s are equal. Setting this to true will for example make
@@ -71,6 +72,21 @@ public class NodeEqualityChecker implements Comparator<Node> {
   public boolean nodeTypeIsSupported(Node node) {
     return true;
   }
+  
+  public boolean isEqual(Node insertSubLine, Node existingSubLine) {
+		return compare(insertSubLine, existingSubLine) == 0;
+	}
+  
+  public boolean isEqualIgnoreChildren(Node a, Node b) {
+	  Boolean isEqual = false; 
+	  if (a instanceof MethodCallExpr && b instanceof MethodCallExpr) {
+		  MethodCallExpr m1 = (MethodCallExpr) a; 
+		  MethodCallExpr m2 = (MethodCallExpr) b;
+		  // TODO only checking the number of arguments is an over-simplification
+		  isEqual = m1.getNameAsString().equals(m2.getNameAsString()) && m1.getArguments().equals(m2.getArguments()); 
+	  }
+		return isEqual;
+	}
 
   @Override
   public int compare(Node a, Node b) {
@@ -79,7 +95,7 @@ public class NodeEqualityChecker implements Comparator<Node> {
     compare = compare != null ? compare : compareImport(a, b);
     compare = compare != null ? compare : compareField(a, b);
     compare = compare != null ? compare : compareConstructor(a, b);
-    compare = compare != null ? compare : compareMethod(a, b);
+    compare = compare != null ? compare : compareMethodDeclaration(a, b);
     compare = compare != null ? compare : compareClass(a, b);
     compare = compare != null ? compare : compareLineComment(a, b);
 
@@ -149,7 +165,7 @@ public class NodeEqualityChecker implements Comparator<Node> {
    * @param b input {@link Node}
    * @return 0 if name and parameters are equal, 1 or -1 otherwise.
    */
-  private Integer compareMethod(Node a, Node b) {
+  private Integer compareMethodDeclaration(Node a, Node b) {
     return compareNodeWithModifiers(a, b, MethodDeclaration.class, this::isBodyDeclarationEqual);
   }
 
@@ -196,13 +212,16 @@ public class NodeEqualityChecker implements Comparator<Node> {
    * @return true if name and parameters are equal, false otherwise.
    */
   private Boolean isBodyDeclarationEqual(Node a, Node b) {
-    boolean isReplacement = false;
     CallableDeclaration<?> m1 = (CallableDeclaration<?>) a;
     CallableDeclaration<?> m2 = (CallableDeclaration<?>) b;
-    isReplacement = m1.getName().equals(m2.getName());
     List<Type> parameterTypes1 = m1.getParameters().stream().map(p -> p.getType()).collect(Collectors.toList());
     List<Type> parameterTypes2 = m2.getParameters().stream().map(p -> p.getType()).collect(Collectors.toList());
-    isReplacement = isReplacement && (parameterTypes1.size() == parameterTypes2.size());
+    boolean isReplacement = m1.getName().equals(m2.getName()) && compareMethodParameters(parameterTypes1, parameterTypes2);
+    return isReplacement;
+  }
+
+private boolean compareMethodParameters(List<Type> parameterTypes1, List<Type> parameterTypes2) {
+	boolean isReplacement = (parameterTypes1.size() == parameterTypes2.size());
     for (int i=0; i< parameterTypes1.size() && isReplacement; i++) {
     	Type t1 = parameterTypes1.get(i); 
     	Type t2 = parameterTypes2.get(i);
@@ -212,8 +231,8 @@ public class NodeEqualityChecker implements Comparator<Node> {
     		isReplacement = t1.equals(t2);  
     	}
     }
-    return isReplacement;
-  }
+	return isReplacement;
+}
 
   private Integer compareNodeWithModifiers(Node a, Node b, Class<?> claz, BiFunction<Node, Node, Boolean> equals) {
     Integer compare;
