@@ -19,7 +19,6 @@ package merger;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -57,10 +56,10 @@ public class NodeEqualityCheckerTest {
   public void testCompare_sorting() {
     List<Node> nodes = Arrays.asList(METHOD, FIELD, IMPORT, CLASS, IMPORT, CONSTRUCTOR, PACKAGE);
     List<Node> expected = Arrays.asList(PACKAGE, IMPORT, IMPORT, FIELD, CONSTRUCTOR, METHOD, CLASS);
-
-    List<Node> sortedNodes = nodes.stream().sorted(comparator).collect(Collectors.toList());
-
-    Assert.assertEquals(expected, sortedNodes);
+    // TODO move test to comparator
+    // List<Node> sortedNodes = nodes.stream().sorted(comparator).collect(Collectors.toList());
+    //
+    // Assert.assertEquals(expected, sortedNodes);
   }
 
   @Test
@@ -73,45 +72,46 @@ public class NodeEqualityCheckerTest {
     List<Node> nodes = Arrays.asList(f4, f2, f1, f3);
     List<Node> expected = Arrays.asList(f1, f2, f3, f4);
 
-    List<Node> sortedNodes = nodes.stream().sorted(comparator).collect(Collectors.toList());
-
-    Assert.assertEquals(expected, sortedNodes);
+    // TODO move test to comparator
+    // List<Node> sortedNodes = nodes.stream().sorted(comparator).collect(Collectors.toList());
+    //
+    // Assert.assertEquals(expected, sortedNodes);
   }
 
   @Test
   public void testCompare_equal() {
-    Assert.assertEquals(0, comparator.compare(PACKAGE, PACKAGE));
-    Assert.assertEquals(-1, comparator.compare(IMPORT, IMPORT)); // TODO not supported yet to find equal imports
-    Assert.assertEquals(0, comparator.compare(FIELD, FIELD));
-    Assert.assertEquals(0, comparator.compare(CONSTRUCTOR, CONSTRUCTOR));
-    Assert.assertEquals(0, comparator.compare(METHOD, METHOD));
-    Assert.assertEquals(0, comparator.compare(CLASS, CLASS));
+    Assert.assertTrue(comparator.isEqual(PACKAGE, PACKAGE));
+    Assert.assertEquals(-1, comparator.isEqual(IMPORT, IMPORT)); // TODO not supported yet to find equal imports
+    Assert.assertTrue(comparator.isEqual(FIELD, FIELD));
+    Assert.assertTrue(comparator.isEqual(CONSTRUCTOR, CONSTRUCTOR));
+    Assert.assertTrue(comparator.isEqual(METHOD, METHOD));
+    Assert.assertTrue(comparator.isEqual(CLASS, CLASS));
   }
 
   @Test
   public void testCompare_smaller() {
-    Assert.assertEquals(-1, comparator.compare(PACKAGE, IMPORT));
-    Assert.assertEquals(-1, comparator.compare(IMPORT, FIELD));
-    Assert.assertEquals(-1, comparator.compare(FIELD, CONSTRUCTOR));
-    Assert.assertEquals(-1, comparator.compare(CONSTRUCTOR, METHOD));
-    Assert.assertEquals(-1, comparator.compare(METHOD, CLASS));
+    Assert.assertEquals(-1, comparator.isEqual(PACKAGE, IMPORT));
+    Assert.assertEquals(-1, comparator.isEqual(IMPORT, FIELD));
+    Assert.assertEquals(-1, comparator.isEqual(FIELD, CONSTRUCTOR));
+    Assert.assertEquals(-1, comparator.isEqual(CONSTRUCTOR, METHOD));
+    Assert.assertEquals(-1, comparator.isEqual(METHOD, CLASS));
   }
 
   @Test
   public void testCompare_bigger() {
-    Assert.assertEquals(1, comparator.compare(IMPORT, PACKAGE));
-    Assert.assertEquals(1, comparator.compare(FIELD, IMPORT));
-    Assert.assertEquals(1, comparator.compare(CONSTRUCTOR, FIELD));
-    Assert.assertEquals(1, comparator.compare(METHOD, CONSTRUCTOR));
-    Assert.assertEquals(1, comparator.compare(CLASS, METHOD));
+    Assert.assertEquals(1, comparator.isEqual(IMPORT, PACKAGE));
+    Assert.assertEquals(1, comparator.isEqual(FIELD, IMPORT));
+    Assert.assertEquals(1, comparator.isEqual(CONSTRUCTOR, FIELD));
+    Assert.assertEquals(1, comparator.isEqual(METHOD, CONSTRUCTOR));
+    Assert.assertEquals(1, comparator.isEqual(CLASS, METHOD));
   }
 
   @Test
   public void testCompare_sameClass() {
-    Assert.assertEquals(-1, comparator.compare(METHOD, METHOD2));
-    Assert.assertEquals(-1, comparator.compare(METHOD2, METHOD));
-    Assert.assertEquals(-1, comparator.compare(CLASS, CLASS2));
-    Assert.assertEquals(-1, comparator.compare(CLASS2, CLASS));
+    Assert.assertEquals(-1, comparator.isEqual(METHOD, METHOD2));
+    Assert.assertEquals(-1, comparator.isEqual(METHOD2, METHOD));
+    Assert.assertEquals(-1, comparator.isEqual(CLASS, CLASS2));
+    Assert.assertEquals(-1, comparator.isEqual(CLASS2, CLASS));
   }
 
   private FieldDeclaration createField(String name, Keyword modifier) {

@@ -99,6 +99,10 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     return end - start;
   }
 
+  public int getNumberOfColumns() {
+    return this.endCharacter - startCharacter;
+  }
+
   /**
    * @return the start line number minus one. Mend to be used in combination with arrays of strings.
    */
@@ -235,7 +239,7 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   @Override
   public String toString() {
     ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    builder.append("start", start).append("startCharacter", startCharacter).append("end", end).append("endCharacter", endCharacter).append("node", node);
+    builder.append("start", "(" + start + ", " + startCharacter + ")").append("end", "(" + end + ", " + endCharacter + ")").append("node", node);
     return builder.toString();
   }
 
@@ -277,4 +281,15 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     return node;
   }
 
+  public boolean isEmpty() {
+    return this.getNumberOfLines() == 0 && getNumberOfColumns() == 0;
+  }
+
+  public boolean isNotEmpty() {
+    return !this.isEmpty();
+  }
+
+  public boolean isBefore(CodeSnippetLocation value) {
+    return this.compareTo(value) < 0;
+  }
 }

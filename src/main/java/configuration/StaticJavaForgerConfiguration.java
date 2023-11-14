@@ -20,6 +20,8 @@ package configuration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -57,6 +59,8 @@ public class StaticJavaForgerConfiguration {
 
   /** Used to gather more data about a parsed class, such as resolving imports or super classes. */
   private JavaSymbolSolver symbolSolver;
+
+  private List<TemplateLoader> templateLoaders = new ArrayList<>();
 
   private static StaticJavaForgerConfiguration config;
 
@@ -111,9 +115,28 @@ public class StaticJavaForgerConfiguration {
 
   public void addTemplateLocation(String templateLocation) throws IOException {
     FileTemplateLoader loader = new FileTemplateLoader(new File(templateLocation));
-    TemplateLoader original = this.getFreeMarkerConfiguration().getTemplateLoader();
-    MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] {original, loader});
-    this.freeMarkerConfiguration.setTemplateLoader(mtl);
+    this.addTemplateLoader(loader);
+  }
+
+  public List<TemplateLoader> getTemplateLoaders() {
+    return templateLoaders;
+  }
+
+  /**
+   * Add a custom template loader to look for templates given a template name or path.
+   * 
+   * @param templateLoader
+   */
+  public void addTemplateLoader(TemplateLoader templateLoader) {
+    this.templateLoaders.add(templateLoader);
+    resetTemplateLoaders();
+  }
+
+  public void removeTemplateLoader(TemplateLoader templateLoader) {
+    boolean removed = this.templateLoaders.remove(templateLoader);
+    if (removed) {
+      resetTemplateLoaders();
+    }
   }
 
   public final void setSymbolSolver(JavaSymbolSolver symbolSolver) {
@@ -148,6 +171,11 @@ public class StaticJavaForgerConfiguration {
     TypeSolver reflTypeSolver = new ReflectionTypeSolver();
     JavaSymbolSolver symbolSolver = new JavaSymbolSolver(reflTypeSolver);
     this.setSymbolSolver(symbolSolver);
+  }
+
+  private void resetTemplateLoaders() {
+    MultiTemplateLoader mtl = new MultiTemplateLoader(this.templateLoaders.toArray(TemplateLoader[]::new));
+    this.freeMarkerConfiguration.setTemplateLoader(mtl);
   }
 
 }

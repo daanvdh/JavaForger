@@ -35,8 +35,14 @@ import templateInput.TemplateInputParameters;
  */
 public class JavaForgerConfiguration {
 
-  /** The template to be prosessed. */
-  private String template;
+  /** The path to the template to be processed. */
+  private String template; // TODO rename to templatePath
+
+  /**
+   * The content for a template. By default this should be empty, because templates are loaded using the template templatePath. This can be filled to override
+   * the template content, if this is filled the original file will not be read.
+   */
+  private String templateContent;
 
   /** The input parameters to be used for the template. This is aditional to the parameters that will be added from the input class. */
   private TemplateInputParameters inputParameters;
@@ -140,9 +146,9 @@ public class JavaForgerConfiguration {
     this.childConfigs.clear();
     this.childConfigs.addAll(configs);
   }
-  
+
   public void clearChildConfigs() {
-	this.childConfigs.clear();
+    this.childConfigs.clear();
   }
 
   public void addChildConfig(JavaForgerConfiguration config) {
@@ -166,6 +172,9 @@ public class JavaForgerConfiguration {
   }
 
   public TemplateInputParameters getInputParameters() {
+    if (inputParameters == null) {
+      inputParameters = new TemplateInputParameters();
+    }
     return inputParameters.copy();
   }
 
@@ -281,6 +290,14 @@ public class JavaForgerConfiguration {
 
   public void setMergerConfiguration(MergerConfiguration mergerConfiguration) {
     this.mergerConfiguration = mergerConfiguration;
+  }
+
+  public String getTemplateContent() {
+    return templateContent;
+  }
+
+  public void setTemplateContent(String templateContent) {
+    this.templateContent = templateContent;
   }
 
   /**

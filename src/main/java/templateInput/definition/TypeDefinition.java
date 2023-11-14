@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -119,6 +120,14 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
     return generics;
   }
 
+  public String getGenericsAsString() {
+    return generics.stream().map(Object::toString).collect(Collectors.joining(", "));
+  }
+
+  public boolean getHasGenerics() {
+    return !generics.isEmpty();
+  }
+
   public void setGenerics(List<StringConverter> generics) {
     this.generics = generics;
   }
@@ -145,7 +154,7 @@ public class TypeDefinition implements Comparable<TypeDefinition> {
   }
 
   public String getNonPrimitiveType() {
-    return InitDefaultValues.getObjectForPrimitive(getType().toString());
+    return InitDefaultValues.getObjectForPrimitive(type.toString());
   }
 
   public boolean isPrimitive() {

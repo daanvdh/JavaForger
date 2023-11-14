@@ -19,6 +19,7 @@ package configuration.merger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
@@ -37,8 +38,6 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import merger.git.GitMerger;
-
 /**
  * Class responsible for getting different file versions from a git repository.
  *
@@ -47,7 +46,21 @@ import merger.git.GitMerger;
 public class GitFileResolver {
   private static final Logger LOG = LoggerFactory.getLogger(GitFileResolver.class);
 
-  public String getFileFromHead(String gitRepository, String inputFilePath)
+  public Optional<String> getFileFromHead(String gitRepository, String absoluteInputFilePath) {
+    String fileContent = null;
+    try {
+      fileContent = getFileFromHeadUnsafe(gitRepository, absoluteInputFilePath);
+    } catch (Exception e) {
+      LOG.error("Unable to get file " + absoluteInputFilePath + " from git repository " + gitRepository + " error: " + e.getMessage());
+    }
+
+    LOG.debug("We got the following original file content from the last git commit:");
+    LOG.debug(fileContent);
+
+    return Optional.ofNullable(fileContent);
+  }
+
+  private String getFileFromHeadUnsafe(String gitRepository, String absoluteInputFilePath)
       throws AmbiguousObjectException, IncorrectObjectTypeException, IOException, MissingObjectException, CorruptObjectException {
     String fileContent;
     File file = new File(gitRepository);
@@ -59,16 +72,17 @@ public class GitFileResolver {
         RevCommit commit = revWalk.parseCommit(lastCommitId);
         // and using commit's tree find the path
         RevTree tree = commit.getTree();
-        System.out.println("Having tree: " + tree);
+        LOG.debug("Having tree: " + tree);
 
         // now try to find a specific file
-        String gitFilePath = inputFilePath.replace(gitRepository, "").substring(1);
+        String gitFilePath = getRelativeGitPath(gitRepository, absoluteInputFilePath);
         try (TreeWalk treeWalk = new TreeWalk(repository)) {
           treeWalk.addTree(tree);
           treeWalk.setRecursive(true);
           treeWalk.setFilter(PathFilter.create(gitFilePath));
           if (!treeWalk.next()) {
-            throw new IllegalStateException("Did not find expected file " + gitFilePath);
+            throw new IllegalStateException(
+                "In repository: " + gitRepository + " did not find expected file: " + gitFilePath + " with absolute path: " + absoluteInputFilePath);
           }
 
           ObjectId objectId = treeWalk.getObjectId(0);
@@ -80,10 +94,17 @@ public class GitFileResolver {
         revWalk.dispose();
       }
     }
-    LOG.debug("We got the following original file content from the last git commit:");
-    LOG.debug(fileContent);
-    
     return fileContent;
+  }
+
+  private String getRelativeGitPath(String repo, String path) {
+    String pathStandardized = path.replace("\\", "/");
+    String repoStandardized = repo.replace("\\", "/");
+    String relativePath = pathStandardized.replace(repoStandardized, "");
+    if (relativePath.startsWith("/")) {
+      relativePath = relativePath.substring(1);
+    }
+    return relativePath;
   }
 
 }

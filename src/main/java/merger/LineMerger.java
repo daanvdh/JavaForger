@@ -18,7 +18,6 @@
 package merger;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 import com.github.javaparser.ast.CompilationUnit;
 
@@ -45,7 +44,7 @@ public class LineMerger extends CodeSnippetMerger {
   protected void executeMerge(JavaForgerConfiguration config, CodeSnippet codeSnipit, String mergeClassPath, String inputFilePath) throws IOException {
     CompilationUnit existingCode = reader.read(mergeClassPath);
     CompilationUnit newCode = reader.read(codeSnipit, mergeClassPath);
-    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> newCodeInsertionLocations = locater.locate(existingCode, newCode, config);
+    InsertionMap newCodeInsertionLocations = locater.locate(existingCode, newCode, config);
     inserter.insert(config, mergeClassPath, codeSnipit.toString(), newCodeInsertionLocations);
   }
 

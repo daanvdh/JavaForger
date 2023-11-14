@@ -83,7 +83,7 @@ public class CodeSnippetLocaterTest {
     CompilationUnit cu1 = parser.parse(existing);
     CompilationUnit cu2 = parser.parse(insert);
 
-    LinkedHashMap<CodeSnippetLocation, CodeSnippetLocation> locations = locater.locate(cu1, cu2, JavaForgerConfiguration.builder().build());
+    InsertionMap locations = locater.locate(cu1, cu2, JavaForgerConfiguration.builder().build());
 
     Assert.assertEquals("Expected the same size", expected.size(), locations.size());
 

@@ -1,8 +1,9 @@
 <#list fields as field>
+
   /**
    * Gets the ${field.name.lowerSpace} of the {@link ${class.name}}.
    *
-   * @return {@link ${field.nonPrimitiveType}} 
+   * @return {@link ${field.nonPrimitiveType}}<#if field.hasGenerics><#list field.generics as generic> of {@link ${generic}}<#sep>, </#sep></#list></#if>
    */
   public ${field.type} ${field.getter}() {
     return ${field.name};
@@ -11,7 +12,7 @@
   /**
    * Sets the ${field.name.lowerSpace} of the {@link ${class.name}}.
    *
-   * @param ${field.name} The input {@link ${field.nonPrimitiveType}}. 
+   * @param ${field.name} The input {@link ${field.nonPrimitiveType}}<#if field.hasGenerics> of <#list field.generics as generic>{@link ${generic}}<#sep>, </#sep></#list></#if>. 
    */
   public void ${field.setter}(${field.type} ${field.name}) {
     this.${field.name} = ${field.name};

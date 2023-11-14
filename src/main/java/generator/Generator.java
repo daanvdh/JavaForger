@@ -28,7 +28,6 @@ import java.util.List;
 
 import configuration.ClassProvider;
 import configuration.JavaForgerConfiguration;
-import configuration.StaticJavaForgerConfiguration;
 import freemarker.core.ParseException;
 import freemarker.template.MalformedTemplateNameException;
 import freemarker.template.TemplateException;
@@ -36,6 +35,7 @@ import freemarker.template.TemplateNotFoundException;
 import merger.CodeSnippetMerger;
 import merger.LineMerger;
 import merger.git.GitMerger;
+import template.TemplateService;
 import templateInput.TemplateInputParameters;
 
 /**
@@ -47,7 +47,7 @@ public class Generator {
 
   private List<CodeSnippetMerger> mergers = Arrays.asList(new GitMerger(this), new LineMerger());
   private TemplateInputParametersService inputService = new TemplateInputParametersService();
-  private StaticJavaForgerConfiguration staticConfig = StaticJavaForgerConfiguration.getConfig();
+  private TemplateService templateService = new TemplateService();
 
   public CodeSnippet execute(String template, TemplateInputParameters inputParameters) throws IOException, TemplateException {
     return execute(template, null, inputParameters);
@@ -69,16 +69,6 @@ public class Generator {
     return execute(config, inputClass, null);
   }
 
-  private CodeSnippet execute(JavaForgerConfiguration config, String inputClass, String parentMergeClass) throws IOException, TemplateException {
-    String mergeClassPath = getMergeClass(inputClass, parentMergeClass, config);
-
-    TemplateInputParameters inputParameters = inputService.getInputParameters(config, inputClass, mergeClassPath);
-    CodeSnippet codeSnipit = processTemplate(config, inputParameters);
-    merge(config, codeSnipit, mergeClassPath, inputParameters, inputClass);
-    executeChildren(config, inputClass, codeSnipit, mergeClassPath);
-    return codeSnipit;
-  }
-
   /**
    * Note that this does not execute any children yet. It also does not support merging yet.
    *
@@ -92,9 +82,21 @@ public class Generator {
   public CodeSnippet executeFromContent(JavaForgerConfiguration config, String inputContent, String inputClass, String mergeClassPath)
       throws IOException, TemplateException {
     TemplateInputParameters inputParameters = inputService.getInputParametersFromFileContent(config, inputContent, mergeClassPath);
+    CodeSnippet codeSnipit = execute(config, inputClass, mergeClassPath, inputParameters);
+    return codeSnipit;
+  }
+
+  public CodeSnippet execute(JavaForgerConfiguration config, String inputClass, String mergeClassPath) throws IOException, TemplateException {
+    TemplateInputParameters inputParameters = inputService.getInputParameters(config, inputClass, mergeClassPath);
+    CodeSnippet codeSnipit = execute(config, inputClass, mergeClassPath, inputParameters);
+    return codeSnipit;
+  }
+
+  private CodeSnippet execute(JavaForgerConfiguration config, String inputClass, String mergeClassPath, TemplateInputParameters inputParameters)
+      throws IOException, TemplateNotFoundException, MalformedTemplateNameException, ParseException, TemplateException {
     CodeSnippet codeSnipit = processTemplate(config, inputParameters);
-    // merge(config, codeSnipit, mergeClassPath, inputParameters);
-    // executeChildren(config, inputClass, codeSnipit, mergeClassPath);
+    merge(config, codeSnipit, mergeClassPath, inputParameters, inputClass);
+    executeChildren(config, inputClass, codeSnipit, mergeClassPath);
     return codeSnipit;
   }
 
@@ -155,7 +157,8 @@ public class Generator {
     List<CodeSnippet> codeSnipits = new ArrayList<>();
     for (JavaForgerConfiguration conf : config.getChildConfigs()) {
       String inputClass = conf.getInputClassProvider().provide(parentInputClass, parentMergeClass);
-      codeSnipits.add(execute(conf, inputClass, parentMergeClass));
+      String mergeClassPath = getMergeClass(inputClass, parentMergeClass, config);
+      codeSnipits.add(execute(conf, inputClass, mergeClassPath));
     }
     codeSnipits.forEach(s -> {
       codeSnipit.add("\n======================================================================\n");
@@ -166,8 +169,7 @@ public class Generator {
   private CodeSnippet processTemplate(JavaForgerConfiguration config, TemplateInputParameters inputParameters)
       throws IOException, TemplateNotFoundException, MalformedTemplateNameException, ParseException, TemplateException {
     Writer writer = new StringWriter();
-
-    staticConfig.getFreeMarkerConfiguration().getTemplate(config.getTemplate()).process(inputParameters, writer);
+    templateService.getTemplate(config).process(inputParameters, writer);
     return new CodeSnippet(writer.toString());
   }
 
