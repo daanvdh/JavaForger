@@ -35,6 +35,7 @@ import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinte
 
 import configuration.PathConverter;
 import generator.CodeSnippet;
+import generator.JavaForgerException;
 import reader.Parser;
 
 /**
@@ -102,6 +103,10 @@ public class CodeSnippetReader {
       }
 
       n = cu;
+
+      String message = "With the new codeSnipperInserted this is not supported anymore, all classes should have a class declaration. ";
+      System.err.println(message);
+      throw new JavaForgerException(message);
     }
     return n;
   }

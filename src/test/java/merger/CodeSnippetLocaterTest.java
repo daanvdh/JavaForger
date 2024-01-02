@@ -87,7 +87,7 @@ public class CodeSnippetLocaterTest {
 
     Assert.assertEquals("Expected the same size", expected.size(), locations.size());
 
-    Iterator<Entry<CodeSnippetLocation, CodeSnippetLocation>> res = locations.entrySet().iterator();
+    Iterator<InsertionEntry> res = locations.iterator();
     Iterator<Entry<CodeSnippetLocation, CodeSnippetLocation>> exp = expected.entrySet().iterator();
     int i = 0;
     while (res.hasNext()) {

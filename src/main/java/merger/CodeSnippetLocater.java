@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -52,6 +51,8 @@ public class CodeSnippetLocater {
 
   private NodeEqualityChecker equalityChecker = new NodeEqualityChecker();
   private NodeComparator comparator = new NodeComparator();
+  private StatementLocater statementLocater = new StatementLocater();
+  private CodeSnippetLocationFactory locationFactory = new CodeSnippetLocationFactory();
 
   /**
    * Receives two {@link CompilationUnit}s and determines the location of a package, imports, fields, constructors, methods or inner classes. This method will
@@ -68,26 +69,24 @@ public class CodeSnippetLocater {
     if (MergeLevel.FILE.equals(config.getMergeLevel())) {
       locations.put(CodeSnippetLocation.of(newCode), CodeSnippetLocation.of(existingCode));
     } else {
-      locations = recursiveLocator(existingCode.getChildNodes(), newCode.getChildNodes(), config);
+      locations = recursiveLocatorClassLevel(existingCode.getChildNodes(), newCode.getChildNodes(), config);
     }
 
     // locations may not be sorted on increasing insertLocation if an existing code block will be overridden and occurs before the last determined insert
     // location. So we need to sort them here.
-    locations = locations.entrySet().stream().sorted(Map.Entry.comparingByValue())
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, InsertionMap::new));
+    locations = locations.stream().sorted(Map.Entry.comparingByValue()).collect(InsertionMap.collect());
 
     return locations;
   }
 
   /**
-   * Calculates the insertion locations for the insertNodes within the existingNodes. Recursively handles classes. The order of the insertNodes is retained,
-   * unless an earlier existing node was equal to an insert node.
+   * Calculates the insertion locations for the insertNodes within the existingNodes. Recursively handles classes.
    *
    * @param existingNodes The nodes from the existing class. May not be empty.
    * @param insertNodes The nodes from the class to be inserted. May not be empty.
    * @return The map of where insertion-code (from) needs to be inserted (to).
    */
-  protected InsertionMap recursiveLocator(List<Node> existingNodes, List<Node> insertNodes, JavaForgerConfiguration config) {
+  protected InsertionMap recursiveLocatorClassLevel(List<Node> existingNodes, List<Node> insertNodes, JavaForgerConfiguration config) {
     InsertionMap locations = new InsertionMap();
 
     // -1 indicates that the new node needs to be inserted before the first node within the existing nodes.
@@ -97,9 +96,6 @@ public class CodeSnippetLocater {
     for (Node insertNode : insertNodes) {
       int equalNodeIndex = findEqualNode(existingNodes, insertNode, lastEqualNodeIndex);
       if (equalNodeIndex >= 0) { // Found equal node
-        if (!(insertNode instanceof ImportDeclaration)) {
-          // lastEqualNodeIndex = equalNodeIndex;
-        }
         locations.putAll(handleEqualNodesRecursively(insertNode, existingNodes.get(equalNodeIndex), config));
         insertAfter = Integer.max(insertAfter, equalNodeIndex);
       } else {
@@ -154,9 +150,11 @@ public class CodeSnippetLocater {
       } else { // No equal node was found
         // If a similar line exists, merge that line
         Node mergeLineNode = findExistingNodeToMergeWith(config, existingNodes, insertNode, previousMatchingExistingNodeIndex);
+        // TODO this is disabled for now. This is not working properly at the moment.
+        mergeLineNode = null;
         if (mergeLineNode != null) {
-          // TODO experimental code that still needs to be tested. The CodeSnippetInserted does not support this yet.
-          InsertionMap subLinelocations = mergeNodes(insertNode, mergeLineNode);
+          // TODO experimental code that still needs to be tested.
+          InsertionMap subLinelocations = statementLocater.locate(insertNode, mergeLineNode);
           subLinelocations.keySet().stream().forEach(k -> locations.put(k, subLinelocations.get(k)));
         } else {
           CodeSnippetLocation location;
@@ -191,32 +189,6 @@ public class CodeSnippetLocater {
           CodeSnippetLocation.fromAfterUntilIncluding(existingChildren.get(existingChildren.size() - 1), existingBlockStmt));
     }
     return locations;
-  }
-
-  private InsertionMap mergeNodes(Node insertNode, Node existingNode) {
-    InsertionMap subLinelocations = new InsertionMap();
-    int existingIndex = 0, insertIndex = 0;
-    List<Node> mergeLineChildNodes = existingNode.getChildNodes();
-    while (insertIndex < insertNode.getChildNodes().size()) {
-      Node insertSubLine = insertNode.getChildNodes().get(insertIndex);
-      Node existingSubLine = mergeLineChildNodes.get(existingIndex);
-      if (existingIndex < mergeLineChildNodes.size() && insertIndex < insertNode.getChildNodes().size()) {
-        // TODO first analyse the children of the node before analysing the node itself.
-        if (equalityChecker.isEqualIgnoreChildren(insertSubLine, existingSubLine)) {
-          // TODO This does put a way bigger location on both sides than intended, because all it's children are also incuded.
-          subLinelocations.put(CodeSnippetLocation.of(insertSubLine), CodeSnippetLocation.of(existingSubLine));
-          existingIndex++;
-          insertIndex++;
-        } else {
-          subLinelocations.put(CodeSnippetLocation.of(insertSubLine), CodeSnippetLocation.before(existingSubLine));
-          insertIndex++;
-        }
-      } else if (insertIndex < insertNode.getChildNodes().size()) {
-        subLinelocations.put(CodeSnippetLocation.of(insertSubLine), CodeSnippetLocation.after(mergeLineChildNodes.get(mergeLineChildNodes.size() - 1)));
-        insertIndex++;
-      }
-    }
-    return subLinelocations;
   }
 
   private Node findExistingNodeToMergeWith(JavaForgerConfiguration config, List<Node> existingNodes, Node insertNode, int previousMatchingExistingNodeIndex) {
@@ -254,10 +226,15 @@ public class CodeSnippetLocater {
       if (!insertNodes.isEmpty()) {
         if (existingNodes.isEmpty()) {
           CodeSnippetLocation firstInsertLocation = getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode);
-          locationMap = insertNodes.stream().collect(Collectors.toMap(CodeSnippetLocation::of, c -> firstInsertLocation, (a, b) -> a, InsertionMap::new));
+          locationMap.putAll(insertNodes.stream().collect(InsertionMap.collect(CodeSnippetLocation::of, c -> firstInsertLocation)));
         } else {
+          if (!config.getMergerConfiguration().ignoreClassDeclaration()) {
+            CodeSnippetLocation insertClassDeclaration = locationFactory.getClassDeclarationLocation(insertNode);
+            CodeSnippetLocation existingClassDeclaration = locationFactory.getClassDeclarationLocation(existingNode);
+            locationMap.put(insertClassDeclaration, existingClassDeclaration);
+          }
           // Recursive call
-          locationMap = recursiveLocator(existingNodes, insertNodes, config);
+          locationMap.putAll(recursiveLocatorClassLevel(existingNodes, insertNodes, config));
         }
       }
     } else if (MergeLevel.LINE.isAsFineGrainedAs(config.getMergeLevel()) && isMethodOrConstructor(existingNode, insertNode)) {
@@ -266,7 +243,7 @@ public class CodeSnippetLocater {
       if (!insertNodes.isEmpty()) {
         if (existingNodes.isEmpty()) {
           CodeSnippetLocation firstInsertLocation = getFirstInsertLocation((ClassOrInterfaceDeclaration) existingNode);
-          locationMap = insertNodes.stream().collect(Collectors.toMap(CodeSnippetLocation::of, c -> firstInsertLocation, (a, b) -> a, InsertionMap::new));
+          locationMap = insertNodes.stream().collect(InsertionMap.collect(CodeSnippetLocation::of, c -> firstInsertLocation));
         } else {
           // TODO handle existingNodes.isEmpty()
           locationMap = createCodeBlockLocationMap(existingNodes, insertNodes, config);

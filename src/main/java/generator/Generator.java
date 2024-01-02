@@ -66,7 +66,8 @@ public class Generator {
   }
 
   public CodeSnippet execute(JavaForgerConfiguration config, String inputClass) throws IOException, TemplateException {
-    return execute(config, inputClass, null);
+    String mergeClass = getMergeClass(inputClass, null, config);
+    return execute(config, inputClass, mergeClass);
   }
 
   /**

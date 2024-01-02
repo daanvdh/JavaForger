@@ -40,6 +40,9 @@ public class MergerConfiguration {
   /** Determines how fine grained the merging will be done. */
   private MergeLevel mergeLevel = MergeLevel.LINE;
 
+  /** Determines if the generated class declarations will be merged with or override the existing class declaration. */
+  private boolean ignoreClassDeclaration = false;
+
   public MergerConfiguration() {
     // empty constructor which would otherwise be invisible due to the constructor receiving the builder.
   }
@@ -85,6 +88,10 @@ public class MergerConfiguration {
 
   public void setMergeLevel(MergeLevel mergeLevel) {
     this.mergeLevel = mergeLevel;
+  }
+
+  public boolean ignoreClassDeclaration() {
+    return this.ignoreClassDeclaration;
   }
 
   /**

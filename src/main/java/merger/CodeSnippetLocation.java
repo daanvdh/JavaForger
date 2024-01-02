@@ -27,7 +27,6 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.Position;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
-import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.javadoc.Javadoc;
 
 import generator.CodeSnippet;
@@ -39,15 +38,12 @@ import generator.CodeSnippet;
  */
 public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
 
-  // TODO rename to startLine
   /** start of the {@link CodeSnippetLocation} (inclusive), first possible line number is '1' */
-  private final int start;
-  // TODO rename to endLine
-  /** end of the {@link CodeSnippetLocation} (exclusive) */
-  private final int end;
-
+  private final int startLine;
   /** The start column of the {@link CodeSnippetLocation} (inclusive) */
   private final int startCharacter;
+  /** end of the {@link CodeSnippetLocation} (inclusive) */
+  private final int endLine;
   /** The end column of the {@link CodeSnippetLocation} (exclusive) */
   private final int endCharacter;
 
@@ -55,26 +51,26 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   private final Node node;
 
   /**
-   * @param start {@link CodeSnippetLocation#start}
-   * @param end {@link CodeSnippetLocation#end}
+   * @param start {@link CodeSnippetLocation#startLine}
+   * @param end {@link CodeSnippetLocation#endLine}
    */
   public CodeSnippetLocation(int start, int startCharacter, int end, int endCharacter, Node node) {
     if (start > end || (start == end && startCharacter > endCharacter)) {
       throw new RuntimeException(
           "Start (" + start + ", " + startCharacter + ") cannot be bigger than end (" + end + ", " + endCharacter + ") for node " + node);
     }
-    this.start = start;
-    this.end = end;
+    this.startLine = start;
+    this.endLine = end;
     this.startCharacter = startCharacter;
     this.endCharacter = endCharacter;
     this.node = node;
   }
 
   /**
-   * @see CodeSnippetLocation#start
+   * @see CodeSnippetLocation#startLine
    */
-  public int getStart() {
-    return start;
+  public int getStartLine() {
+    return startLine;
   }
 
   public int getStartCharacter() {
@@ -82,10 +78,10 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   }
 
   /**
-   * @see CodeSnippetLocation#end
+   * @see CodeSnippetLocation#endLine
    */
-  public int getEnd() {
-    return end;
+  public int getEndLine() {
+    return endLine;
   }
 
   public int getEndCharacter() {
@@ -96,7 +92,9 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
    * @return The number of lines represented by this {@link CodeSnippet}.
    */
   public int getNumberOfLines() {
-    return end - start;
+    // We need to do plus one because the endLine is inclusive, meaning endLine = 1 and startLine = 1 represents line 1.
+    // Only if the characters are equal this whole CodeSnippetLocation is empty.
+    return endLine - startLine + 1;
   }
 
   public int getNumberOfColumns() {
@@ -106,29 +104,29 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   /**
    * @return the start line number minus one. Mend to be used in combination with arrays of strings.
    */
-  public int getFirstIndex() {
-    return start - 1;
+  public int getStartLineIndex() {
+    return startLine - 1;
   }
 
   /**
    * @return the end line number minus one. Mend to be used in combination with arrays of strings.
    */
-  public int getLastIndex() {
-    return end - 1;
+  public int getEndLineIndex() {
+    return endLine - 1;
   }
 
   /**
-   * @return {@code true} if the end line is higher than the start line, {@code false} otherwise.
+   * @return the end start character minus one. Mend to be used in combination with indexes of strings.
    */
-  public boolean containsLines() {
-    return end > start;
+  public int getStartCharacterIndex() {
+    return this.startCharacter - 1;
   }
 
   /**
-   * @return The total number of lines represented by this {@link CodeSnippetLocation}.
+   * @return the end start character minus one. Mend to be used in combination with indexes of strings.
    */
-  public int size() {
-    return end - start;
+  public int getEndCharacterIndex() {
+    return this.endCharacter - 1;
   }
 
   public static CodeSnippetLocation of(int start, int startCharacter, int end, int endCharacter) {
@@ -138,8 +136,8 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   /**
    * Creates a new {@link CodeSnippetLocation}.
    *
-   * @param start The {@link CodeSnippetLocation#start}
-   * @param end The {@link CodeSnippetLocation#end}
+   * @param start The {@link CodeSnippetLocation#startLine}
+   * @param end The {@link CodeSnippetLocation#endLine}
    * @return new {@link CodeSnippetLocation}
    */
   public static CodeSnippetLocation of(int start, int startCharacter, int end, int endCharacter, Node node) {
@@ -207,16 +205,27 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
    * @param inclusiveEnd The end of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnippetLocation}.
    * @return new {@link CodeSnippetLocation}.
    */
-  public static CodeSnippetLocation fromAfterUntilIncluding(Node exclusiveStart, BlockStmt inclusiveEnd) {
+  public static CodeSnippetLocation fromAfterUntilIncluding(Node exclusiveStart, Node inclusiveEnd) {
     return of(calculateEnd(exclusiveStart), calculateEnd(inclusiveEnd));
+  }
+
+  /**
+   * Creates a new {@link CodeSnippetLocation} for the given {@link Node}s.
+   *
+   * @param inclusiveStart The beginning of this {@link JavaParser} {@link Node} will be the start of the resulting {@link CodeSnippetLocation}.
+   * @param inclusiveEnd The end of this {@link JavaParser} {@link Node} will be the end of the resulting {@link CodeSnippetLocation}.
+   * @return new {@link CodeSnippetLocation}.
+   */
+  public static CodeSnippetLocation fromUntilIncluding(Node inclusiveStart, Node inclusiveEnd) {
+    return of(calculateStart(inclusiveStart), calculateEnd(inclusiveEnd), inclusiveStart);
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + end;
-    result = prime * result + start;
+    result = prime * result + endLine;
+    result = prime * result + startLine;
     return result;
   }
 
@@ -229,9 +238,13 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
     if (getClass() != obj.getClass())
       return false;
     CodeSnippetLocation other = (CodeSnippetLocation) obj;
-    if (end != other.end)
+    if (endLine != other.endLine)
       return false;
-    if (start != other.start)
+    if (startLine != other.startLine)
+      return false;
+    if (startCharacter != other.startCharacter)
+      return false;
+    if (endCharacter != other.endCharacter)
       return false;
     return true;
   }
@@ -239,18 +252,22 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   @Override
   public String toString() {
     ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    builder.append("start", "(" + start + ", " + startCharacter + ")").append("end", "(" + end + ", " + endCharacter + ")").append("node", node);
+    builder.append("start", "(" + startLine + ", " + startCharacter + ")").append("end", "(" + endLine + ", " + endCharacter + ")").append("node", node);
     return builder.toString();
   }
 
   @Override
   public int compareTo(CodeSnippetLocation that) {
-    return this.start - that.start;
+    int compare = this.startLine - that.startLine;
+    if (compare == 0) {
+      compare = this.startCharacter - that.startCharacter;
+    }
+    return compare;
   }
 
   private static Pair<Integer, Integer> calculateEnd(Node node) {
-    // TODO Should not do +1 anymore since we are working with columns now. Maybe +1 on the column?
-    return Pair.of(node.getEnd().get().line + 1, node.getEnd().get().column);
+    // We need to do +1 on the column, because it is exclusive. Otherwise we cannot represent an empty CodeSnippetLocation
+    return Pair.of(node.getEnd().get().line, node.getEnd().get().column + 1);
   }
 
   private static Pair<Integer, Integer> calculateStart(Node node) {
@@ -282,7 +299,7 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   }
 
   public boolean isEmpty() {
-    return this.getNumberOfLines() == 0 && getNumberOfColumns() == 0;
+    return endLine == startLine && getNumberOfColumns() == 0;
   }
 
   public boolean isNotEmpty() {
@@ -292,4 +309,36 @@ public class CodeSnippetLocation implements Comparable<CodeSnippetLocation> {
   public boolean isBefore(CodeSnippetLocation value) {
     return this.compareTo(value) < 0;
   }
+
+  public static CodeSnippetLocation empty() {
+    return of(1, 1, 1, 1);
+  }
+
+  public boolean isOnSingleLine() {
+    return this.startLine == this.endLine;
+  }
+
+  public int getEndCharacterIndexInclusive() {
+    return getEndCharacterIndex() - 1;
+  }
+
+  public boolean includes(CodeSnippetLocation that) {
+    boolean includes = true;
+    if (this.startLine > that.startLine) {
+      includes = false;
+    } else if (this.startLine == that.startLine && this.startCharacter > that.startCharacter) {
+      includes = false;
+    }
+    if (this.endLine < that.endLine) {
+      includes = false;
+    } else if (this.endLine == that.endLine && this.endCharacter < that.endCharacter) {
+      includes = false;
+    }
+    return includes;
+  }
+
+  public static CodeSnippetLocation after(CodeSnippetLocation l) {
+    return of(l.endLine, l.endCharacter + 1, l.endLine, l.endCharacter + 1);
+  }
+
 }

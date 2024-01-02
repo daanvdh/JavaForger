@@ -19,8 +19,6 @@ package merger.git;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 
 import configuration.JavaForgerConfiguration;
 import configuration.merger.GitFileResolver;
@@ -44,8 +43,8 @@ import merger.CodeSnippetLocater;
 import merger.CodeSnippetLocation;
 import merger.CodeSnippetMerger;
 import merger.CodeSnippetReader;
+import merger.InsertionEntry;
 import merger.InsertionMap;
-import merger.InsertionMap.InsertionEntry;
 import merger.MergeType;
 import template.TemplateService;
 
@@ -107,17 +106,42 @@ public class GitMerger extends CodeSnippetMerger {
     // The code below is mostly for fields and variables which are equal because their name is equal, but have a different assignment.
     // This will find all new code, but if the from and to are NOT EQUAL AND from old to new it was EQUAL, we should also merge it.
     InsertionMap replaceFromNewToPrevious = newIntoPrevious.stream() //
-        .filter((e) -> e.getTo().isNotEmpty()) //
-        .filter((e) -> e.getTo().getNode() != null) //
-        .filter((e) -> e.getFrom().getNode() != null) //
         .filter(e -> !this.isNodeEqual(e.getFrom(), e.getTo())) //
         .collect(InsertionMap.collect());
 
+    // InsertionMap replaceLocations = replaceFromNewToPrevious.stream()
+    // // In theory this should simply let everything through since all nodes should be represented.
+    // .filter(e -> previousIntoCurrent.hasLocationKeyIncluded(e.getTo())) //
+    // .collect(InsertionMap.collect(InsertionEntry::getFrom, e -> getCodeSnippetLocationForReplacement(previousIntoCurrent, e.getTo())));
     InsertionMap replaceLocations = replaceFromNewToPrevious.stream()
-        // In theory this should simply let everything thru since all nodes are represented.
-        .filter(e -> previousIntoCurrent.containsKey(e.getTo())) //
-        .collect(InsertionMap.collect(InsertionEntry::getFrom, e -> previousIntoCurrent.get(e.getTo())));
+        // In theory this should simply let everything through since all nodes should be represented.
+        .filter(t -> previousIntoCurrent.containsKey(t.getTo())) //
+        .collect(InsertionMap.collect(InsertionEntry::getFrom, e -> previousIntoCurrent.getTo(e.getTo())));
+
+    // It can happen that newIntoPrevious has a node that is completely included inside a node from previousIntoCurrent
+    InsertionEntry entryFromNewIntoPrevious = null;
+    CodeSnippetLocation locationKeyFromPreviousIntoCurrent = null;
+
     return replaceLocations;
+  }
+
+  private CodeSnippetLocation getCodeSnippetLocationForReplacement(InsertionMap previousIntoCurrent, CodeSnippetLocation previous) {
+    CodeSnippetLocation replacement = previousIntoCurrent.getTo(previous);
+    if (replacement == null) {
+      Optional<InsertionEntry> locationKeyThatIncludesPrevious = previousIntoCurrent.getLocationKeyThatIncludes(previous);
+      if (locationKeyThatIncludesPrevious.isPresent()) {
+        // Try to construct a location from one of the inner nodes, possibly using the locater
+
+        JavaForgerConfiguration config = new JavaForgerConfiguration(); // TODO check what we need from this
+        Node nodeContainingPrevious = locationKeyThatIncludesPrevious.get().getTo().getNode();
+        Node previousNode = previous.getNode();
+
+        // locater.locate(nodeContainingPrevious, previousNode, config);
+      } else {
+        // TODO Construct a backup location that does not override anything, but will include this node.
+      }
+    }
+    return replacement;
   }
 
   /**
@@ -135,8 +159,11 @@ public class GitMerger extends CodeSnippetMerger {
 
     // We need to map these values to the current CodeSnippetLocation counterparts.
     // TODO InsertionMap needs to allow duplicate keys
-    InsertionMap deleteLocations = previousIntoCurrent.entrySet().stream().filter(e1 -> deleteFromPrevious.contains(e1.getKey())).map(Map.Entry::getValue)
-        .collect(Collectors.toMap(v -> CodeSnippetLocation.of(0, 0, 0, 0), v -> v, (a1, b1) -> a1, InsertionMap::new));
+    InsertionMap deleteLocations = previousIntoCurrent.stream() //
+        .filter(e1 -> deleteFromPrevious.contains(e1.getFrom())) //
+        .filter(e -> !e.getTo().isEmpty()) //
+        .map(InsertionEntry::getTo) //
+        .collect(InsertionMap.collect(v -> CodeSnippetLocation.empty(), v -> v));
     return deleteLocations;
   }
 
@@ -151,7 +178,7 @@ public class GitMerger extends CodeSnippetMerger {
         .map(InsertionEntry::getFrom).collect(Collectors.toList());
     InsertionMap insertLocations = newIntoCurrent.stream() //
         .filter(e -> insertFromNew.contains(e.getFrom())) //
-        .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (a, b) -> a, InsertionMap::new));
+        .collect(InsertionMap.collect());
     return insertLocations;
   }
 
@@ -159,7 +186,13 @@ public class GitMerger extends CodeSnippetMerger {
     // TODO We cannot use the NodeEqualityChecker here, because that will be true for all node pairs at this point
     // Checking equality on the toString should at least ignore spaces.
     // The cleanest way is to use the equalityChecker on the field assignment.
-    return from.getNode().toString().equals(to.getNode().toString());
+    boolean equals = true;
+    if (from.getNode() != null && to.getNode() != null && to.isNotEmpty()) {
+      String fromString = from.getNode().toString();
+      String toString = to.getNode().toString();
+      equals = fromString.equals(toString);
+    }
+    return equals;
   }
 
   private CompilationUnit executeTemplateOnGitHeadFileVersion(JavaForgerConfiguration config, String mergeClassPath, String inputFilePath)
